@@ -11,8 +11,6 @@
 
 ### Idea 2: Interactive Calendar
 
-### Idea 3
-
 **Mentor TA:** _Put your mentor TA's name and email here once you're assigned one!_
 
 ## Meetings
