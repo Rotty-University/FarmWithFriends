@@ -1,6 +1,6 @@
 # cs0320 Term Project 2020
 
-**Team Members:** _Fill this in!_
+**Team Members:** Nasheath Ahmed, Andrew Boden, Henry Lucco, Jake Zhang
 
 **Team Strengths and Weaknesses:** _Fill this in!_
 
