@@ -5,9 +5,9 @@
 **Team Strengths and Weaknesses:** _Fill this in!_
 
 **Project Idea(s):** _Fill this in with three unique ideas! (Due by March 2)_
-### Idea 1
+### Idea 1: Farming Simulator
 
-### Idea 2
+### Idea 2: Interactive Calendar
 
 ### Idea 3
 
