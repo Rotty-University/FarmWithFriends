@@ -3,8 +3,8 @@
 **Team Members:** Nasheath Ahmed, Andrew Boden, Henry Lucco, Jake Zhang
 
 **Team Strengths and Weaknesses:** 
-- Strengths: Graphics & GUI, Algorithms & Datastructures, Class Heirarchy/Organization
-- Weaknesses: AI, Databases/SQL, Performance/Optimization
+- Strengths: Graphics & GUI, Algorithms & Datastructures, Class Heirarchy/Organization, Databases
+- Weaknesses: AI, Performance/Optimization
 
 **Project Idea(s):** _Fill this in with three unique ideas! (Due by March 2)_
 ### Idea 1: Farming Simulator
