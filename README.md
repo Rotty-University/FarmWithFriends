@@ -9,7 +9,14 @@
 **Project Idea(s):** _Fill this in with three unique ideas! (Due by March 2)_
 ### Idea 1: Farming Simulator
 
+TA Review: Approved pending change, likely yes, but right now it's just a replica of a game that already exists. There is also not a significant algorithmic component to the implementation.
+
+
 ### Idea 2: Interactive Calendar
+
+TA Review: Rejected - this feature already exists in google calendar, and the algorithmic complexities behind this project are not complex enough for the class. 
+
+**Note:** You must submit updated ideas for your term project. Also please remove the word document and put the information in this README file.
 
 **Mentor TA:** _Put your mentor TA's name and email here once you're assigned one!_
 
