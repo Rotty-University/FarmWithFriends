@@ -9,7 +9,7 @@
 **Project Idea(s):** _Fill this in with three unique ideas! (Due by March 2)_
 ### Idea 1: Farming Simulator
 
-TA Review: Approved pending change, likely yes, but right now it's just a replica of a game that already exists. There is also not a significant algorithmic component to the implementation.
+TA Review: Approved! Looks good now, if you don't want to do both map generation and AI you do not have to.
 
 ------------------------------------------------------------------------------
 There is a finite two dimensional space and every player can pick a plot of land in this space and grow crops for profit. After a certain amount of time, you can harvest the crops and make a profit (Think Stardew Valley). However, there is a catch: if your friend(s) gets to your crops before you, they can steal a portion of your crops and profit. With the money you can make, you can buy more things that increase profit (such as upgrading your farm to not only sell crops but also handle livestock), cosmetic upgrades, or more fun cosmetic items. After development is finished we can add a virtually infinite amount of crops and animals. 
