@@ -1,0 +1,22 @@
+input[type="number"] {
+  width: 3em;
+}
+
+body {
+        
+	background-color: #3a3d44;
+	background-image: url("images/goop.png");
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+	
+	text-align: center;
+	
+	color: black;
+    }
+
+    #center {
+        margin-right: auto;
+        margin-left: auto;
+        width: 50%;
+        height: 80%;
+    }
