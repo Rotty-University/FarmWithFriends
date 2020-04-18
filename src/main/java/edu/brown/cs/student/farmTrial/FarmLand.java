@@ -60,7 +60,6 @@ public class FarmLand implements Land {
     this.landStatus = landStatus;
   }
 
-
   // -------------------------------------------------------------
 
 }

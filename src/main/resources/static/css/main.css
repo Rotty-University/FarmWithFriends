@@ -5,12 +5,12 @@ input[type="number"] {
 body {
         
 	background-color: #3a3d44;
-	background-image: url("images/goop.png");
+	background-image: url("images/farm.jpg");
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
-	
+	height: 100%;
 	text-align: center;
-	
+	background-size: cover;
 	color: black;
     }
 
