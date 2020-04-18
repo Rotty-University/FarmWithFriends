@@ -1,4 +1,4 @@
-package edu.brown.cs.jzhang30.farmTrial;
+package edu.brown.cs.student.farmTrial;
 
 import java.util.Set;
 

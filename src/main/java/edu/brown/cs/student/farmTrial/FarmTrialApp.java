@@ -1,9 +1,9 @@
-package edu.brown.cs.jzhang30.farmTrial;
+package edu.brown.cs.student.farmTrial;
 
 import java.io.PrintWriter;
 
-import edu.brown.cs.jzhang30.repl.Command;
-import edu.brown.cs.jzhang30.repl.REPL;
+import edu.brown.cs.student.repl.Command;
+import edu.brown.cs.student.repl.REPL;
 
 public class FarmTrialApp {
   // welcome to my farm
