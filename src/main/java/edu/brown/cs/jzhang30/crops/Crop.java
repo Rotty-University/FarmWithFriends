@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 
-import edu.brown.cs.jzhang30.farmTrial.Land;
+import edu.brown.cs.jzhang30.farmTrial.FarmLand;
 
 public interface Crop {
 
@@ -14,13 +14,29 @@ public interface Crop {
 
   public Set<String> getDesiredTerrain();
 
-  public Land getLand();
+  public FarmLand getFarmLand();
 
-  public void setLand(Land l);
+  public void setFarmLand(FarmLand l);
 
   public Instant getInstantNextStage();
 
+  /**
+   * Set instantNextStage to the specified instant
+   *
+   * @param i instant to set to
+   */
   public void setInstantNextStage(Instant i);
+
+  /**
+   * Set instantNextStage to (now + lifeCycleTimes[Math.abs(cropStatus)])
+   *
+   * @implNote this operation DOES NOT move corpStatus to the next stage
+   * @implNote if crop is infested, this method will use absolute value to find
+   *           the right stage and keep growing towards the next stage, i.e. -2
+   *           (mature infested) becomes 2 (mature)
+   * @param now the instant to start growing from
+   */
+  public void startGrowing(Instant now);
 
   /**
    * @return -2: mature infested, -1: sprout infested, 0: seeded, 1: sprout, 2:
@@ -38,9 +54,14 @@ public interface Crop {
   public Duration[] getLifeCycleTimes();
 
   /**
-   * @return index 0: minimum yields, index 1: maximum yields
+   * @return minimum yield
    */
-  public int[] getMinMaxYields();
+  public int getMinYield();
+
+  /**
+   * @return maximum yield
+   */
+  public int getMaxYield();
 
   /**
    * @return a random number between min and max yield
