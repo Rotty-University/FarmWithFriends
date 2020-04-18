@@ -1,4 +1,4 @@
-package edu.brown.cs.jzhang30.repl;
+package edu.brown.cs.student.repl;
 
 import java.io.BufferedReader;
 import java.io.IOException;

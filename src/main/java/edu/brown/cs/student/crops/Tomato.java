@@ -1,11 +1,11 @@
-package edu.brown.cs.jzhang30.crops;
+package edu.brown.cs.student.crops;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.brown.cs.jzhang30.farmTrial.FarmLand;
+import edu.brown.cs.student.farmTrial.FarmLand;
 
 public class Tomato implements Crop {
   private FarmLand farmLand;

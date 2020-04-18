@@ -1,11 +1,11 @@
-package edu.brown.cs.jzhang30.farmTrial;
+package edu.brown.cs.student.farmTrial;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import edu.brown.cs.jzhang30.repl.REPL;
+import edu.brown.cs.student.repl.REPL;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;

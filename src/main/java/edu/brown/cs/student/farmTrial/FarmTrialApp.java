@@ -1,12 +1,12 @@
-package edu.brown.cs.jzhang30.farmTrial;
+package edu.brown.cs.student.farmTrial;
 
 import java.io.PrintWriter;
 import java.time.Instant;
 
-import edu.brown.cs.jzhang30.crops.Crop;
-import edu.brown.cs.jzhang30.crops.Tomato;
-import edu.brown.cs.jzhang30.repl.Command;
-import edu.brown.cs.jzhang30.repl.REPL;
+import edu.brown.cs.student.crops.Crop;
+import edu.brown.cs.student.crops.Tomato;
+import edu.brown.cs.student.repl.Command;
+import edu.brown.cs.student.repl.REPL;
 
 public class FarmTrialApp {
   // welcome to my farm

@@ -1,8 +1,8 @@
-package edu.brown.cs.jzhang30.farmTrial;
+package edu.brown.cs.student.farmTrial;
 
 import java.time.Instant;
 
-import edu.brown.cs.jzhang30.crops.Crop;
+import edu.brown.cs.student.crops.Crop;
 
 public class FarmLand implements Land {
 
