@@ -56,7 +56,8 @@ public final class Main {
     // Parse command line arguments
     OptionParser parser = new OptionParser();
     parser.accepts("gui");
-    parser.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(DEFAULT_PORT);
+    parser.accepts("port").withRequiredArg().ofType(Integer.class)
+    .defaultsTo(DEFAULT_PORT);
     OptionSet options = parser.parse(args);
 
     // Process commands in a REPL
@@ -77,7 +78,8 @@ public final class Main {
     try {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {
-      System.out.printf("ERROR: Unable use %s for template loading.%n", templates);
+      System.out.printf("ERROR: Unable use %s for template loading.%n",
+          templates);
       System.exit(1);
     }
     return new FreeMarkerEngine(config);
@@ -124,7 +126,7 @@ public final class Main {
   public REPL getREPL() {
     return repl;
   }
-
+  
   static String message = "";
   static String createMessage = "";
   static String userCookie = null;

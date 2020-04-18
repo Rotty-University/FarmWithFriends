@@ -1,29 +1,29 @@
 package edu.brown.cs.student.farmTrial;
 
+import java.time.Instant;
+
+import edu.brown.cs.student.crops.Crop;
+
 public class FarmLand implements Land {
 
   private String terrain;
-  private int cropID;
-  private int cropStatus;
-  private boolean isWatered;
+  private Crop crop;
+  // 0: empty, unplowed
+  // 1: plowed
+  // 2: watered
+  // 3: occupied
+  // 4: occupied and watered
+  private int landStatus;
+  // TODO: empty land automatically dries
+  private Instant timeToDry;
 
   public FarmLand() {
     // default constructor, construct an empty farmland
     terrain = "soil";
     // no crop
-    cropID = -1;
+    setCrop(null);
     // empty
-    cropStatus = -1;
-    // clearly cannot be watered
-    isWatered = false;
-  }
-
-  public FarmLand(String t, int id, int status, boolean w) {
-    // construct a farmland that already has a plant in place
-    terrain = t;
-    cropID = id;
-    cropStatus = status;
-    isWatered = w;
+    setLandStatus(0);
   }
 
   // mutators ----------------------------------------------------------
@@ -33,45 +33,31 @@ public class FarmLand implements Land {
   }
 
   /**
-   * @return the cropID
+   * @return the crop
    */
-  public int getCropID() {
-    return cropID;
+  public Crop getCrop() {
+    return crop;
   }
 
   /**
-   * @param cropID the cropID to set
+   * @param crop the crop to set
    */
-  public void setCropID(int cropID) {
-    this.cropID = cropID;
+  public void setCrop(Crop crop) {
+    this.crop = crop;
   }
 
   /**
-   * @return the cropStatus
+   * @return the landStatus
    */
-  public int getCropStatus() {
-    return cropStatus;
+  public int getLandStatus() {
+    return landStatus;
   }
 
   /**
-   * @param cropStatus the cropStatus to set
+   * @param landStatus the landStatus to set
    */
-  public void setCropStatus(int cropStatus) {
-    this.cropStatus = cropStatus;
-  }
-
-  /**
-   * @return the isWatered
-   */
-  public boolean isWatered() {
-    return isWatered;
-  }
-
-  /**
-   * @param isWatered the isWatered to set
-   */
-  public void setWatered(boolean isWatered) {
-    this.isWatered = isWatered;
+  public void setLandStatus(int landStatus) {
+    this.landStatus = landStatus;
   }
 
   // -------------------------------------------------------------
