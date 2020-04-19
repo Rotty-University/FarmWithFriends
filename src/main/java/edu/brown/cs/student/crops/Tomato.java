@@ -14,7 +14,8 @@ public class Tomato implements Crop {
   private int cropStatus;
   private Set<String> desiredTerrain;
   private Duration[] lifeCycleTimes;
-  private Instant instantNextStage;
+  private Duration durationUntilNextStage;
+  private Instant nextStageInstant;
   private final int minYield;
   private final int maxYield;
   private int yield;
@@ -47,16 +48,16 @@ public class Tomato implements Crop {
     lifeCycleTimes[3] = Duration.ofSeconds(4);
     lifeCycleTimes[4] = Duration.ofSeconds(4);
 
+    // first duration
+    durationUntilNextStage = lifeCycleTimes[0];
+
     // time next stage
-    if (farmLand.getLandStatus() == 1) {
-      // not watered, start growing AS SOON AS it's watered
-      instantNextStage = Instant.MIN;
-    } else if (farmLand.getLandStatus() == 2) {
+    if (farmLand.isWatered()) {
       // watered, start timer
-      instantNextStage = now.plus(lifeCycleTimes[0]);
+      nextStageInstant = now.plus(lifeCycleTimes[0]);
     } else {
-      // a crop should only be instantiated if land is plowed, thus should not
-      // reach this block
+      // not watered, start growing AS SOON AS it's watered
+      nextStageInstant = Instant.MIN;
     }
 
     // min max yield
@@ -70,6 +71,78 @@ public class Tomato implements Crop {
     maxHarvestTimes = 4;
   }
 
+  // Controllers ----------------------------------------------
+  @Override
+  public void startGrowing(Instant now) {
+    // if this crop has not grown into "harvest"
+    if (cropStatus < 3) {
+      // TODO: if infested, how to pause timer and start growing later
+      nextStageInstant = now.plus(durationUntilNextStage);
+    }
+  }
+
+  public void stopGrowing() {
+    nextStageInstant = Instant.MAX;
+  }
+
+  @Override
+  public void pauseGrowing(Instant now) {
+    // store how much time left for startGrowing
+    if (!nextStageInstant.equals(Instant.MAX)) {
+      durationUntilNextStage = Duration.between(now, nextStageInstant);
+    }
+    // set nextStageInstant to infinity
+    stopGrowing();
+  }
+
+  @Override
+  public boolean updateStatus(Instant now) {
+    boolean isChanged = false;
+
+    // a better way to deal with "seed in a dry land":
+    // if instantNextStage == min, then don't update at all (i.e. skip)
+    if (nextStageInstant.equals(Instant.MIN)) {
+      return isChanged;
+    }
+
+    // if timer is up
+    // keep checking just in case crop progressed multiple stages since last update
+    while (now.isAfter(nextStageInstant)) {
+      Instant lastStageInstant = null;
+      // if crop is not withered, move onto the next stage
+      if (cropStatus < 5) {
+        // update status to next
+        cropStatus += 1;
+        // set durationUntilNextStage for next stage
+        durationUntilNextStage = lifeCycleTimes[cropStatus];
+        // store the instant where crop stops growing
+        lastStageInstant = nextStageInstant;
+        // stop growing
+        stopGrowing();
+      }
+
+      // if land is still watered
+      // TODO: check what should be compared to farmLand.getNextDryInstant()
+      // BUG: water lasts 10 seconds but grows for total 11 seconds
+      if (lastStageInstant != null && lastStageInstant.isBefore(farmLand.getNextDryInstant())) {
+        // subtract amount passed since last stage from durationUntilNextStage
+        durationUntilNextStage = durationUntilNextStage
+            .minus(Duration.between(lastStageInstant, now));
+
+        // start growing
+        startGrowing(now);
+      }
+
+      isChanged = true;
+    }
+
+    // if crop is withered, nothing happens :(
+    return isChanged;
+  }
+
+  // --------------------------------------------------------------
+
+  // mutators
   @Override
   public String getName() {
     return name;
@@ -126,13 +199,13 @@ public class Tomato implements Crop {
   }
 
   @Override
-  public Instant getInstantNextStage() {
-    return instantNextStage;
+  public Instant getNextStageInstant() {
+    return nextStageInstant;
   }
 
   @Override
-  public void setInstantNextStage(Instant i) {
-    instantNextStage = i;
+  public void setNextStageInstant(Instant i) {
+    nextStageInstant = i;
   }
 
   @Override
@@ -141,17 +214,13 @@ public class Tomato implements Crop {
   }
 
   @Override
-  public void startGrowing(Instant now) {
-    // if this crop has a valid next stage
-    // TODO: think about where to stop growing (how to move from harvest to
-    // stealable
-    if (cropStatus < 5) {
-      // AND it's time to grow
-      // TODO: if infested, how to pause timer and start growing later
-      if (now.isAfter(instantNextStage)) {
-        instantNextStage = now.plus(lifeCycleTimes[Math.abs(cropStatus)]);
-      }
-    }
+  public Duration getDurationUntilNextStage() {
+    return durationUntilNextStage;
+  }
+
+  @Override
+  public void setDurationUntilNextStage(Duration d) {
+    durationUntilNextStage = d;
   }
 
 } // end of class
