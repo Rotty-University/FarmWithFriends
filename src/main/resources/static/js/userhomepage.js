@@ -78,10 +78,92 @@ class Game extends React.Component {
 }
 
 class Home extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            prevselectedtool: "",
+        }
+        this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
+        this.generateFarmArray = this.generateFarmArray.bind(this)
+    }
+
+    generateFarmArray(rows, columns) {
+        return <Table id={"farmTable"} rows={rows} columns={columns}/>;
+    }
+
+    updatePrevSelectedTool(e) {
+        let newTool = e.target.id;
+        let current = document.getElementById(this.state.prevselectedtool);
+        if (current != null) {
+            current.className = "toolbaritem";
+        }
+        let selected = document.getElementById(newTool);
+        selected.className = "toolbarSelected";
+        this.setState({prevselectedtool: newTool});
+    }
+
+
+
+    render() {
+
+        let table = this.generateFarmArray(1, 4);
+
+        return (
+            <div className={"homeContainer"} onClick={this.resetTool}>
+                <div className={"farmContainer"}>
+                    {table}
+                </div>
+                <div className="toolbox">
+                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
+                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
+                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
+                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"harvest"} src={"css/images/iconSickle.svg"} height={40} width={40}/>
+                </div>
+            </div>
+        )
+    }
+}
+
+class Table extends React.Component {
+    constructor(props){
+        super(props);
+    }
+    render(){
+        let rows = [];
+        for (var i = 0; i < this.props.rows; i++){
+            let rowID = `row${i}`
+            let cell = []
+            for (var idx = 0; idx < this.props.columns; idx++){
+                let cellID = `cell${i}-${idx}`
+                cell.push(<td key={cellID} id={cellID}><Tile type={"[FARMLAND]"} spritepath={"css/images/testsprite.png"}/></td>)
+            }
+            rows.push(<tr key={i} id={rowID}>{cell}</tr>)
+        }
+        return(
+            <div className="row">
+                <div className="col s12 board">
+                    <table id="simple-board">
+                        <tbody>
+                        {rows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    }
+}
+
+class Tile extends React.Component {
+
+    constructor(props) {
+        super(props);
+    }
+
     render() {
         return (
-            <p>{this.props.id}</p>
-        )
+            <img className={"tileImage"} src={this.props.spritepath}/>
+        );
     }
 }
 

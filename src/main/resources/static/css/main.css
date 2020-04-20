@@ -82,6 +82,46 @@ body {
     height: 100%;
 }
 
-.tab-container {
-    background-color: blue;
+.toolbox {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    background-color: #3c3e47;
+    padding: 10px;
+    position: absolute;
+    bottom: 0px;
+    width: 15%;
+    right:25%;
+    left:50%;
+    margin-left:-150px;
+}
+
+.toolbaritem {
+    padding-right: 15px;
+    padding-left: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 5px;
+}
+
+.toolbaritem:hover {
+    background-color: #636672;
+}
+
+.toolbarSelected {
+    padding-right: 15px;
+    padding-left: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 5px;
+    background-color: #636672;
+}
+
+.farmContainer {
+    /*background-color: red;*/
+    margin: 0px;
+}
+
+td {
+    margin: 0px;
+    padding: 0px;
 }
