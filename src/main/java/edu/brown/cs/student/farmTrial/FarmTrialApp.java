@@ -3,6 +3,8 @@ package edu.brown.cs.student.farmTrial;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import edu.brown.cs.student.crops.Crop;
 import edu.brown.cs.student.crops.Tomato;
@@ -11,10 +13,14 @@ import edu.brown.cs.student.repl.REPL;
 
 public class FarmTrialApp {
   // welcome to my farm
-  FarmLand[][] thePlantation = new FarmLand[1][4];
+  private FarmLand[][] thePlantation = new FarmLand[1][4];
+
+  // user data
+  private Map<Integer, Integer> inventory = new HashMap<>();
 
   public FarmTrialApp(REPL repl) {
 
+    // initialize the plantation
     for (int i = 0; i < thePlantation.length; i++) {
       for (int j = 0; j < thePlantation[i].length; j++) {
         thePlantation[i][j] = new FarmLand();
@@ -114,6 +120,7 @@ public class FarmTrialApp {
       }
 
       l.setCrop(new Tomato(thePlantation[x][y]));
+      // this is already done by crop constructor, but here for reference
       l.setIsOccupied(true);
 
       showFarm();
@@ -135,10 +142,66 @@ public class FarmTrialApp {
         return;
       }
 
-      l.water(now, Duration.ofSeconds(2));
+      l.water(now, Duration.ofSeconds(10));
 
       showFarm();
     }
   }
+
+  class HarvestCommand implements Command {
+
+    @Override
+    public void execute(String[] tokens, PrintWriter pw) {
+      int x = Integer.parseInt(tokens[0]);
+      int y = Integer.parseInt(tokens[1]);
+      FarmLand l = thePlantation[x][y];
+      Crop c = l.getCrop();
+
+      if (!l.isOccupied()) {
+        pw.println("Can't harvest here, your nics didn't plant anything");
+        return;
+      }
+
+      if (c.getCropStatus() == 3 || c.getCropStatus() == 4) {
+        // can harvest
+        int id = c.getID();
+        int yield = c.getYield();
+
+        // update inventory
+        inventory.put(id, inventory.getOrDefault(id, 0) + yield);
+
+        // update land status
+        // TODO: if crop can harvest multiple times
+        l.setCrop(null);
+
+        pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
+        return;
+      } else {
+        // cannot harvest
+        pw.println("Crop cannot be harvested yet, your nics should work harder");
+      }
+    }
+  } // end of harvest command class
+
+  // mutators
+  public FarmLand[][] getThePlantation() {
+    return thePlantation;
+  }
+
+  /**
+   * @return the inventory
+   */
+  public Map<Integer, Integer> getInventory() {
+    return inventory;
+  }
+
+  /**
+   * @param inventory the inventory to set
+   */
+  public void setInventory(Map<Integer, Integer> inventory) {
+    this.inventory = inventory;
+  }
+
+  // ---------------------------------------------------------------------------------
 
 } // end of class

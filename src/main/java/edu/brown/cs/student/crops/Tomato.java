@@ -15,6 +15,7 @@ public class Tomato implements Crop {
   private Set<String> desiredTerrain;
   private Duration[] lifeCycleTimes;
   private Duration durationUntilNextStage;
+  private Duration witherDuration;
   private Instant witheredInstant;
   private Instant nextStageInstant;
   private final int minYield;
@@ -28,6 +29,8 @@ public class Tomato implements Crop {
 
     // bind this crop to its land, like a slave basically
     farmLand = l;
+    // set land isOccupied to true, since this crop exists
+    l.setIsOccupied(true);
 
     name = "Tomato";
 
@@ -43,17 +46,20 @@ public class Tomato implements Crop {
 
     // place holder
     lifeCycleTimes = new Duration[5];
-    lifeCycleTimes[0] = Duration.ofSeconds(1);
-    lifeCycleTimes[1] = Duration.ofSeconds(2);
-    lifeCycleTimes[2] = Duration.ofSeconds(3);
-    lifeCycleTimes[3] = Duration.ofSeconds(1);
-    lifeCycleTimes[4] = Duration.ofSeconds(10);
+    lifeCycleTimes[0] = Duration.ofSeconds(3);
+    lifeCycleTimes[1] = Duration.ofSeconds(5);
+    lifeCycleTimes[2] = Duration.ofSeconds(8);
+    lifeCycleTimes[3] = Duration.ofSeconds(5);
+    lifeCycleTimes[4] = Duration.ofSeconds(600);
 
     // first duration
     durationUntilNextStage = lifeCycleTimes[0];
 
+    // default wither duration for each stage except harvest
+    witherDuration = Duration.ofMinutes(10);
+
     // place holder: auto wither time from seeded stage
-    witheredInstant = now.plus(Duration.ofMinutes(5));
+    witheredInstant = now.plus(witherDuration);
 
     // time next stage
     if (farmLand.isWatered()) {
@@ -99,6 +105,12 @@ public class Tomato implements Crop {
     stopGrowing();
   }
 
+  public void wither(Instant now) {
+    cropStatus = 5;
+    stopGrowing();
+    System.out.println("Crop automatically withered at " + witheredInstant);
+  }
+
   @Override
   public boolean updateStatus(Instant now) {
     boolean isChanged = false;
@@ -106,21 +118,18 @@ public class Tomato implements Crop {
     // a better way to deal with "seed in a dry land":
     // if instantNextStage == min, then don't update at all (i.e. skip)
     if (nextStageInstant.equals(Instant.MIN)) {
-      return isChanged;
+      if (now.isAfter(witheredInstant)) {
+        wither(witheredInstant);
+
+        return true;
+      } else {
+        return isChanged;
+      }
     }
 
     // if already withered, no need to update
     if (cropStatus == 5) {
       return isChanged;
-    }
-
-    // if crop is neglected for enough time IN ANY STAGE,
-    // automatically wither
-    if (now.isAfter(witheredInstant)) {
-      cropStatus = 5;
-      stopGrowing();
-
-      return true;
     }
 
     // if timer is up
@@ -177,6 +186,12 @@ public class Tomato implements Crop {
       // been completed
       startGrowing(nextStageInstant);
 
+      // set auto wither time for next stage
+      // must be after nextStageInstant has already been updated
+      if (cropStatus != 3) {
+        witheredInstant = nextStageInstant.plus(witherDuration);
+      }
+
       // if land is still watered AND not in harvest
       if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
         // pause growing
@@ -184,6 +199,14 @@ public class Tomato implements Crop {
       }
 
       isChanged = true;
+    }
+
+    // if crop is neglected for enough time IN ANY STAGE,
+    // automatically wither
+    if (now.isAfter(witheredInstant)) {
+      wither(witheredInstant);
+
+      return true;
     }
 
     // if crop is withered, nothing happens :(
