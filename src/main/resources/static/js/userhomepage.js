@@ -1,20 +1,12 @@
 'use strict';
 
 class Main extends React.Component {
-    render() {
-        return (
-            <div id={"homepagecontainer"}>
-                <NavBar/>
-                <Game/>
-            </div>
-        );
-    }
-}
 
-class NavBar extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { active: "home" };
+        this.state = {
+            active: "home"
+        }
         this.changeActive = this.changeActive.bind(this)
     }
 
@@ -34,28 +26,94 @@ class NavBar extends React.Component {
 
     render() {
         return (
+            <div id={"homepagecontainer"}>
+                <NavBar active={this.state.active} action={this.changeActive}/>
+                <Game active = {this.state.active}/>
+            </div>
+        );
+    }
+}
+
+class NavBar extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
             <div className={"nav-bar"}>
-                <p><a href={"#"}><img src={"css/images/iconShop.svg"} height={40} width={40}/></a></p>
-                <p onClick={this.changeActive}><a href={"#"}><img id={"map"} src={"css/images/iconMap.svg"} height={40} width={40}/></a></p>
-                <p><a href={"#"}><img src={"css/images/iconCoin.svg"} height={40} width={40}/></a></p>
-                <p class={"nav-bar-active"} onClick={this.changeActive}><a href={"#"}><img  id={"home"} src={"css/images/iconHome.svg"} height={40} width={40}/></a></p>
-                <p onClick={this.changeActive}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>
-                <p onClick={this.changeActive}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>
+                <p onClick={this.props.action}><a href={"#"}><img id={"shop"} src={"css/images/iconShop.svg"} height={40} width={40}/></a></p>
+                <p onClick={this.props.action}><a href={"#"}><img id={"map"} src={"css/images/iconMap.svg"} height={40} width={40}/></a></p>
+                <p onClick={this.props.action}><a href={"#"}><img id={"store"} src={"css/images/iconCoin.svg"} height={40} width={40}/></a></p>
+                <p class={"nav-bar-active"} onClick={this.props.action}><a href={"#"}><img  id={"home"} src={"css/images/iconHome.svg"} height={40} width={40}/></a></p>
+                <p onClick={this.props.action}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>
+                <p onClick={this.props.action}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>
                 <p><a href={"/logout"}><img src={"css/images/iconLeave.svg"} height={40} width={40}/></a></p>
             </div>
         );
     }
 }
 
-'use strict';
-
 class Game extends React.Component {
+
+    constructor(props) {
+        super(props);
+    }
+
     render() {
+
+        let tabsMap = new Map();
+        tabsMap.set("map", <GameMap id={"map"}/>)
+        tabsMap.set("home", <Home id={"home"}/>)
+        tabsMap.set("store", <Store id={"store"}/>)
+        tabsMap.set("shop", <Shop id={"shop"}/>)
+        tabsMap.set("settings", <Settings id={"settings"}/>)
+
         return (
             <div className={"content-window"}>
-                <p>content window</p>
+                {tabsMap.get(this.props.active)}
             </div>
         );
+    }
+}
+
+class Home extends React.Component {
+    render() {
+        return (
+            <p>{this.props.id}</p>
+        )
+    }
+}
+
+class GameMap extends React.Component {
+    render() {
+        return (
+            <p>{this.props.id}</p>
+        );
+    }
+}
+
+class Shop extends React.Component {
+    render() {
+        return (
+            <p>{this.props.id}</p>
+        )
+    }
+}
+
+class Store extends React.Component {
+    render() {
+        return (
+            <p>{this.props.id}</p>
+        )
+    }
+}
+
+class Settings extends React.Component {
+    render() {
+        return (
+            <p>{this.props.id}</p>
+        )
     }
 }
 

@@ -76,9 +76,12 @@ body {
 }
 
 .content-window {
-    background-color: red;
     width: 96%;
     position: absolute;
     right: 0px;
     height: 100%;
+}
+
+.tab-container {
+    background-color: blue;
 }
