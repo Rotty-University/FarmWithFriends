@@ -54,10 +54,10 @@ public class FarmTrialApp {
           // update crop if necessary
           c.updateStatus(now);
 
-          System.out.print("[Crop ID: " + c.getID() + ", watered: " + j.isWatered()
+          System.out.print("[Crop ID: " + c.getID() + ", watered: " + j.isWatered(now)
               + ", crop status: " + c.getCropStatus() + "] ");
 
-        } else if (j.isWatered()) {
+        } else if (j.isWatered(now)) {
           System.out.print("[ WATEREDLAND ]");
         } else if (j.isPlowed()) {
           System.out.print("[ PLOWED ]");
