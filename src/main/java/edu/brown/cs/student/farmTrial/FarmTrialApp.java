@@ -11,7 +11,7 @@ import edu.brown.cs.student.repl.REPL;
 
 public class FarmTrialApp {
   // welcome to my farm
-  FarmLand[][] thePlantation = new FarmLand[2][4];
+  FarmLand[][] thePlantation = new FarmLand[1][4];
 
   public FarmTrialApp(REPL repl) {
 
@@ -33,6 +33,7 @@ public class FarmTrialApp {
   // print the current layout of the farm
   void showFarm() {
     Instant now = Instant.now();
+    System.out.println("Farm shown at: " + now);
 
     for (FarmLand[] l : thePlantation) {
       for (FarmLand j : l) {
@@ -134,7 +135,7 @@ public class FarmTrialApp {
         return;
       }
 
-      l.water(now, Duration.ofSeconds(10));
+      l.water(now, Duration.ofSeconds(15));
 
       showFarm();
     }

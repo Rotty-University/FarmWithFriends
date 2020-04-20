@@ -52,7 +52,7 @@ public class FarmLand implements Land {
   }
 
   /**
-   * @param now
+   * @param now           the instant the land was watered
    * @param durationToDry how much longer to keep this land wet
    * @return true if water status changes, false if not
    */

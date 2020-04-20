@@ -15,6 +15,7 @@ public class Tomato implements Crop {
   private Set<String> desiredTerrain;
   private Duration[] lifeCycleTimes;
   private Duration durationUntilNextStage;
+  private Instant witheredInstant;
   private Instant nextStageInstant;
   private final int minYield;
   private final int maxYield;
@@ -105,32 +106,39 @@ public class Tomato implements Crop {
       return isChanged;
     }
 
+    // if already withered, no need to update
+    if (cropStatus == 5) {
+      return isChanged;
+    }
+
+    // TODO: automatic wither due to negligence
+    // if changed to withered, update and return
+//    if (now.isAfter(witheredInstant)) {
+//      cropStatus = 5;
+//
+//      return true;
+//    }
+
     // if timer is up
     // keep checking just in case crop progressed multiple stages since last update
-    while (now.isAfter(nextStageInstant)) {
+    while (now.isAfter(nextStageInstant) && cropStatus < 4) {
       Instant lastStageInstant = null;
       // if crop is not withered, move onto the next stage
-      if (cropStatus < 5) {
-        // update status to next
-        cropStatus += 1;
-        // set durationUntilNextStage for next stage
-        durationUntilNextStage = lifeCycleTimes[cropStatus];
-        // store the instant where crop stops growing
-        lastStageInstant = nextStageInstant;
-        // stop growing
-        stopGrowing();
-      }
+      // update status to next
+      cropStatus += 1;
+      // set durationUntilNextStage for next stage
+      durationUntilNextStage = lifeCycleTimes[cropStatus];
+      // store the instant where crop stops growing
+      lastStageInstant = nextStageInstant;
+      // start growing
+      startGrowing(lastStageInstant);
 
       // if land is still watered
       // TODO: check what should be compared to farmLand.getNextDryInstant()
       // BUG: water lasts 10 seconds but grows for total 11 seconds
-      if (lastStageInstant != null && lastStageInstant.isBefore(farmLand.getNextDryInstant())) {
-        // subtract amount passed since last stage from durationUntilNextStage
-        durationUntilNextStage = durationUntilNextStage
-            .minus(Duration.between(lastStageInstant, now));
-
-        // start growing
-        startGrowing(now);
+      if (!nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
+        // pause growing
+        pauseGrowing(farmLand.getNextDryInstant());
       }
 
       isChanged = true;
