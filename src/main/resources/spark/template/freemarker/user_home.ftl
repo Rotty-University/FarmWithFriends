@@ -1,25 +1,5 @@
 <#assign content>
-      <ul class="nav-bar">
-      <li><a href="/logout">Logout</a></li>
-      </ul>
-<style>
-.nav-bar{
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-li {
-  display: inline;
-}
-li a {
-  display: block;
-  padding: 8px;
-  background-color: #dddddd;
-}
-</style>
-<h1> Welcome to your home page man </h1>
-<br><br><br>
-
-
+<div id="nav_bar_container"></div>
+<h1> Welcome to you home page man </h1>
 </#assign>
 <#include "main.ftl">
