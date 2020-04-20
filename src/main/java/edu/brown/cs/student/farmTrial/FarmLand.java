@@ -5,12 +5,10 @@ import java.time.Instant;
 
 import edu.brown.cs.student.crops.Crop;
 
-public class FarmLand implements Land {
-
+public class FarmLand implements Land, java.io.Serializable {
   private String terrain;
   private Crop crop;
   private boolean isPlowed;
-  private boolean isWatered;
   private boolean isOccupied;
   private Instant lastDryInstant;
   private Instant nextDryInstant;
@@ -24,8 +22,6 @@ public class FarmLand implements Land {
     setCrop(null);
     // not plowed
     setIsPlowed(false);
-    // not watered
-    setIsWatered(false);
     // not occupied
     setIsOccupied(false);
     // last dry instant defaults to now
@@ -40,8 +36,6 @@ public class FarmLand implements Land {
    */
   public boolean updateWaterStatus(Instant now) {
     if (now.isAfter(nextDryInstant)) {
-      // update status
-      isWatered = false;
       // update last time this land was dry
       lastDryInstant = nextDryInstant;
 
@@ -63,7 +57,7 @@ public class FarmLand implements Land {
       crop.updateStatus(now);
     }
 
-    if (isWatered) {
+    if (isWatered(now)) {
       // already watered, only update next time to dry
       nextDryInstant = now.plus(durationToDry);
 
@@ -74,12 +68,14 @@ public class FarmLand implements Land {
     lastDryInstant = now;
     // update next time to dry
     nextDryInstant = now.plus(durationToDry);
-    // update status
-    isWatered = true;
 
-    // crop starts growing if (1) there is a crop and (2) it's not infested
+    // crop starts growing if
+    // (1) there is a crop and
+    // (2) (crop is pausing OR seeded on dry land) and
+    // (3) it's not infested
     // TODO: add infested condition
-    if (isOccupied) {
+    if (isOccupied && (crop.getNextStageInstant().equals(Instant.MAX)
+        || crop.getNextStageInstant().equals(Instant.MIN))) {
       crop.startGrowing(now);
     }
 
@@ -123,15 +119,8 @@ public class FarmLand implements Land {
   /**
    * @return the isWatered
    */
-  public boolean isWatered() {
-    return isWatered;
-  }
-
-  /**
-   * @param isWatered the isWatered to set
-   */
-  public void setIsWatered(boolean isWatered) {
-    this.isWatered = isWatered;
+  public boolean isWatered(Instant now) {
+    return now.isBefore(nextDryInstant);
   }
 
   /**

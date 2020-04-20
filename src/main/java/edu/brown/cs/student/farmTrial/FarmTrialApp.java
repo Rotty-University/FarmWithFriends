@@ -1,5 +1,10 @@
 package edu.brown.cs.student.farmTrial;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
@@ -13,30 +18,93 @@ import edu.brown.cs.student.repl.REPL;
 
 public class FarmTrialApp {
   // welcome to my farm
-  private FarmLand[][] thePlantation = new FarmLand[1][4];
+  private TestFarm serializedFarm;
+  private FarmLand[][] thePlantation;
 
   // user data
-  private Map<Integer, Integer> inventory = new HashMap<>();
+  private Map<Integer, Integer> inventory;
+  private String farmName;
 
   public FarmTrialApp(REPL repl) {
-
-    // initialize the plantation
-    for (int i = 0; i < thePlantation.length; i++) {
-      for (int j = 0; j < thePlantation[i].length; j++) {
-        thePlantation[i][j] = new FarmLand();
-      }
-    }
-
-    System.out.println("Welcome to my farm");
+    // init
+    initializeFarm();
 
     repl.register("plant", new PlantCommand());
     repl.register("plow", new PlowCommand());
     repl.register("s", new ShowCommand());
     repl.register("water", new WaterCommand());
     repl.register("harvest", new HarvestCommand());
+    repl.register("inspect", new InspectInventoryCommand());
   }
 
   // Helper methods ------------------------------------------------------------
+  // initialize the farm
+  void initializeFarm() {
+    System.out.println("Welcome to my farm");
+
+    farmName = "myFarm";
+
+    try {
+      // Reading the object from a file
+      FileInputStream file = new FileInputStream(farmName + ".ser");
+      ObjectInputStream in = new ObjectInputStream(file);
+
+      // Method for deserialization of object
+      serializedFarm = (TestFarm) in.readObject();
+
+      // retrieve values from deserialized object
+      thePlantation = serializedFarm.getThePlantation();
+      inventory = serializedFarm.getInventory();
+
+      in.close();
+      file.close();
+
+      System.out.println("Loaded \"" + farmName + "\"");
+    } catch (Exception e) {
+      // no file saved, create new plantation
+      thePlantation = new FarmLand[1][4];
+      inventory = new HashMap<Integer, Integer>();
+
+      for (int i = 0; i < thePlantation.length; i++) {
+        for (int j = 0; j < thePlantation[0].length; j++) {
+          thePlantation[i][j] = new FarmLand();
+        }
+      }
+
+      // init new farm to save
+      serializedFarm = new TestFarm(thePlantation, inventory, farmName);
+
+      System.out.println("No save file found, creating a new farm");
+    } // end of catch
+
+    // new farm or old farm, always show farm
+    showFarm();
+  }
+
+  // save current state of farm
+  boolean saveFarm() {
+    // Serialization
+    try {
+      // Saving of object in a file
+      FileOutputStream file = new FileOutputStream(farmName + ".ser");
+      ObjectOutputStream out = new ObjectOutputStream(file);
+
+      // Method for serialization of object
+      out.writeObject(serializedFarm);
+
+      out.close();
+      file.close();
+
+      System.out.println("Your plantation has been saved successfully");
+      return true;
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      System.out.println("Failed to save plantation, IOException caught");
+      return false;
+    }
+  }
+
   // print the current layout of the farm
   void showFarm() {
     Instant now = Instant.now();
@@ -54,10 +122,10 @@ public class FarmTrialApp {
           // update crop if necessary
           c.updateStatus(now);
 
-          System.out.print("[Crop ID: " + c.getID() + ", watered: " + j.isWatered()
+          System.out.print("[Crop ID: " + c.getID() + ", watered: " + j.isWatered(now)
               + ", crop status: " + c.getCropStatus() + "] ");
 
-        } else if (j.isWatered()) {
+        } else if (j.isWatered(now)) {
           System.out.print("[ WATEREDLAND ]");
         } else if (j.isPlowed()) {
           System.out.print("[ PLOWED ]");
@@ -77,6 +145,9 @@ public class FarmTrialApp {
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
       showFarm();
+
+      // save after every command
+      saveFarm();
     }
   }
 
@@ -97,6 +168,9 @@ public class FarmTrialApp {
       thePlantation[x][y].setIsPlowed(true);
 
       showFarm();
+
+      // save after every command
+      saveFarm();
     }
   }
 
@@ -125,6 +199,9 @@ public class FarmTrialApp {
       l.setIsOccupied(true);
 
       showFarm();
+
+      // save after every command
+      saveFarm();
     }
   }
 
@@ -147,6 +224,9 @@ public class FarmTrialApp {
       l.water(now, Duration.ofSeconds(10));
 
       showFarm();
+
+      // save after every command
+      saveFarm();
     }
   }
 
@@ -178,15 +258,32 @@ public class FarmTrialApp {
         l.setIsOccupied(false);
 
         pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
-        return;
       } else {
         // cannot harvest
         pw.println("Crop cannot be harvested yet, your nics should work harder");
       }
+
+      showFarm();
+
+      // save after every command
+      saveFarm();
     }
   } // end of harvest command class
 
-  // mutators
+  class InspectInventoryCommand implements Command {
+
+    @Override
+    public void execute(String[] tokens, PrintWriter pw) {
+      pw.println("You have: ");
+
+      for (int i : inventory.keySet()) {
+        pw.println(inventory.get(i) + " units of crop (ID: " + i + ")");
+      }
+    }
+
+  }
+
+  // mutators ------------------------------------------------------------
   public FarmLand[][] getThePlantation() {
     return thePlantation;
   }

@@ -7,7 +7,7 @@ import java.util.Set;
 
 import edu.brown.cs.student.farmTrial.FarmLand;
 
-public class Tomato implements Crop {
+public class Tomato implements Crop, java.io.Serializable {
   private FarmLand farmLand;
   private String name;
   private int id;
@@ -62,7 +62,7 @@ public class Tomato implements Crop {
     witheredInstant = now.plus(witherDuration);
 
     // time next stage
-    if (farmLand.isWatered()) {
+    if (farmLand.isWatered(now)) {
       // watered, start timer
       nextStageInstant = now.plus(lifeCycleTimes[0]);
     } else {
@@ -131,6 +131,12 @@ public class Tomato implements Crop {
     if (cropStatus == 5) {
       return isChanged;
     }
+
+//    // if land has dried but crop still needs more growth until next stage
+//    // pause growing
+//    if (!farmLand.isWatered(now) && cropStatus < 3) {
+//      pauseGrowing(farmLand.getNextDryInstant());
+//    }
 
     // if timer is up
     // keep checking just in case crop progressed multiple stages since last update
