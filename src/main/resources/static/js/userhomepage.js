@@ -136,7 +136,7 @@ class Table extends React.Component {
             let cell = []
             for (var idx = 0; idx < this.props.columns; idx++){
                 let cellID = `cell${i}-${idx}`
-                cell.push(<td key={cellID} id={cellID}><Tile type={"[FARMLAND]"} spritepath={"css/images/testsprite.png"}/></td>)
+                cell.push(<td key={cellID} id={cellID}><Tile type={"ploughed"} spritepath={"css/images/testsprite.png"}/></td>)
             }
             rows.push(<tr key={i} id={rowID}>{cell}</tr>)
         }
