@@ -57,6 +57,12 @@ public class FarmLand implements Land {
    * @return true if water status changes, false if not
    */
   public boolean water(Instant now, Duration durationToDry) {
+    if (isOccupied) {
+      // NOTE: order matters here, don't move this down
+      // update crop status before growing first
+      crop.updateStatus(now);
+    }
+
     if (isWatered) {
       // already watered, only update next time to dry
       nextDryInstant = now.plus(durationToDry);
