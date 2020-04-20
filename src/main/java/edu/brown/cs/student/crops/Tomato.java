@@ -47,8 +47,8 @@ public class Tomato implements Crop {
     // place holder
     lifeCycleTimes = new Duration[5];
     lifeCycleTimes[0] = Duration.ofSeconds(3);
-    lifeCycleTimes[1] = Duration.ofSeconds(5);
-    lifeCycleTimes[2] = Duration.ofSeconds(8);
+    lifeCycleTimes[1] = Duration.ofSeconds(4);
+    lifeCycleTimes[2] = Duration.ofSeconds(6);
     lifeCycleTimes[3] = Duration.ofSeconds(5);
     lifeCycleTimes[4] = Duration.ofSeconds(600);
 
@@ -197,6 +197,14 @@ public class Tomato implements Crop {
         // pause growing
         pauseGrowing(farmLand.getNextDryInstant());
       }
+
+      // TODO: fix this, watering later is not pausing plants correctly
+
+//      // if land is still watered AND not in harvest
+//      if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getLastDryInstant())) {
+//        // pause growing
+//        pauseGrowing(farmLand.getLastDryInstant());
+//      }
 
       isChanged = true;
     }

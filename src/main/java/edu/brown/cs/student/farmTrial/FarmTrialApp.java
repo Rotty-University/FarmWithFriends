@@ -33,6 +33,7 @@ public class FarmTrialApp {
     repl.register("plow", new PlowCommand());
     repl.register("s", new ShowCommand());
     repl.register("water", new WaterCommand());
+    repl.register("harvest", new HarvestCommand());
   }
 
   // Helper methods ------------------------------------------------------------
@@ -142,6 +143,7 @@ public class FarmTrialApp {
         return;
       }
 
+      // water the land
       l.water(now, Duration.ofSeconds(10));
 
       showFarm();
@@ -173,6 +175,7 @@ public class FarmTrialApp {
         // update land status
         // TODO: if crop can harvest multiple times
         l.setCrop(null);
+        l.setIsOccupied(false);
 
         pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
         return;
