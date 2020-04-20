@@ -5,8 +5,7 @@ import java.time.Instant;
 
 import edu.brown.cs.student.crops.Crop;
 
-public class FarmLand implements Land {
-
+public class FarmLand implements Land, java.io.Serializable {
   private String terrain;
   private Crop crop;
   private boolean isPlowed;
@@ -75,8 +74,8 @@ public class FarmLand implements Land {
     // (2) (crop is pausing OR seeded on dry land) and
     // (3) it's not infested
     // TODO: add infested condition
-    Instant cropNextStage = crop.getNextStageInstant();
-    if (isOccupied && (cropNextStage.equals(Instant.MAX) || cropNextStage.equals(Instant.MIN))) {
+    if (isOccupied && (crop.getNextStageInstant().equals(Instant.MAX)
+        || crop.getNextStageInstant().equals(Instant.MIN))) {
       crop.startGrowing(now);
     }
 

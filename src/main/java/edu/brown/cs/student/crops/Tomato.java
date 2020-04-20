@@ -7,7 +7,7 @@ import java.util.Set;
 
 import edu.brown.cs.student.farmTrial.FarmLand;
 
-public class Tomato implements Crop {
+public class Tomato implements Crop, java.io.Serializable {
   private FarmLand farmLand;
   private String name;
   private int id;
