@@ -43,14 +43,17 @@ public class Tomato implements Crop {
 
     // place holder
     lifeCycleTimes = new Duration[5];
-    lifeCycleTimes[0] = Duration.ofSeconds(3);
-    lifeCycleTimes[1] = Duration.ofSeconds(4);
-    lifeCycleTimes[2] = Duration.ofSeconds(4);
-    lifeCycleTimes[3] = Duration.ofSeconds(4);
-    lifeCycleTimes[4] = Duration.ofSeconds(4);
+    lifeCycleTimes[0] = Duration.ofSeconds(1);
+    lifeCycleTimes[1] = Duration.ofSeconds(2);
+    lifeCycleTimes[2] = Duration.ofSeconds(3);
+    lifeCycleTimes[3] = Duration.ofSeconds(1);
+    lifeCycleTimes[4] = Duration.ofSeconds(10);
 
     // first duration
     durationUntilNextStage = lifeCycleTimes[0];
+
+    // place holder: auto wither time from seeded stage
+    witheredInstant = now.plus(Duration.ofMinutes(5));
 
     // time next stage
     if (farmLand.isWatered()) {
@@ -75,8 +78,8 @@ public class Tomato implements Crop {
   // Controllers ----------------------------------------------
   @Override
   public void startGrowing(Instant now) {
-    // if this crop has not grown into "harvest"
-    if (cropStatus < 3) {
+    // if this crop has not grown into "stealable"
+    if (cropStatus < 4) {
       // TODO: if infested, how to pause timer and start growing later
       nextStageInstant = now.plus(durationUntilNextStage);
     }
@@ -111,32 +114,71 @@ public class Tomato implements Crop {
       return isChanged;
     }
 
-    // TODO: automatic wither due to negligence
-    // if changed to withered, update and return
-//    if (now.isAfter(witheredInstant)) {
-//      cropStatus = 5;
-//
-//      return true;
-//    }
+    // if crop is neglected for enough time IN ANY STAGE,
+    // automatically wither
+    if (now.isAfter(witheredInstant)) {
+      cropStatus = 5;
+      stopGrowing();
+
+      return true;
+    }
 
     // if timer is up
     // keep checking just in case crop progressed multiple stages since last update
-    while (now.isAfter(nextStageInstant) && cropStatus < 4) {
-      Instant lastStageInstant = null;
+    while (now.isAfter(nextStageInstant)) {
+
       // if crop is not withered, move onto the next stage
       // update status to next
       cropStatus += 1;
+
+      //
+      //
+      //
+      // print the instant
+      System.out.println("Crop grew from stage " + String.valueOf(cropStatus - 1) + " to "
+          + cropStatus + " at " + nextStageInstant);
+      //
+      //
+      //
+
+      // crop had withered, stop growing and return
+      // NOTE: This is NOT a duplicate of the if statement outside the loop,
+      // crop can wither as the loop repeats
+      if (cropStatus == 5) {
+        stopGrowing();
+
+        return true;
+      }
+
+      // once crop is "stealable", stop growth completely and wait to wither
+      // automatically
+      if (cropStatus == 4) {
+        nextStageInstant = witheredInstant;
+        isChanged = true;
+
+        // ignore the rest of the loop and just check whether the crop had withered
+        continue;
+      }
+
+      // once crop is ready to harvest, set auto withered time
+      // still needs to "grow" to the next stage (stealable)
+      if (cropStatus == 3) {
+        // set auto withered time
+        // because this time starts as soon as crop becomes harvest
+        witheredInstant = nextStageInstant.plus(lifeCycleTimes[4]);
+      }
+
       // set durationUntilNextStage for next stage
       durationUntilNextStage = lifeCycleTimes[cropStatus];
-      // store the instant where crop stops growing
-      lastStageInstant = nextStageInstant;
-      // start growing
-      startGrowing(lastStageInstant);
 
-      // if land is still watered
-      // TODO: check what should be compared to farmLand.getNextDryInstant()
-      // BUG: water lasts 10 seconds but grows for total 11 seconds
-      if (!nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
+      // update nextStageInstant
+      // NOTE: starting here, nextStageInstant marks the instant of the new stage
+      // before this line, nextStageInstant marks the instant of the stage that had
+      // been completed
+      startGrowing(nextStageInstant);
+
+      // if land is still watered AND not in harvest
+      if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
         // pause growing
         pauseGrowing(farmLand.getNextDryInstant());
       }

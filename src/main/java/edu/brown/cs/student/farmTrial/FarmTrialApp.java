@@ -135,7 +135,7 @@ public class FarmTrialApp {
         return;
       }
 
-      l.water(now, Duration.ofSeconds(15));
+      l.water(now, Duration.ofSeconds(2));
 
       showFarm();
     }
