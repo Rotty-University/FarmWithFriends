@@ -1,5 +1,5 @@
 <#assign content>
-<div id="nav_bar_container"></div>
-<h1> Welcome to you home page man </h1>
+    <div id="nav_bar_container"></div>
+    <div id="game_container"></div>
 </#assign>
 <#include "main.ftl">

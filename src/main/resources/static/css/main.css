@@ -4,7 +4,7 @@ input[type="number"] {
 
 body {
 	background-color: black;
-    background-image: url("images/farm.jpg");
+    /*background-image: url("images/farm.jpg");*/
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 	height: 100%;
@@ -73,4 +73,12 @@ body {
 .inputForm input[type=submit]:hover {
     background-color: #cccccc;
     color: #3c3e47;
+}
+
+.content-window {
+    background-color: red;
+    width: 96%;
+    position: absolute;
+    right: 0px;
+    height: 100%;
 }
