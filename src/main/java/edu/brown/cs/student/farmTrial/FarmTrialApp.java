@@ -1,7 +1,10 @@
 package edu.brown.cs.student.farmTrial;
 
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import edu.brown.cs.student.crops.Crop;
 import edu.brown.cs.student.crops.Tomato;
@@ -10,10 +13,14 @@ import edu.brown.cs.student.repl.REPL;
 
 public class FarmTrialApp {
   // welcome to my farm
-  FarmLand[][] thePlantation = new FarmLand[2][4];
+  private FarmLand[][] thePlantation = new FarmLand[1][4];
+
+  // user data
+  private Map<Integer, Integer> inventory = new HashMap<>();
 
   public FarmTrialApp(REPL repl) {
 
+    // initialize the plantation
     for (int i = 0; i < thePlantation.length; i++) {
       for (int j = 0; j < thePlantation[i].length; j++) {
         thePlantation[i][j] = new FarmLand();
@@ -32,59 +39,33 @@ public class FarmTrialApp {
   // print the current layout of the farm
   void showFarm() {
     Instant now = Instant.now();
+    System.out.println("Farm shown at: " + now);
 
     for (FarmLand[] l : thePlantation) {
       for (FarmLand j : l) {
-        if (j.getLandStatus() == 0) {
-          System.out.print("[ FARMLAND ]");
-        } else if (j.getLandStatus() == 1) {
-          System.out.print("[ PLOWED ]");
-        } else if (j.getLandStatus() == 2) {
-          System.out.print("[ WATEREDLAND ]");
-        }
-        else {
+        // update land first
+        j.updateWaterStatus(now);
+
+        if (j.isOccupied()) {
           // there is a crop on this land
           Crop c = j.getCrop();
 
           // update crop if necessary
-          updateCropStatus(c, now);
+          c.updateStatus(now);
 
-          System.out
-          .print(
-              "[Crop ID: " + c.getID() + ", land status: "
-                  + j.getLandStatus() + ", crop status: "
-                  + c.getCropStatus() + "] ");
+          System.out.print("[Crop ID: " + c.getID() + ", watered: " + j.isWatered()
+              + ", crop status: " + c.getCropStatus() + "] ");
+
+        } else if (j.isWatered()) {
+          System.out.print("[ WATEREDLAND ]");
+        } else if (j.isPlowed()) {
+          System.out.print("[ PLOWED ]");
+        } else {
+          System.out.print("[ FARMLAND ]");
         }
       }
 
       System.out.println();
-    }
-  }
-
-  // Update crop status helper method
-  void updateCropStatus(Crop c, Instant now) {
-    // if crop doesn't exist, do nothing
-    if (c == null) {
-      return;
-    }
-
-    Instant nextStage = c.getInstantNextStage();
-    int cropStatus = c.getCropStatus();
-
-    // if timer is up AND land is watered
-    // ** NOTE TO SELF: do NOT be an idiot again and remove "land is watered"
-    // it's here for a reason, dumbass, stop trying to be smart
-    // if you forgot why again, think: what happens when seed is planted on DRY
-    // land
-    if (now.isAfter(nextStage) && c.getFarmLand().getLandStatus() == 4) {
-      // if crop is not withered, move onto the next stage
-      if (cropStatus < 5) {
-        // update status to next
-        c.setCropStatus(cropStatus + 1);
-      }
-      // land becomes dry
-      c.getFarmLand().setLandStatus(3);
-      // if crop is withered, nothing happens :(
     }
   }
 
@@ -107,12 +88,12 @@ public class FarmTrialApp {
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
 
-      if (thePlantation[x][y].getLandStatus() > 2) {
+      if (thePlantation[x][y].isOccupied()) {
         pw.println("Don't plow the plant, your nics worked hard on it");
         return;
       }
 
-      thePlantation[x][y].setLandStatus(1);
+      thePlantation[x][y].setIsPlowed(true);
 
       showFarm();
     }
@@ -126,20 +107,21 @@ public class FarmTrialApp {
 
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
-      int currentStatus = thePlantation[x][y].getLandStatus();
+      FarmLand l = thePlantation[x][y];
 
-      if (currentStatus == 0) {
+      if (!l.isPlowed()) {
         pw.println("Please plow this land first");
         return;
       }
 
-      if (currentStatus > 2) {
+      if (l.isOccupied()) {
         pw.println("This land is already occupied");
         return;
       }
 
-      thePlantation[x][y].setCrop(new Tomato(thePlantation[x][y]));
-      thePlantation[x][y].setLandStatus(currentStatus + 2);
+      l.setCrop(new Tomato(thePlantation[x][y]));
+      // this is already done by crop constructor, but here for reference
+      l.setIsOccupied(true);
 
       showFarm();
     }
@@ -153,26 +135,73 @@ public class FarmTrialApp {
 
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
-      int currentStatus = thePlantation[x][y].getLandStatus();
+      FarmLand l = thePlantation[x][y];
 
-      if (currentStatus == 0) {
+      if (!l.isPlowed()) {
         pw.println("Plow first then water");
         return;
       }
 
-      // if watered, or occupied and watered, stay the same (no change)
-      if (currentStatus != 2 && currentStatus < 4) {
-        // else change to watered or occupied and watered
-        thePlantation[x][y].setLandStatus(currentStatus + 1);
-      }
-
-      // start growing if land is NOW occupied and watered
-      if (currentStatus + 1 == 4) {
-        thePlantation[x][y].getCrop().startGrowing(now);
-      }
+      l.water(now, Duration.ofSeconds(10));
 
       showFarm();
     }
   }
+
+  class HarvestCommand implements Command {
+
+    @Override
+    public void execute(String[] tokens, PrintWriter pw) {
+      int x = Integer.parseInt(tokens[0]);
+      int y = Integer.parseInt(tokens[1]);
+      FarmLand l = thePlantation[x][y];
+      Crop c = l.getCrop();
+
+      if (!l.isOccupied()) {
+        pw.println("Can't harvest here, your nics didn't plant anything");
+        return;
+      }
+
+      if (c.getCropStatus() == 3 || c.getCropStatus() == 4) {
+        // can harvest
+        int id = c.getID();
+        int yield = c.getYield();
+
+        // update inventory
+        inventory.put(id, inventory.getOrDefault(id, 0) + yield);
+
+        // update land status
+        // TODO: if crop can harvest multiple times
+        l.setCrop(null);
+
+        pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
+        return;
+      } else {
+        // cannot harvest
+        pw.println("Crop cannot be harvested yet, your nics should work harder");
+      }
+    }
+  } // end of harvest command class
+
+  // mutators
+  public FarmLand[][] getThePlantation() {
+    return thePlantation;
+  }
+
+  /**
+   * @return the inventory
+   */
+  public Map<Integer, Integer> getInventory() {
+    return inventory;
+  }
+
+  /**
+   * @param inventory the inventory to set
+   */
+  public void setInventory(Map<Integer, Integer> inventory) {
+    this.inventory = inventory;
+  }
+
+  // ---------------------------------------------------------------------------------
 
 } // end of class
