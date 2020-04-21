@@ -65,7 +65,7 @@ class Game extends React.Component {
         let tabsMap = new Map();
         tabsMap.set("map", <GameMap id={"map"}/>)
         tabsMap.set("home", <Home id={"home"}/>)
-        tabsMap.set("store", <Store id={"store"}/>)
+        tabsMap.set("store", <Friends id={"friends"}/>)
         tabsMap.set("shop", <Shop id={"shop"}/>)
         tabsMap.set("settings", <Settings id={"settings"}/>)
 
@@ -197,7 +197,7 @@ class Shop extends React.Component {
     }
 }
 
-class Store extends React.Component {
+class Friends extends React.Component {
     render() {
         return (
             <p>{this.props.id}</p>
