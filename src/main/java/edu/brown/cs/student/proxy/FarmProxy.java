@@ -27,12 +27,12 @@ public final class FarmProxy {
       conn = DriverManager.getConnection(urlToDB);
       PreparedStatement prep;
       // simulator databases
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
-//      prep.executeUpdate();
-//
-//      prep.close();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
-//      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
+      prep.executeUpdate();
+
+      prep.close();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
+      prep.executeUpdate();
       // , PRIMARY KEY(username)
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text);");
@@ -97,9 +97,11 @@ public final class FarmProxy {
       prep.addBatch();
       prep.executeBatch();
       prep.close();
-      prep = conn.prepareStatement("INSERT INTO user_data(username, friends) VALUES (?, ?);");
+      prep = conn.prepareStatement(
+          "INSERT INTO user_data(username, friends, friendspending) VALUES (?, ?,?);");
       prep.setString(1, username);
       prep.setString(2, "");
+      prep.setString(3, "");
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -230,6 +232,85 @@ public final class FarmProxy {
     ResultSet rs = null;
     try {
       prep = conn.prepareStatement("SELECT friends FROM user_data WHERE username=?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        friends = rs.getString(1);
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+      return null;
+    }
+    return friends;
+  }
+
+  /**
+   * This method will update the friends pending for the user receiving the
+   * request.When a user sends a friend request to another user, the friends
+   * pending list of the user receiveing the request will be updated so they can
+   * accept or decline the friend invitaion.
+   *
+   * @param username This will be the username of the current player.
+   * @param toAdd    This will be the username of the person receiving the
+   *                 request.
+   */
+  public static void UpdateFriendsPending(String username, String toAdd) {
+    PreparedStatement prep;
+    String friends = null;
+    ResultSet rs = null;
+    // getting the old friendlist.
+    try {
+      prep = conn.prepareStatement("SELECT friendspending FROM user_data WHERE username=?;");
+      prep.setString(1, toAdd);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        friends = rs.getString(1);
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+    }
+    StringBuilder friendsList = new StringBuilder();
+    // appending to the list in form of a string.
+    if (friends.equals("")) {
+      friendsList.append(username);
+      friendsList.append(",");
+    } else {
+      friendsList.append(friends);
+      friendsList.append(username);
+      friendsList.append(",");
+    }
+
+    try {
+      // update the string that represents the friend list pending.
+      prep = conn.prepareStatement("UPDATE user_data SET friendspending= ? WHERE username=?;");
+      prep.setString(1, friendsList.toString());
+      prep.setString(2, toAdd);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    // This will update the friend list of the other user.
+
+  }
+
+  /**
+   * This method will retrieve the pending friends list as a string that will be
+   * parsed by the javascript code in order to output the pending friends in a
+   * list and determining whether that friend will be accepted or not.
+   *
+   * @param username It takes in the user for which to find the friend list for.
+   * @return It will return the friends list as string.
+   */
+  public static String getFriendsListPending(String username) {
+    PreparedStatement prep;
+    String friends = null;
+    ResultSet rs = null;
+    try {
+      prep = conn.prepareStatement("SELECT friendspending FROM user_data WHERE username=?;");
       prep.setString(1, username);
       rs = prep.executeQuery();
       while (rs.next()) {

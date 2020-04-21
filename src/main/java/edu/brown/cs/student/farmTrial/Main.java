@@ -340,14 +340,14 @@ public final class Main {
   private static class LogOutHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "message",
-          message);
       if (req.cookies().containsKey(userCookie)) {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";
+      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "message",
+          message);
       return new ModelAndView(variables, "home.ftl");
     }
   }
@@ -369,6 +369,7 @@ public final class Main {
       Map<String, String> variables;
       // Making sure that the user name they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(username) == null) {
+        System.out.println("doesnt exist");
         message = "The user doesn't exist. Try adding someone else.";
       } else {
         // ADD THE OPTION OF ACCEPTING OR DECLINING FRIENDS
@@ -387,6 +388,7 @@ public final class Main {
         FarmProxy.UpdateFriendsList(userCookie, username);
         FarmProxy.UpdateFriendsList(username, userCookie);
         message = "sending the request right now";
+        System.out.println("adding them");
       }
       // TODO: create an immutable map using the suggestions
       variables = ImmutableMap.of("message", message);

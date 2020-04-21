@@ -8,6 +8,35 @@ import edu.brown.cs.student.farmTrial.FarmLand;
 
 public interface Crop {
 
+  /**
+   * Set nextStageInstant to (now + durationUntilNextStage) IF grop is not yet at
+   * "harvest"
+   *
+   * @implNote this operation DOES NOT move corpStatus to the next stage
+   * @param now the instant to start growing from
+   */
+  public void startGrowing(Instant now);
+
+  /**
+   * Set nextStageInstant to MAX and store amount of time left in
+   * durationUntilNextStage
+   *
+   * @implNote if the crop is NOT currently growing, this method will do nothing
+   * @param now the instant to pause at
+   */
+  public void pauseGrowing(Instant now);
+
+  /**
+   * Updates this crop's status to the next stage if valid
+   *
+   * @param now the instant to compare to
+   * @return true if crop successfully moved to the next stage, false if crop
+   *         failed to move on
+   */
+  public boolean updateStatus(Instant now);
+
+  // mutators and accessers
+
   public String getName();
 
   public int getID();
@@ -18,25 +47,14 @@ public interface Crop {
 
   public void setFarmLand(FarmLand l);
 
-  public Instant getInstantNextStage();
+  public Instant getNextStageInstant();
 
   /**
    * Set instantNextStage to the specified instant
    *
    * @param i instant to set to
    */
-  public void setInstantNextStage(Instant i);
-
-  /**
-   * Set instantNextStage to (now + lifeCycleTimes[Math.abs(cropStatus)])
-   *
-   * @implNote this operation DOES NOT move corpStatus to the next stage
-   * @implNote if crop is infested, this method will use absolute value to find
-   *           the right stage and keep growing towards the next stage, i.e. -2
-   *           (mature infested) becomes 2 (mature)
-   * @param now the instant to start growing from
-   */
-  public void startGrowing(Instant now);
+  public void setNextStageInstant(Instant i);
 
   /**
    * @return -2: mature infested, -1: sprout infested, 0: seeded, 1: sprout, 2:
@@ -46,10 +64,14 @@ public interface Crop {
 
   public void setCropStatus(int s);
 
+  public Duration getDurationUntilNextStage();
+
+  public void setDurationUntilNextStage(Duration d);
+
   /**
-   * @return (seconds for testing, hours for deployment) index 0:
-   *         seeded->sprout, index 1: sprout->mature, index 2: mature->harvest,
-   *         index 3: harvest->stealable, index 4: harvest->withered
+   * @return (seconds for testing, hours for deployment) index 0: seeded->sprout,
+   *         index 1: sprout->mature, index 2: mature->harvest, index 3:
+   *         harvest->stealable, index 4: harvest->withered
    */
   public Duration[] getLifeCycleTimes();
 
