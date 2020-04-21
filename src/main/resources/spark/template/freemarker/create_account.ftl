@@ -19,10 +19,14 @@ li a {
 </style>
 <h1> CREATE YOUR ACCOUNT HERE</h1>
 <form method="POST" action="/new_user">
+	<label for="email">Enter Your Email</label>
+	<br>
+  	<input type="email" name="email" id="email" required>
+	<br>
 	<label for="text">Enter Your Desired Username</label>
 	<br>
   	<input type="text" name="username" id="text" required>
-<br>
+	<br>
 	<label for="pass">Enter Password</label>
 	<br>
   	<input type="password" name="password" id="pass" required>

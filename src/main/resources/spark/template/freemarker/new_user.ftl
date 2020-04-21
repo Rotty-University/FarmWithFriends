@@ -17,7 +17,7 @@ li a {
   background-color: #dddddd;
 }
 </style>
-<h1> Welcome to your set up page </h1>
+<h1> Welcome ${name} to your set up page </h1>
 <br><br><br>
 
 

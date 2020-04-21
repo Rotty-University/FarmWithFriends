@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 
 import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.REPL;
@@ -24,6 +25,7 @@ import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
+import spark.Route;
 import spark.Spark;
 import spark.TemplateViewRoute;
 import spark.template.freemarker.FreeMarkerEngine;
@@ -36,6 +38,7 @@ public final class Main {
 
   private static final int DEFAULT_PORT = 4567;
   private REPL repl;
+  private static final Gson GSON = new Gson();
 
   /**
    * The initial method called when execution begins.
@@ -56,8 +59,7 @@ public final class Main {
     // Parse command line arguments
     OptionParser parser = new OptionParser();
     parser.accepts("gui");
-    parser.accepts("port").withRequiredArg().ofType(Integer.class)
-    .defaultsTo(DEFAULT_PORT);
+    parser.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(DEFAULT_PORT);
     OptionSet options = parser.parse(args);
 
     // Process commands in a REPL
@@ -78,8 +80,7 @@ public final class Main {
     try {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {
-      System.out.printf("ERROR: Unable use %s for template loading.%n",
-          templates);
+      System.out.printf("ERROR: Unable use %s for template loading.%n", templates);
       System.exit(1);
     }
     return new FreeMarkerEngine(config);
@@ -97,8 +98,11 @@ public final class Main {
     Spark.post("/home", new HomePageHandler(), freeMarker);
     Spark.get("/home", new HomePageAlreadyLoggedInHandler(), freeMarker);
     Spark.get("/create_account", new CreateAccountPageHandler(), freeMarker);
+    Spark.get("/new_user", new NewUserPageAlreadyLoggedInHandler(), freeMarker);
     Spark.post("/new_user", new NewUserPageHandler(), freeMarker);
     Spark.get("/logout", new LogOutHandler(), freeMarker);
+    Spark.post("/adding_friend", new AddingFriendsHandler());
+    Spark.post("/friendLoader", new FriendLoaderHandler());
   }
 
   /**
@@ -126,7 +130,7 @@ public final class Main {
   public REPL getREPL() {
     return repl;
   }
-  
+
   static String message = "";
   static String createMessage = "";
   static String userCookie = null;
@@ -142,7 +146,8 @@ public final class Main {
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "message",
           message);
       message = "";
-      // checking to make sure the user isn't already logged on.
+      // checking to make sure the user isn't already logged on.Will take to their
+      // homepage if they are.
       if (req.cookies().containsKey(userCookie)) {
         message = "You are already logged in";
         res.redirect("/home");
@@ -160,6 +165,12 @@ public final class Main {
   private static class HomePageAlreadyLoggedInHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
+      // checking to make sure that the user is logged in before they can access this
+      // page.
+      if (userCookie == null) {
+        res.redirect("/login");
+        return new ModelAndView(null, "home.ftl");
+      }
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
       return new ModelAndView(variables, "user_home.ftl");
     }
@@ -246,6 +257,7 @@ public final class Main {
     @Override
     public ModelAndView handle(Request req, Response res) {
       QueryParamsMap data = req.queryMap();
+      String email = data.value("email");
       String username = data.value("username");
       String password = data.value("password");
       String reEntered = data.value("re_password");
@@ -262,9 +274,15 @@ public final class Main {
         res.redirect("/create_account");
         return new ModelAndView(null, "new_user.ftl");
       }
-      // Making sure that the username they are trying to make doesn't exist already.
+      // Making sure that the user name they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(username) != null) {
         createMessage = "The username already exists. Please try a different username.";
+        res.redirect("/create_account");
+        return new ModelAndView(null, "new_user.ftl");
+      }
+      // Making sure that the email they are trying to make doesn't exist already.
+      if (FarmProxy.getUserNameFromDataBase(email) != null) {
+        createMessage = "The email already exists. Please try a different email.";
         res.redirect("/create_account");
         return new ModelAndView(null, "new_user.ftl");
       }
@@ -284,10 +302,32 @@ public final class Main {
       }
       // insert this user information into the database.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
-          Arrays.toString(salt));
+          Arrays.toString(salt), email);
       userCookie = username;
       res.cookie(username, username);
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
+      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
+          username);
+      return new ModelAndView(variables, "new_user.ftl");
+    }
+  }
+
+  /**
+   * Handles the get request for when the user is going to their new_user_profile
+   * page profile page if they haven't finished yet.
+   *
+   */
+  private static class NewUserPageAlreadyLoggedInHandler implements TemplateViewRoute {
+    @Override
+    public ModelAndView handle(Request req, Response res) {
+      // checking to make sure that the user is logged in before they can access this
+      // page.
+      if (userCookie == null) {
+        res.redirect("/login");
+        return new ModelAndView(null, "home.ftl");
+      }
+      // HAVE TO DO THE CHECK WHERE THE USER ISN'T NEW USER ANYMORE.
+      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
+          userCookie);
       return new ModelAndView(variables, "new_user.ftl");
     }
   }
@@ -311,4 +351,57 @@ public final class Main {
       return new ModelAndView(variables, "home.ftl");
     }
   }
+
+  /**
+   * This class will handle the request for adding a friend and will send a
+   * message back to the javascript post request pertaining to the status of
+   * adding this friend.
+   *
+   * @return GSON which contains the result of autocorrect.suggest()
+   */
+  private static class AddingFriendsHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String username = qm.value("text");
+      String message = "";
+      // Making sure that the user name they are trying to make doesn't exist already.
+      if (FarmProxy.getUserNameFromDataBase(username) == null) {
+        message = "The user doesn't exist. Try adding someone else.";
+      } else {
+        // ADD THE OPTION OF ACCEPTING OR DECLINING FRIENDS
+        System.out.println(userCookie);
+        FarmProxy.UpdateFriendsList(userCookie, username);
+        FarmProxy.UpdateFriendsList(username, userCookie);
+        message = "sending the request right now";
+      }
+      // TODO: create an immutable map using the suggestions
+      Map<String, String> variables = ImmutableMap.of("message", message);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the request for displaying the friend's list of a user
+   * when they want to see it.
+   *
+   * @return GSON which contains the result of autocorrect.suggest()
+   */
+  private static class FriendLoaderHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String friendslist = FarmProxy.getFriendsList(userCookie);
+      // TODO: create an immutable map using the suggestions
+      Map<String, String> variables = ImmutableMap.of("list", friendslist);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
 }
