@@ -125,3 +125,61 @@ td {
     margin: 0px;
     padding: 0px;
 }
+
+/* Button used to open the contact form - fixed at the bottom of the page */
+.friend_button {
+    background-color: #555;
+    color: white;
+    padding: 16px 20px;
+    border: none;
+    cursor: pointer;
+    opacity: 0.8;
+    display: block
+}
+.friends_list{
+    display: none;
+    position: fixed;
+    border: 3px solid #f1f1f1;
+    z-index: 9;
+    background-color: white;
+}
+/* The popup form - hidden by default */
+.form-popup {
+    display: none;
+    position: fixed;
+    border: 3px solid #f1f1f1;
+    z-index: 9;
+    background-color: white;
+}
+/* Full-width input fields */
+#addfriendstext{
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+    border: none;
+    background: #f1f1f1;
+}
+/* When the inputs get focus, do something */
+#addfriendstext:focus{
+    background-color: #ddd;
+    outline: none;
+}
+/* Set a style for the send/request button */
+.btnn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px 20px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom:10px;
+    opacity: 0.8;
+}
+/* Red background color to cancel */
+.cancel {
+    background-color: red;
+}
+/* Hover effects to buttons */
+.btn:hover, .open-button:hover {
+    opacity: 1;
+}

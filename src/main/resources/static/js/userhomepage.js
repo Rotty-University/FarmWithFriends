@@ -44,7 +44,7 @@ class NavBar extends React.Component {
             <div className={"nav-bar"}>
                 <p onClick={this.props.action}><a href={"#"}><img id={"shop"} src={"css/images/iconShop.svg"} height={40} width={40}/></a></p>
                 <p onClick={this.props.action}><a href={"#"}><img id={"map"} src={"css/images/iconMap.svg"} height={40} width={40}/></a></p>
-                <p onClick={this.props.action}><a href={"#"}><img id={"store"} src={"css/images/iconCoin.svg"} height={40} width={40}/></a></p>
+                <p onClick={this.props.action}><a href={"#"}><img id={"store"} src={"css/images/iconFriends.svg"} height={40} width={40}/></a></p>
                 <p class={"nav-bar-active"} onClick={this.props.action}><a href={"#"}><img  id={"home"} src={"css/images/iconHome.svg"} height={40} width={40}/></a></p>
                 <p onClick={this.props.action}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>
                 <p onClick={this.props.action}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>
@@ -198,9 +198,27 @@ class Shop extends React.Component {
 }
 
 class Friends extends React.Component {
+
     render() {
         return (
-            <p>{this.props.id}</p>
+            <div className={"friendsContainer"}>
+                <button className={"friend_button"} onClick={ () => openFriendList('myFriendList') }>FriendsList</button>
+                <button className={"friend_button"} onClick={ () => openForm('myForm') }>Click Here to Add Friends</button>
+                <div className={"form-popup"} id={"myFriendList"}>
+                    <h1>Friends List</h1>
+                    <ul id={"list_of_friends"}>
+                    </ul>
+                    <button type={"button"} className={"btnn cancel"} onClick={ () => closeForm('myFriendList') }>Close</button>
+                </div>
+                <div className={"form-popup"} id={"myForm"}>
+                    <h1>Add A Friend</h1>
+                    <label htmlFor={"friend_username"}><b>Username of Friend</b></label>
+                    <input type={"text"} id={"addfriendstext"} placeholder={"Enter username of player"} name={"friend_username"}required></input>
+                    <button type={"button"} className={"btnn"} id={"add_friend_button"}>Send Request</button>
+                    <button type={"button"} className={"btnn cancel"} onClick={ () => closeForm('myForm') }>Close</button>
+                    <p id={"message_for_friend_status"}></p>
+                </div>
+            </div>
         )
     }
 }
