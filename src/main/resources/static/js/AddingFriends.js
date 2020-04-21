@@ -4,15 +4,14 @@
  It sends a post request to the backend that will then send the list of friends as a json.
  */
 function openFriendList(form){
-    console.log("i am being called!");
     document.getElementById(form).style.display = "block";
-    console.log("is it null")
     const suggestionList = $("#list_of_friends");
     suggestionList.empty();
     const postParameters = {
         //TODO: get the text inside the input box
         text: "placeholder"
     };
+    console.log("we are here about to do friend loader")
     $.post("/friendLoader", postParameters, response => {
         // Do something with the response here
         const object = JSON.parse(response);
@@ -21,7 +20,6 @@ function openFriendList(form){
         //showing a list of the friends when the button is clicked.
         for (let i = 0; i < arrayLength; i++) {
             suggestionList.append("<li>"+list[i]+"</li>");
-
         }
     });
 };
