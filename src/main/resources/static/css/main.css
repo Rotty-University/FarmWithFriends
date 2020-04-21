@@ -3,20 +3,183 @@ input[type="number"] {
 }
 
 body {
-        
-	background-color: #3a3d44;
-	background-image: url("images/farm.jpg");
+	background-color: black;
+    /*background-image: url("images/farm.jpg");*/
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 	height: 100%;
 	text-align: center;
 	background-size: cover;
-	color: black;
-    }
+	color: white;
+}
 
-    #center {
-        margin-right: auto;
-        margin-left: auto;
-        width: 50%;
-        height: 80%;
-    }
+.nav-bar {
+    color: white;
+    position: absolute;
+    left: 0px;
+    top:0px;
+    font-family: "Gill Sans";
+    height: 100%;
+    width: 4%;
+    background-color: #3c3e47;
+}
+
+.nav-bar-active {
+    background-color: #636672;
+}
+.nav-bar p {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin: 0px;
+}
+
+.nav-bar p:hover {
+    background-color: #636672;
+}
+
+.nav-bar a {
+    text-decoration: none;
+    color: white;
+}
+
+.inputForm {
+    background-color: #3c3e47;
+    text-align: center;
+    width: 20%;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-radius: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.inputForm input {
+    border-radius: 5px;
+    border: none;
+    padding: 5px;
+}
+
+.inputForm input[type=text] {
+    color: #3c3e47;
+}
+
+.inputForm input[type=submit] {
+    background-color: white;
+    margin-top: 0px;
+    width: 100px;
+    padding: 5px;
+}
+
+.inputForm input[type=submit]:hover {
+    background-color: #cccccc;
+    color: #3c3e47;
+}
+
+.content-window {
+    width: 96%;
+    position: absolute;
+    right: 0px;
+    height: 100%;
+}
+
+.toolbox {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    background-color: #3c3e47;
+    padding: 10px;
+    position: absolute;
+    bottom: 0px;
+    width: 20%;
+    right:25%;
+    left:50%;
+    margin-left:-150px;
+}
+
+.toolbaritem {
+    padding-right: 15px;
+    padding-left: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 5px;
+}
+
+.toolbaritem:hover {
+    background-color: #636672;
+}
+
+.toolbarSelected {
+    padding-right: 15px;
+    padding-left: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 5px;
+    background-color: #636672;
+}
+
+.farmContainer {
+    /*background-color: red;*/
+    margin: 0px;
+}
+
+td {
+    margin: 0px;
+    padding: 0px;
+}
+
+/* Button used to open the contact form - fixed at the bottom of the page */
+.friend_button {
+    background-color: #555;
+    color: white;
+    padding: 16px 20px;
+    border: none;
+    cursor: pointer;
+    opacity: 0.8;
+    display: block
+}
+.friends_list{
+    display: none;
+    position: fixed;
+    border: 3px solid #f1f1f1;
+    z-index: 9;
+    background-color: white;
+}
+/* The popup form - hidden by default */
+.form-popup {
+    display: none;
+    position: fixed;
+    border: 3px solid #f1f1f1;
+    z-index: 9;
+    background-color: white;
+}
+/* Full-width input fields */
+#addfriendstext{
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+    border: none;
+    background: #f1f1f1;
+}
+/* When the inputs get focus, do something */
+#addfriendstext:focus{
+    background-color: #ddd;
+    outline: none;
+}
+/* Set a style for the send/request button */
+.btnn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px 20px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom:10px;
+    opacity: 0.8;
+}
+/* Red background color to cancel */
+.cancel {
+    background-color: red;
+}
+/* Hover effects to buttons */
+.btn:hover, .open-button:hover {
+    opacity: 1;
+}
