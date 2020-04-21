@@ -368,18 +368,30 @@ public final class Main {
       QueryParamsMap qm = req.queryMap();
       String username = qm.value("text");
       String message = "";
+      Map<String, String> variables;
       // Making sure that the user name they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(username) == null) {
         message = "The user doesn't exist. Try adding someone else.";
       } else {
         // ADD THE OPTION OF ACCEPTING OR DECLINING FRIENDS
         System.out.println(userCookie);
+        String friendslist = FarmProxy.getFriendsList(userCookie);
+        String[] friends = friendslist.split(",");
+        // check to make sure the user isn't already in the friends list.
+        for (String friend : friends) {
+          if (username.equals(friend)) {
+            message = "This friend is already in your friends list.";
+            variables = ImmutableMap.of("message", message);
+            GSON.toJson(variables);
+            return GSON.toJson(variables);
+          }
+        }
         FarmProxy.UpdateFriendsList(userCookie, username);
         FarmProxy.UpdateFriendsList(username, userCookie);
         message = "ADDING THIS USER TO YOUR FRIENDS LIST";
       }
       // TODO: create an immutable map using the suggestions
-      Map<String, String> variables = ImmutableMap.of("message", message);
+      variables = ImmutableMap.of("message", message);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);
