@@ -142,6 +142,7 @@ class Table extends React.Component {
                     spritepath={"css/images/testsprite.png"}
                     row={i}
                     column={idx}
+                    watered={false}
                     activetool={this.props.active}
                 /></td>)
             }
