@@ -88,8 +88,8 @@ class Home extends React.Component {
         this.generateFarmArray = this.generateFarmArray.bind(this)
     }
 
-    generateFarmArray(rows, columns) {
-        return <Table id={"farmTable"} rows={rows} columns={columns}/>;
+    generateFarmArray(rows, columns, activetool) {
+        return <Table id={"farmTable"} rows={rows} columns={columns} active={activetool}/>;
     }
 
     updatePrevSelectedTool(e) {
@@ -107,7 +107,7 @@ class Home extends React.Component {
 
     render() {
 
-        let table = this.generateFarmArray(1, 4);
+        let table = this.generateFarmArray(1, 4, this.state.prevselectedtool);
 
         return (
             <div className={"homeContainer"} onClick={this.resetTool}>
@@ -115,6 +115,7 @@ class Home extends React.Component {
                     {table}
                 </div>
                 <div className="toolbox">
+                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
@@ -136,7 +137,13 @@ class Table extends React.Component {
             let cell = []
             for (var idx = 0; idx < this.props.columns; idx++){
                 let cellID = `cell${i}-${idx}`
-                cell.push(<td key={cellID} id={cellID}><Tile type={"ploughed"} spritepath={"css/images/testsprite.png"}/></td>)
+                cell.push(<td key={cellID} id={cellID}><Tile
+                    type={"ploughed"}
+                    spritepath={"css/images/testsprite.png"}
+                    row={i}
+                    column={idx}
+                    activetool={this.props.active}
+                /></td>)
             }
             rows.push(<tr key={i} id={rowID}>{cell}</tr>)
         }
@@ -158,11 +165,16 @@ class Tile extends React.Component {
 
     constructor(props) {
         super(props);
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    handleClick() {
+        alert("you clicked me! " + this.props.row + "," + this.props.column + " active tool: " + this.props.activetool);
     }
 
     render() {
         return (
-            <img className={"tileImage"} src={this.props.spritepath}/>
+            <img onClick={this.handleClick} className={"tileImage"} src={this.props.spritepath}/>
         );
     }
 }
