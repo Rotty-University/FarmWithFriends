@@ -82,7 +82,7 @@ class Home extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            prevselectedtool: "",
+            prevselectedtool: "select",
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
@@ -104,7 +104,6 @@ class Home extends React.Component {
     }
 
 
-
     render() {
 
         let table = this.generateFarmArray(1, 4, this.state.prevselectedtool);
@@ -115,7 +114,7 @@ class Home extends React.Component {
                     {table}
                 </div>
                 <div className="toolbox">
-                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>
+                    <img className={"toolbarSelected"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
@@ -125,6 +124,7 @@ class Home extends React.Component {
         )
     }
 }
+
 
 class Table extends React.Component {
     constructor(props){
@@ -168,6 +168,7 @@ class Tile extends React.Component {
         this.handleClick = this.handleClick.bind(this);
     }
 
+    //TODO this gonna be a big boi method
     handleClick() {
         alert("you clicked me! " + this.props.row + "," + this.props.column + " active tool: " + this.props.activetool);
     }
