@@ -26,9 +26,10 @@ function openFriendList(form){
     });
 };
 //Below is where we are going to take care of adding a friend and setting a post request with the user we are trying to add.
-$(document).ready(() => {
+function sendAddRequest() {
     //This is where we will send a post request with the user we are trying to add.
     const submit = $("#add_friend_button");
+    console.log(submit.innerHTML);
     const input = $("#addfriendstext");
     const message = $("#message_for_friend_status");
     submit.click(function(event){
@@ -36,6 +37,7 @@ $(document).ready(() => {
             //TODO: get the text inside the input box
             text: input.val()
         };
+        console.log(postParameters.text);
         //send the post and show the message from the backend.
         $.post("/adding_friend", postParameters, response => {
             // Do something with the response here
@@ -46,7 +48,7 @@ $(document).ready(() => {
             message.append(message_to_player);
         });
     });
-});
+};
 
 //Method for opening the div forms.
 function openForm(form) {

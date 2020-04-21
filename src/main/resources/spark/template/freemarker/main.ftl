@@ -19,7 +19,7 @@
      <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
      <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
      <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-     <!-- Load React components. -->
+     <!-- Load React components & helper functions. -->
      <script src="js/AddingFriends.js"></script>
      <script src="js/userhomepage.js" type="text/babel"></script>
   </body>

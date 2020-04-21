@@ -4,6 +4,8 @@
 	</div>
 	<h1> CREATE YOUR ACCOUNT HERE</h1>
 	<form method="POST" action="/new_user" class="inputForm">
+		<label for="email">Enter Your Email</label>
+		<p><input type="email" name="email" id="email" required></p>
 		<label for="text">Enter Your Desired Username:</label>
 	  	<p><input type="text" name="username" id="text" required></p>
 		<label for="pass">Enter Password:</label>

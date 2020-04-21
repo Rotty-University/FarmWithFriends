@@ -214,7 +214,7 @@ class Friends extends React.Component {
                     <h1>Add A Friend</h1>
                     <label htmlFor={"friend_username"}><b>Username of Friend</b></label>
                     <input type={"text"} id={"addfriendstext"} placeholder={"Enter username of player"} name={"friend_username"}required></input>
-                    <button type={"button"} className={"btnn"} id={"add_friend_button"}>Send Request</button>
+                    <button type={"button"} className={"btnn"} id={"add_friend_button"} onClick={ () => sendAddRequest() }>Send Request</button>
                     <button type={"button"} className={"btnn cancel"} onClick={ () => closeForm('myForm') }>Close</button>
                     <p id={"message_for_friend_status"}></p>
                 </div>
