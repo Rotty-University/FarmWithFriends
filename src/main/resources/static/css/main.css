@@ -195,16 +195,16 @@ td {
     opacity: 1;
 }
 #message_for_friend_status{
-    color:black;
+    color:white;
 }
 #addedfriends{
-    color:black;
+    color:white;
 }
 #title_of_friends_list{
-    color:black;
+    color:white;
 }
 .color_of_text{
-    color:black;
+    color:white;
 }
 
 .friendsActivated  {
