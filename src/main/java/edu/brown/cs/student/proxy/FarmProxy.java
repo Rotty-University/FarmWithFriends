@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 /**
  * This will handle all the queries and everything that has to do with the base
@@ -241,6 +242,63 @@ public final class FarmProxy {
       return null;
     }
     return friends;
+  }
+
+  /**
+   * updateTradingCenter adds a new record into the trading center table.
+   *
+   * @param seller    userName of user making the listing
+   * @param cropSell  id of the crop that will be traded
+   * @param sellQ     quantity of cropSell willing to be traded
+   * @param cropBuy   id of crop that is requested in return
+   * @param buyQ      quantity of cropBuy asked for
+   */
+  public static void updateTradingCenter(String seller, int cropSell, int sellQ, int cropBuy, int buyQ) {
+    PreparedStatement prep;
+    try {
+      // update the string that represents the friend list.
+      prep = conn.prepareStatement("INSERT INTO trading_center (user_seller, id_sell, sell_quantity, " +
+              "id_buy, buy_quantity) VALUES (?,?,?,?,?);");
+      prep.setString(1, seller);
+      prep.setString(2, cropSell + "");
+      prep.setString(3, sellQ + "");
+      prep.setString(4, cropBuy + "");
+      prep.setString(5, buyQ + "");
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * getTradingCenter returns all the records in the trading center.
+   *
+   * @return ArrayList of listings represented as, String[5]
+   */
+  public static ArrayList<String[]> getTradingCenter() {
+    PreparedStatement prep;
+    ArrayList<String[]> listings = new ArrayList<String[]>();
+    ResultSet rs = null;
+    try {
+      prep = conn.prepareStatement("SELECT * FROM trading_center;");
+      rs = prep.executeQuery();
+      int rowIndex = 0;
+      while (rs.next()) {
+        String[] newListing = new String[5];
+        newListing[0] = rs.getString(1);
+        newListing[1] = rs.getString(2);
+        newListing[2] = rs.getString(3);
+        newListing[3] = rs.getString(4);
+        newListing[4] = rs.getString(5);
+        listings.add(newListing);
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+      return null;
+    }
+    return listings;
   }
 
 }

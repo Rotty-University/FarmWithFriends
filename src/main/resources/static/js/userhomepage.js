@@ -192,7 +192,11 @@ class GameMap extends React.Component {
 class Shop extends React.Component {
     render() {
         return (
+        <div id={"friendsContainer"}>
             <p>{this.props.id}</p>
+            <h1>Shop and Trade</h1>
+            <button className={"add_button"} onClick={ () => openForm('myForm') }>List a Trade</button>
+        </div>
         )
     }
 }
