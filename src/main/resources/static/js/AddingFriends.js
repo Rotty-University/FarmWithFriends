@@ -7,6 +7,7 @@
 function openFriendList(form){
     document.getElementById(form).style.display = "block";
     const suggestionList = $("#list_of_friends");
+    const pendinglist = $("#list_of_friends_pending");
     suggestionList.empty();
     const postParameters = {
         //TODO: get the text inside the input box
@@ -19,19 +20,31 @@ function openFriendList(form){
         const list = object.list.split(",")
         const arrayLength = list.length;
         //showing a list of the friends when the button is clicked.
-        for (let i = 0; i < arrayLength; i++) {
-            suggestionList.append("<li>"+list[i]+"</li>");
+        for (let i = 0; i < arrayLength-1; i++) {
+            suggestionList.append("<li id=\"addedfriends\">"+list[i]+"</li>");
         }
     });
+    //code for the pending below
+    //         $.post("/friendPendingLoader", postParameters, response => {
+    //     // Do something with the response here
+    //     const object = JSON.parse(response);
+    //     const list = object.list.split(",")
+    //     const arrayLength = list.length;
+    //     //showing a list of the friends when the button is clicked. 
+    //     for (let i = 0; i < arrayLength; i++) {
+    //       pendingList.append("<li class=\"pending\">"+list[i]+"</li>");
+          
+    //     } 
+    // });
 };
 //Below is where we are going to take care of adding a friend and setting a post request with the user we are trying to add.
 function sendAddRequest() {
     //This is where we will send a post request with the user we are trying to add.
     const submit = $("#add_friend_button");
-    console.log(submit.innerHTML);
+    // console.log(submit.innerHTML);
     const input = $("#addfriendstext");
     const message = $("#message_for_friend_status");
-    submit.click(function(event){
+    // submit.click(function(event){
         const postParameters = {
             //TODO: get the text inside the input box
             text: input.val()
@@ -46,7 +59,7 @@ function sendAddRequest() {
             message.empty()
             message.append(message_to_player);
         });
-    });
+    // });
 };
 
 //Method for opening the div forms.

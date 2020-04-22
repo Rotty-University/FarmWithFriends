@@ -103,6 +103,7 @@ public final class Main {
     Spark.get("/logout", new LogOutHandler(), freeMarker);
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
+    Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
   }
 
   /**
@@ -410,6 +411,26 @@ public final class Main {
       // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       String friendslist = FarmProxy.getFriendsList(userCookie);
+      // TODO: create an immutable map using the suggestions
+      Map<String, String> variables = ImmutableMap.of("list", friendslist);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the request for displaying the friend's list of a user
+   * when they want to see it.
+   *
+   * @return GSON which contains the result of autocorrect.suggest()
+   */
+  private static class FriendPendingLoaderHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String friendslist = FarmProxy.getFriendsListPending(userCookie);
       // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)

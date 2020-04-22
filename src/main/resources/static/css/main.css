@@ -183,3 +183,15 @@ td {
 .btn:hover, .open-button:hover {
     opacity: 1;
 }
+#message_for_friend_status{
+    color:black;
+}
+#addedfriends{
+    color:black;
+}
+#title_of_friends_list{
+    color:black;
+}
+.color_of_text{
+    color:black;
+}
