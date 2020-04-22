@@ -128,56 +128,67 @@ td {
 
 /* Button used to open the contact form - fixed at the bottom of the page */
 .friend_button {
-    background-color: #555;
+    background-color: #5c6672;
     color: white;
     padding: 16px 20px;
     border: none;
+    width: 100%;
     cursor: pointer;
-    opacity: 0.8;
-    display: block
 }
-.friends_list{
-    display: none;
-    position: fixed;
-    border: 3px solid #f1f1f1;
-    z-index: 9;
-    background-color: white;
+
+#myForm {
+    background-color: #636672;
 }
+
 /* The popup form - hidden by default */
 .form-popup {
     display: none;
     position: fixed;
-    border: 3px solid #f1f1f1;
+    left: 4%;
+    padding: 0px;
+    border: none;
+    background-color: #888d99;
     z-index: 9;
-    background-color: white;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+
+}
+
+.form-popup p:hover {
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    background-color: #888d99;
 }
 /* Full-width input fields */
 #addfriendstext{
     width: 100%;
-    padding: 15px;
-    margin: 5px 0 22px 0;
     border: none;
-    background: #f1f1f1;
-}
-/* When the inputs get focus, do something */
-#addfriendstext:focus{
-    background-color: #ddd;
-    outline: none;
+    padding: 10px;
+    box-sizing:border-box
 }
 /* Set a style for the send/request button */
 .btnn {
+    width: 100%;
     background-color: #4CAF50;
     color: white;
     padding: 16px 20px;
     border: none;
     cursor: pointer;
-    width: 100%;
-    margin-bottom:10px;
-    opacity: 0.8;
+}
+
+.btnn:hover {
+    opacity: .8;
 }
 /* Red background color to cancel */
 .cancel {
+    border-bottom-right-radius: 15px;
     background-color: red;
+    width: 100%;
+    margin: 0px;
+}
+
+.cancel:hover, .friend_button:hover{
+    opacity: .8;
 }
 /* Hover effects to buttons */
 .btn:hover, .open-button:hover {
@@ -195,3 +206,8 @@ td {
 .color_of_text{
     color:black;
 }
+
+.friendsActivated  {
+    background-color: #888d99;
+}
+

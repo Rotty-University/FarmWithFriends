@@ -56,7 +56,7 @@ public class Tomato implements Crop, java.io.Serializable {
     durationUntilNextStage = lifeCycleTimes[0];
 
     // default wither duration for each stage except harvest
-    witherDuration = Duration.ofMinutes(10);
+    witherDuration = Duration.ofSeconds(10);
 
     // place holder: auto wither time from seeded stage
     witheredInstant = now.plus(witherDuration);
@@ -129,14 +129,11 @@ public class Tomato implements Crop, java.io.Serializable {
 
     // if already withered, no need to update
     if (cropStatus == 5) {
+      // put this in here just in case (should not be necessary)
+      stopGrowing();
+
       return isChanged;
     }
-
-//    // if land has dried but crop still needs more growth until next stage
-//    // pause growing
-//    if (!farmLand.isWatered(now) && cropStatus < 3) {
-//      pauseGrowing(farmLand.getNextDryInstant());
-//    }
 
     // if timer is up
     // keep checking just in case crop progressed multiple stages since last update
@@ -178,9 +175,13 @@ public class Tomato implements Crop, java.io.Serializable {
       // once crop is ready to harvest, set auto withered time
       // still needs to "grow" to the next stage (stealable)
       if (cropStatus == 3) {
-        // set auto withered time
+        // set auto withered time for harvest (currently designed to be different from
+        // all other stages)
         // because this time starts as soon as crop becomes harvest
         witheredInstant = nextStageInstant.plus(lifeCycleTimes[4]);
+      } else {
+        // if not yet harvest, add a constant time to wither time
+        witheredInstant = nextStageInstant.plus(witherDuration);
       }
 
       // set durationUntilNextStage for next stage
@@ -192,19 +193,11 @@ public class Tomato implements Crop, java.io.Serializable {
       // been completed
       startGrowing(nextStageInstant);
 
-      // set auto wither time for next stage
-      // must be after nextStageInstant has already been updated
-      if (cropStatus != 3) {
-        witheredInstant = nextStageInstant.plus(witherDuration);
-      }
-
-      // if land is still watered AND not in harvest
+      // if land is no longer watered, or crop is not in harvest
       if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
         // pause growing
         pauseGrowing(farmLand.getNextDryInstant());
       }
-
-      // TODO: fix this, watering later is not pausing plants correctly
 
 //      // if land is still watered AND not in harvest
 //      if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getLastDryInstant())) {

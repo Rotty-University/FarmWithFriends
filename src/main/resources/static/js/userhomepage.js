@@ -44,7 +44,7 @@ class NavBar extends React.Component {
             <div className={"nav-bar"}>
                 <p onClick={this.props.action}><a href={"#"}><img id={"shop"} src={"css/images/iconShop.svg"} height={40} width={40}/></a></p>
                 <p onClick={this.props.action}><a href={"#"}><img id={"map"} src={"css/images/iconMap.svg"} height={40} width={40}/></a></p>
-                <p onClick={this.props.action}><a href={"#"}><img id={"store"} src={"css/images/iconFriends.svg"} height={40} width={40}/></a></p>
+                <Friends id={"friends"}/>
                 <p className={"nav-bar-active"} onClick={this.props.action}><a href={"#"}><img  id={"home"} src={"css/images/iconHome.svg"} height={40} width={40}/></a></p>
                 <p onClick={this.props.action}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>
                 <p onClick={this.props.action}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>
@@ -65,7 +65,7 @@ class Game extends React.Component {
         let tabsMap = new Map();
         tabsMap.set("map", <GameMap id={"map"}/>)
         tabsMap.set("home", <Home id={"home"}/>)
-        tabsMap.set("store", <Friends id={"friends"}/>)
+        tabsMap.set("friends", <Friends id={"friends"}/>)
         tabsMap.set("shop", <Shop id={"shop"}/>)
         tabsMap.set("settings", <Settings id={"settings"}/>)
 
@@ -201,9 +201,7 @@ class Friends extends React.Component {
 
     render() {
         return (
-            <div className={"friendsContainer"}>
-                <button className={"friend_button"} onClick={ () => openFriendList('myFriendList') }>FriendsList</button>
-                <button className={"friend_button"} onClick={ () => openForm('myForm') }>Click Here to Add Friends</button>
+            <div id={"friendsContainer"}>
                 <div className={"form-popup"} id={"myFriendList"}>
                     <h1 id={"title_of_friends_list"}>Friends List</h1>
                     <ul id={"list_of_friends"}>
@@ -212,16 +210,19 @@ class Friends extends React.Component {
                     <p className={"color_of_text"}>Click on a name to accept the user</p>
                     <ul id={"list_of_friends_pending"}>
                     </ul>
+                    <button className={"friend_button"} onClick={ () => openForm('myForm') }>Add Friends</button>
                     <button type={"button"} className={"btnn cancel"} onClick={ () => closeForm('myFriendList') }>Close</button>
                 </div>
+                <p onClick={ () => openFriendList('myFriendList') }><a href={"#"}><img id={"friends"} src={"css/images/iconFriends.svg"} height={40} width={40}/></a></p>
                 <div className={"form-popup"} id={"myForm"}>
                     <h1>Add A Friend</h1>
                     <label htmlFor={"friend_username"}><b>Username of Friend</b></label>
                     <input type={"text"} id={"addfriendstext"} placeholder={"Enter username of player"} name={"friend_username"}required></input>
-                    <button type={"button"} className={"btnn"} id={"add_friend_button"} onClick={ () => sendAddRequest() }>Send Request</button>
-                    <button type={"button"} className={"btnn cancel"} onClick={ () => closeForm('myForm') }>Close</button>
                     <p id={"message_for_friend_status"}></p>
+                    <button type={"button"} className={"btnn"} id={"add_friend_button"} onClick={ () => sendAddRequest() }>Send Request</button>
+                    <button type={"button"} className={"btnn cancel"} onClick={ () => closeAddForm('myForm') }>Close</button>
                 </div>
+
             </div>
         )
     }
