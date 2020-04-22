@@ -103,6 +103,7 @@ public final class Main {
     Spark.get("/logout", new LogOutHandler(), freeMarker);
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
+    Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
   }
 
   /**
@@ -143,9 +144,9 @@ public final class Main {
   private static class LoginPageHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-      message = "";
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "message",
           message);
+      message = "";
       // checking to make sure the user isn't already logged on.Will take to their
       // homepage if they are.
       if (req.cookies().containsKey(userCookie)) {
@@ -340,11 +341,9 @@ public final class Main {
   private static class LogOutHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-
       if (req.cookies().containsKey(userCookie)) {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
-        userCookie = null;
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";
@@ -368,18 +367,32 @@ public final class Main {
       QueryParamsMap qm = req.queryMap();
       String username = qm.value("text");
       String message = "";
+      Map<String, String> variables;
       // Making sure that the user name they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(username) == null) {
+        System.out.println("doesnt exist");
         message = "The user doesn't exist. Try adding someone else.";
       } else {
         // ADD THE OPTION OF ACCEPTING OR DECLINING FRIENDS
         System.out.println(userCookie);
+        String friendslist = FarmProxy.getFriendsList(userCookie);
+        String[] friends = friendslist.split(",");
+        // check to make sure the user isn't already in the friends list.
+        for (String friend : friends) {
+          if (username.equals(friend)) {
+            message = "This friend is already in your friends list.";
+            variables = ImmutableMap.of("message", message);
+            GSON.toJson(variables);
+            return GSON.toJson(variables);
+          }
+        }
         FarmProxy.UpdateFriendsList(userCookie, username);
         FarmProxy.UpdateFriendsList(username, userCookie);
-        message = "ADDING THIS USER TO YOUR FRIENDS LIST";
+        message = "sending the request right now";
+        System.out.println("adding them");
       }
       // TODO: create an immutable map using the suggestions
-      Map<String, String> variables = ImmutableMap.of("message", message);
+      variables = ImmutableMap.of("message", message);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);
@@ -398,6 +411,26 @@ public final class Main {
       // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       String friendslist = FarmProxy.getFriendsList(userCookie);
+      // TODO: create an immutable map using the suggestions
+      Map<String, String> variables = ImmutableMap.of("list", friendslist);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the request for displaying the friend's list of a user
+   * when they want to see it.
+   *
+   * @return GSON which contains the result of autocorrect.suggest()
+   */
+  private static class FriendPendingLoaderHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String friendslist = FarmProxy.getFriendsListPending(userCookie);
       // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)

@@ -190,6 +190,22 @@ td {
 .cancel:hover, .friend_button:hover{
     opacity: .8;
 }
+/* Hover effects to buttons */
+.btn:hover, .open-button:hover {
+    opacity: 1;
+}
+#message_for_friend_status{
+    color:black;
+}
+#addedfriends{
+    color:black;
+}
+#title_of_friends_list{
+    color:black;
+}
+.color_of_text{
+    color:black;
+}
 
 .friendsActivated  {
     background-color: #888d99;

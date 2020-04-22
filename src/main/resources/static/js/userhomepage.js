@@ -203,8 +203,12 @@ class Friends extends React.Component {
         return (
             <div id={"friendsContainer"}>
                 <div className={"form-popup"} id={"myFriendList"}>
-                    <p>Friends List:</p>
+                    <h1 id={"title_of_friends_list"}>Friends List</h1>
                     <ul id={"list_of_friends"}>
+                    </ul>
+                    <p className={"color_of_text"}>These are your pending requests below</p>
+                    <p className={"color_of_text"}>Click on a name to accept the user</p>
+                    <ul id={"list_of_friends_pending"}>
                     </ul>
                     <button className={"friend_button"} onClick={ () => openForm('myForm') }>Add Friends</button>
                     <button type={"button"} className={"btnn cancel"} onClick={ () => closeForm('myFriendList') }>Close</button>
