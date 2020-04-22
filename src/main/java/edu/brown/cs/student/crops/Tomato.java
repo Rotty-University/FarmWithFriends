@@ -56,7 +56,7 @@ public class Tomato implements Crop, java.io.Serializable {
     durationUntilNextStage = lifeCycleTimes[0];
 
     // default wither duration for each stage except harvest
-    witherDuration = Duration.ofMinutes(10);
+    witherDuration = Duration.ofMinutes(5);
 
     // place holder: auto wither time from seeded stage
     witheredInstant = now.plus(witherDuration);
@@ -132,12 +132,6 @@ public class Tomato implements Crop, java.io.Serializable {
       return isChanged;
     }
 
-//    // if land has dried but crop still needs more growth until next stage
-//    // pause growing
-//    if (!farmLand.isWatered(now) && cropStatus < 3) {
-//      pauseGrowing(farmLand.getNextDryInstant());
-//    }
-
     // if timer is up
     // keep checking just in case crop progressed multiple stages since last update
     while (now.isAfter(nextStageInstant)) {
@@ -198,13 +192,11 @@ public class Tomato implements Crop, java.io.Serializable {
         witheredInstant = nextStageInstant.plus(witherDuration);
       }
 
-      // if land is still watered AND not in harvest
+      // if land is no longer watered, or crop is not in harvest
       if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
         // pause growing
         pauseGrowing(farmLand.getNextDryInstant());
       }
-
-      // TODO: fix this, watering later is not pausing plants correctly
 
 //      // if land is still watered AND not in harvest
 //      if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getLastDryInstant())) {
