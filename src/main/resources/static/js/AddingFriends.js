@@ -69,12 +69,12 @@ function openForm(form) {
 };
 //method for closing the two div forms
 function closeForm(form) {
+    document.getElementById("friendsContainer").className = "";
     document.getElementById(form).style.display = "none";
 
 };
 
-//     document.getElementById("friendsContainer").className = "";
-// };
+
 
 function closeAddForm(form) {
     document.getElementById(form).style.display = "none";
