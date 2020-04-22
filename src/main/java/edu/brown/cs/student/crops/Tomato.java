@@ -56,7 +56,7 @@ public class Tomato implements Crop, java.io.Serializable {
     durationUntilNextStage = lifeCycleTimes[0];
 
     // default wither duration for each stage except harvest
-    witherDuration = Duration.ofMinutes(5);
+    witherDuration = Duration.ofSeconds(10);
 
     // place holder: auto wither time from seeded stage
     witheredInstant = now.plus(witherDuration);
@@ -129,6 +129,9 @@ public class Tomato implements Crop, java.io.Serializable {
 
     // if already withered, no need to update
     if (cropStatus == 5) {
+      // put this in here just in case (should not be necessary)
+      stopGrowing();
+
       return isChanged;
     }
 
@@ -172,9 +175,13 @@ public class Tomato implements Crop, java.io.Serializable {
       // once crop is ready to harvest, set auto withered time
       // still needs to "grow" to the next stage (stealable)
       if (cropStatus == 3) {
-        // set auto withered time
+        // set auto withered time for harvest (currently designed to be different from
+        // all other stages)
         // because this time starts as soon as crop becomes harvest
         witheredInstant = nextStageInstant.plus(lifeCycleTimes[4]);
+      } else {
+        // if not yet harvest, add a constant time to wither time
+        witheredInstant = nextStageInstant.plus(witherDuration);
       }
 
       // set durationUntilNextStage for next stage
@@ -185,12 +192,6 @@ public class Tomato implements Crop, java.io.Serializable {
       // before this line, nextStageInstant marks the instant of the stage that had
       // been completed
       startGrowing(nextStageInstant);
-
-      // set auto wither time for next stage
-      // must be after nextStageInstant has already been updated
-      if (cropStatus != 3) {
-        witheredInstant = nextStageInstant.plus(witherDuration);
-      }
 
       // if land is no longer watered, or crop is not in harvest
       if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
