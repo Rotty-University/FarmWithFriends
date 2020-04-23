@@ -191,13 +191,13 @@ class GameMap extends React.Component {
 
 class Shop extends React.Component {
     render() {
-        const x = openTradeList();
         return (
-        <div id={"shopContainer"}>
+        <div id={"shopContainer"} >
             <p>{this.props.id}</p>
             <h1>Shop and Trade</h1>
             <button className={"add_button"} onClick={ () => openForm('newTrade') }>List a Trade</button>
             <p>Trade List:</p>
+            <button onClick={() => openTradeList() }>test load</button>
             <ul id={"trade_list"}>
             </ul>
             <div className={"form-popup"} id={"newTrade"}>
@@ -219,6 +219,8 @@ class Shop extends React.Component {
     }
 }
 
+
+
 function openTradeList(){
     const suggestionList = $("#trade_list");
     suggestionList.empty();
@@ -235,6 +237,7 @@ function openTradeList(){
         for (let i = 0; i < arrayLength; i++) {
             console.log(list[i])
             suggestionList.append("<li>" + list[i] + "</li>");
+            console.log("suggestion list = " + suggestionList);
         }
     });
 };
