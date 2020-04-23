@@ -141,7 +141,7 @@ public class FarmTrialApp {
   // ---------------------------------------------------------------------------
 
   // command to print the farm
-  class ShowCommand implements Command {
+  public class ShowCommand implements Command {
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
       showFarm();
