@@ -29,8 +29,6 @@ public class Tomato implements Crop, java.io.Serializable {
 
     // bind this crop to its land, like a slave basically
     farmLand = l;
-    // set land isOccupied to true, since this crop exists
-    l.setIsOccupied(true);
 
     name = "Tomato";
 
@@ -56,7 +54,7 @@ public class Tomato implements Crop, java.io.Serializable {
     durationUntilNextStage = lifeCycleTimes[0];
 
     // default wither duration for each stage except harvest
-    witherDuration = Duration.ofSeconds(10);
+    witherDuration = Duration.ofSeconds(60);
 
     // place holder: auto wither time from seeded stage
     witheredInstant = now.plus(witherDuration);

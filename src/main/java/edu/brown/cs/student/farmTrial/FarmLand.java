@@ -9,7 +9,6 @@ public class FarmLand implements Land, java.io.Serializable {
   private String terrain;
   private Crop crop;
   private boolean isPlowed;
-  private boolean isOccupied;
   private Instant lastDryInstant;
   private Instant nextDryInstant;
 
@@ -22,8 +21,6 @@ public class FarmLand implements Land, java.io.Serializable {
     setCrop(null);
     // not plowed
     setIsPlowed(false);
-    // not occupied
-    setIsOccupied(false);
     // last dry instant defaults to now
     setLastDryInstant(now);
     // next dry instant defaults to now
@@ -51,7 +48,7 @@ public class FarmLand implements Land, java.io.Serializable {
    * @return true if water status changes, false if not
    */
   public boolean water(Instant now, Duration durationToDry) {
-    if (isOccupied) {
+    if (isOccupied()) {
       // NOTE: order matters here, don't move this down
       // update crop status before growing first
       crop.updateStatus(now);
@@ -74,7 +71,7 @@ public class FarmLand implements Land, java.io.Serializable {
     // (2) (crop is pausing OR seeded on dry land) and
     // (3) it's not infested
     // TODO: add infested condition
-    if (isOccupied && (crop.getNextStageInstant().equals(Instant.MAX)
+    if (isOccupied() && (crop.getNextStageInstant().equals(Instant.MAX)
         || crop.getNextStageInstant().equals(Instant.MIN))) {
       crop.startGrowing(now);
     }
@@ -124,17 +121,10 @@ public class FarmLand implements Land, java.io.Serializable {
   }
 
   /**
-   * @return the isOccupied
+   * @return true if land is occupied, false if note
    */
   public boolean isOccupied() {
-    return isOccupied;
-  }
-
-  /**
-   * @param isOccupied the isOccupied to set
-   */
-  public void setIsOccupied(boolean isOccupied) {
-    this.isOccupied = isOccupied;
+    return crop != null;
   }
 
   /**
