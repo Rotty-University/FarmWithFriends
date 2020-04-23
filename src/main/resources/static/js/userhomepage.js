@@ -191,7 +191,7 @@ class GameMap extends React.Component {
 
 class Shop extends React.Component {
     render() {
-        var x = openTradeList();
+        const x = openTradeList();
         return (
         <div id={"shopContainer"}>
             <p>{this.props.id}</p>
@@ -220,9 +220,7 @@ class Shop extends React.Component {
 }
 
 function openTradeList(){
-    document.getElementById(form).style.display = "block";
-    document.getElementById("friendsContainer").className = "friendsActivated";
-    const suggestionList = $("#list_of_friends");
+    const suggestionList = $("#trade_list");
     suggestionList.empty();
     const postParameters = {
         //TODO: get the text inside the input box
@@ -235,10 +233,10 @@ function openTradeList(){
         const arrayLength = list.length;
         //showing a list of the friends when the button is clicked.
         for (let i = 0; i < arrayLength; i++) {
-            x.append("<li>" + list[i] + "</li>");
+            console.log(list[i])
+            suggestionList.append("<li>" + list[i] + "</li>");
         }
     });
-    console.log(x);
 };
 
 function addTradeListing() {
