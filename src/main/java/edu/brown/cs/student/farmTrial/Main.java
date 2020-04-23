@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -103,6 +104,8 @@ public final class Main {
     Spark.get("/logout", new LogOutHandler(), freeMarker);
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
+    Spark.post("/posting_trade", new TradePostHandler());
+    Spark.post("/tradeLoader", new TradeLoaderHandler());
   }
 
   /**
@@ -386,6 +389,13 @@ public final class Main {
     }
   }
 
+  private static class TradePostHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      return "";
+    }
+  }
+
   /**
    * This class will handle the request for displaying the friend's list of a user
    * when they want to see it.
@@ -406,4 +416,15 @@ public final class Main {
     }
   }
 
+  private static class TradeLoaderHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String tradeCenter = FarmProxy.getTradingCenter();
+      System.out.println(tradeCenter);
+      Map<String, String> variables = ImmutableMap.of("list", tradeCenter);
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
 }

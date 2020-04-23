@@ -276,9 +276,9 @@ public final class FarmProxy {
    *
    * @return ArrayList of listings represented as, String[5]
    */
-  public static ArrayList<String[]> getTradingCenter() {
+  public static String getTradingCenter() {
     PreparedStatement prep;
-    ArrayList<String[]> listings = new ArrayList<String[]>();
+    StringBuilder listings = new StringBuilder();
     ResultSet rs = null;
     try {
       prep = conn.prepareStatement("SELECT * FROM trading_center;");
@@ -286,19 +286,18 @@ public final class FarmProxy {
       int rowIndex = 0;
       while (rs.next()) {
         String[] newListing = new String[5];
-        newListing[0] = rs.getString(1);
-        newListing[1] = rs.getString(2);
-        newListing[2] = rs.getString(3);
-        newListing[3] = rs.getString(4);
-        newListing[4] = rs.getString(5);
-        listings.add(newListing);
+        listings.append(rs.getString(1)).append(",");
+        listings.append(rs.getString(2)).append(",");
+        listings.append(rs.getString(3)).append(",");
+        listings.append(rs.getString(4)).append(",");
+        listings.append(rs.getString(5)).append(";");
       }
       rs.close();
       prep.close();
     } catch (SQLException e) {
       return null;
     }
-    return listings;
+    return listings.toString();
   }
 
 }
