@@ -23,7 +23,7 @@ public class FarmingHandlers {
     pw = new PrintWriter(System.out);
   }
 
-  private class FarmingHandler implements Route {
+  public class FarmingHandler implements Route {
 
     @Override
     public String handle(Request req, Response res) throws Exception {
