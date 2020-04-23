@@ -171,15 +171,22 @@ class Tile extends React.Component {
 
     //TODO this gonna be a big boi method
     handleClick() {
-    	const dict = {row : this.props.row, 
+        let toolsMap = new Map();
+        toolsMap.set("select", 0);
+        toolsMap.set("plough", 1);
+        toolsMap.set("plant", 2);
+        toolsMap.set("water", 3);
+        toolsMap.set("harvest", 4);
+        toolsMap.set("delete", 5);
+        const dict = {row : this.props.row,
     			col : this.props.column, 
-    			action : this.props.activetool};
+    			action : toolsMap.get(this.props.activetool)};
     	
     	// send as parameter
     	$.post("/farmland", dict, response => {
     		// get result
     		const result = JSON.parse(response);
-    		
+    		alert(result);
     		// update board
     	});
     }
