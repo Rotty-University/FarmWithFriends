@@ -47,18 +47,22 @@ public class FarmingHandlers {
 
       case 1:
         // plow
+        app.new PlowCommand().execute(commands, pw);
         break;
 
       case 2:
         // plant
+        app.new PlantCommand().execute(commands, pw);
         break;
 
       case 3:
         // water
+        app.new WaterCommand().execute(commands, pw);
         break;
 
       case 4:
         // harvest
+        app.new HarvestCommand().execute(commands, pw);
         break;
 
       default:

@@ -152,7 +152,7 @@ public class FarmTrialApp {
   }
 
   // plow a land
-  class PlowCommand implements Command {
+  public class PlowCommand implements Command {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
@@ -177,7 +177,7 @@ public class FarmTrialApp {
   }
 
   // plant a seed
-  class PlantCommand implements Command {
+  public class PlantCommand implements Command {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
@@ -205,7 +205,7 @@ public class FarmTrialApp {
     }
   }
 
-  class WaterCommand implements Command {
+  public class WaterCommand implements Command {
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
 
@@ -230,7 +230,7 @@ public class FarmTrialApp {
     }
   }
 
-  class HarvestCommand implements Command {
+  public class HarvestCommand implements Command {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
@@ -272,7 +272,7 @@ public class FarmTrialApp {
     }
   } // end of harvest command class
 
-  class InspectInventoryCommand implements Command {
+  public class InspectInventoryCommand implements Command {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
