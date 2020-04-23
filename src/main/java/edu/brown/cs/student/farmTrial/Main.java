@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
+import edu.brown.cs.student.guihandlers.FarmingHandlers;
 import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.REPL;
 import freemarker.template.Configuration;
@@ -39,6 +40,8 @@ public final class Main {
   private static final int DEFAULT_PORT = 4567;
   private REPL repl;
   private static final Gson GSON = new Gson();
+  private FarmTrialApp app;
+  private FarmingHandlers farmingHandlers;
 
   /**
    * The initial method called when execution begins.
@@ -64,7 +67,12 @@ public final class Main {
 
     // Process commands in a REPL
     repl = new REPL(System.in);
-    FarmTrialApp app = new FarmTrialApp(repl);
+
+    // init app
+    app = new FarmTrialApp(repl);
+    // init farming handlers
+    farmingHandlers = new FarmingHandlers(app);
+
     FarmProxy.setUpDataBase();
     // Stars the GUI server
     if (options.has("gui")) {
@@ -105,6 +113,7 @@ public final class Main {
     Spark.post("/friendLoader", new FriendLoaderHandler());
     Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
     Spark.post("/friendAccepted", new FriendAcceptedHandler());
+    Spark.post("/farmland", farmingHandlers.new FarmingHandler());
   }
 
   /**
