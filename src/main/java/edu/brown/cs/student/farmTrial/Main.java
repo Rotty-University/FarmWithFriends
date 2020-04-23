@@ -104,6 +104,7 @@ public final class Main {
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
     Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
+    Spark.post("/farmland", new FarmLandHandler());
   }
 
   /**
@@ -433,6 +434,28 @@ public final class Main {
       String friendslist = FarmProxy.getFriendsListPending(userCookie);
       // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  private static class FarmLandHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String row = qm.value("row");
+      String col = qm.value("col");
+      String action = qm.value("action");
+
+      String testString = "row: " + row + " col: " + col + " action: " + action;
+      // app.action(row, col);
+      // FarmLand[][] newState = app.getArray();
+
+      // TODO: create an immutable map using the suggestions
+      //Map<String, Object> variables = ImmutableMap.of("newFarm", newState);
+      Map<String, String> variables = ImmutableMap.of("test", testString);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);

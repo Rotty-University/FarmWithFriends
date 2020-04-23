@@ -171,7 +171,20 @@ class Tile extends React.Component {
 
     //TODO this gonna be a big boi method
     handleClick() {
-        alert("you clicked me! " + this.props.row + "," + this.props.column + " active tool: " + this.props.activetool);
+        //AJAX on click populate dictionary
+        const dict = {
+            row: this.props.row,
+            col: this.props.column,
+            action: this.props.activetool
+        }
+        //send it as parameters
+        $.post("/farmland", dict, response => {
+            ///get result
+            const result = JSON.parse(response);
+            //update board
+            alert(result.test);
+        })
+        // alert("you clicked me! " + this.props.row + "," + this.props.column + " active tool: " + this.props.activetool);
     }
 
     render() {
