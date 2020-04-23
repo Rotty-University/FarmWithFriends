@@ -186,7 +186,7 @@ class Tile extends React.Component {
     	$.post("/farmland", dict, response => {
     		// get result
     		const result = JSON.parse(response);
-    		alert(result);
+    		alert(result.valueOf());
     		// update board
     	});
     }
