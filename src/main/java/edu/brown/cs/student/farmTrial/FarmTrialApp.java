@@ -141,7 +141,7 @@ public class FarmTrialApp {
   // ---------------------------------------------------------------------------
 
   // command to print the farm
-  class ShowCommand implements Command {
+  public class ShowCommand implements Command {
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
       showFarm();
@@ -159,13 +159,15 @@ public class FarmTrialApp {
 
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
+      FarmLand l = thePlantation[x][y];
 
-      if (thePlantation[x][y].isOccupied()) {
-        pw.println("Don't plow the plant, your nics worked hard on it");
+      if (l.isOccupied() && l.getCrop().getCropStatus() != 5) {
+        pw.println("Don't plow the plant, you worked hard on it");
         return;
       }
 
-      thePlantation[x][y].setIsPlowed(true);
+      l.setCrop(null);
+      l.setIsPlowed(true);
 
       showFarm();
 
@@ -195,8 +197,6 @@ public class FarmTrialApp {
       }
 
       l.setCrop(new Tomato(thePlantation[x][y]));
-      // this is already done by crop constructor, but here for reference
-      l.setIsOccupied(true);
 
       showFarm();
 
@@ -240,7 +240,7 @@ public class FarmTrialApp {
       Crop c = l.getCrop();
 
       if (!l.isOccupied()) {
-        pw.println("Can't harvest here, your nics didn't plant anything");
+        pw.println("Can't harvest here, your didn't plant anything");
         return;
       }
 
@@ -255,12 +255,14 @@ public class FarmTrialApp {
         // update land status
         // TODO: if crop can harvest multiple times
         l.setCrop(null);
-        l.setIsOccupied(false);
 
         pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
+      } else if (c.getCropStatus() == 5) {
+        // crop withered
+        pw.println("You have left your plant neglected for too long, plow and star over");
       } else {
-        // cannot harvest
-        pw.println("Crop cannot be harvested yet, your nics should work harder");
+        // cannot harvest yet
+        pw.println("Crop cannot be harvested yet, you should work harder");
       }
 
       showFarm();

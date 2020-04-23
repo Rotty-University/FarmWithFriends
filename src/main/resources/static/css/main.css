@@ -210,4 +210,13 @@ td {
 .friendsActivated  {
     background-color: #888d99;
 }
+.pending{
+    background: black;
+    padding: 5px;
+}
+#list_of_friends_pending{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
 
