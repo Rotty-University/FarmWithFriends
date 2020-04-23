@@ -246,23 +246,23 @@ public final class FarmProxy {
   }
 
   /**
-   * This method will update the friends pending for the user receiving the
-   * request.When a user sends a friend request to another user, the friends
-   * pending list of the user receiveing the request will be updated so they can
-   * accept or decline the friend invitaion.
+   * This method is where when a user adds a friend, the friend request will go to
+   * the user they want to add and this user's pending list will be updated so
+   * that it includes this user.
    *
-   * @param username This will be the username of the current player.
-   * @param toAdd    This will be the username of the person receiving the
-   *                 request.
+   * @param usernameToAddToPending the user that is trying to add another user and
+   *                               will be added to their list
+   * @param userlistbeingupdated   the user whos list is being updated.
    */
-  public static void UpdateFriendsPending(String username, String toAdd) {
+  public static void UpdateFriendsPending(String usernameToAddToPending,
+      String userlistbeingupdated) {
     PreparedStatement prep;
     String friends = null;
     ResultSet rs = null;
     // getting the old friendlist.
     try {
       prep = conn.prepareStatement("SELECT friendspending FROM user_data WHERE username=?;");
-      prep.setString(1, toAdd);
+      prep.setString(1, userlistbeingupdated);
       rs = prep.executeQuery();
       while (rs.next()) {
         friends = rs.getString(1);
@@ -274,11 +274,11 @@ public final class FarmProxy {
     StringBuilder friendsList = new StringBuilder();
     // appending to the list in form of a string.
     if (friends.equals("")) {
-      friendsList.append(username);
+      friendsList.append(usernameToAddToPending);
       friendsList.append(",");
     } else {
       friendsList.append(friends);
-      friendsList.append(username);
+      friendsList.append(usernameToAddToPending);
       friendsList.append(",");
     }
 
@@ -286,7 +286,7 @@ public final class FarmProxy {
       // update the string that represents the friend list pending.
       prep = conn.prepareStatement("UPDATE user_data SET friendspending= ? WHERE username=?;");
       prep.setString(1, friendsList.toString());
-      prep.setString(2, toAdd);
+      prep.setString(2, userlistbeingupdated);
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -298,12 +298,11 @@ public final class FarmProxy {
   }
 
   /**
-   * This method will retrieve the pending friends list as a string that will be
-   * parsed by the javascript code in order to output the pending friends in a
-   * list and determining whether that friend will be accepted or not.
+   * This method will return the pending friend list of a user a string that is
+   * separated by commas for username that is in the string.
    *
-   * @param username It takes in the user for which to find the friend list for.
-   * @return It will return the friends list as string.
+   * @param username The user for which to get the pending list for.
+   * @return
    */
   public static String getFriendsListPending(String username) {
     PreparedStatement prep;
@@ -322,6 +321,30 @@ public final class FarmProxy {
       return null;
     }
     return friends;
+  }
+
+  /**
+   * This method is where we will update the pending friend list when the user
+   * accepts the person that is in their friend list.
+   *
+   * @param replacement the list of the current pending friendlist as a string.
+   * @param user        the user for whom to replace the pending list of.
+   */
+  public static void UpdateFriendsPendingAfterAdding(String replacement, String user) {
+    PreparedStatement prep;
+    try {
+      // update the string that represents the friend list pending.
+      prep = conn.prepareStatement("UPDATE user_data SET friendspending= ? WHERE username=?;");
+      prep.setString(1, replacement);
+      prep.setString(2, user);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    // This will update the friend list of the other user.
+
   }
 
 }

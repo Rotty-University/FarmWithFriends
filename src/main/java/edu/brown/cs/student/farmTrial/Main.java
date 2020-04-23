@@ -104,6 +104,7 @@ public final class Main {
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
     Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
+    Spark.post("/friendAccepted", new FriendAcceptedHandler());
   }
 
   /**
@@ -368,6 +369,12 @@ public final class Main {
       String username = qm.value("text");
       String message = "";
       Map<String, String> variables;
+      if (username.equals(userCookie)) {
+        message = "You can't add yourself. Try again.";
+        variables = ImmutableMap.of("message", message);
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
+      }
       // Making sure that the user name they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(username) == null) {
         System.out.println("doesnt exist");
@@ -386,8 +393,34 @@ public final class Main {
             return GSON.toJson(variables);
           }
         }
-        FarmProxy.UpdateFriendsList(userCookie, username);
-        FarmProxy.UpdateFriendsList(username, userCookie);
+        String friendslistpending = FarmProxy.getFriendsListPending(username);
+        String[] friendspending = friendslistpending.split(",");
+        // check to make sure the user isn't already in the friends list.
+        for (String friend : friendspending) {
+          if (userCookie.equals(friend)) {
+            message = "You already sent a friend request to this person.";
+            variables = ImmutableMap.of("message", message);
+            GSON.toJson(variables);
+            return GSON.toJson(variables);
+          }
+        }
+        // the user is trying to send a request to somebody that already sent to them
+        friendslistpending = FarmProxy.getFriendsListPending(userCookie);
+        friendspending = friendslistpending.split(",");
+        // check to make sure the user isn't already in the friends list.
+        for (String friend : friendspending) {
+          if (userCookie.equals(friend)) {
+            message = "This person already sent you one. Check your pending friend requests.";
+            variables = ImmutableMap.of("message", message);
+            GSON.toJson(variables);
+            return GSON.toJson(variables);
+          }
+        }
+        // add this current user who is trying to add to the pending list of the user
+        // they are trying to add
+        FarmProxy.UpdateFriendsPending(userCookie, username);
+//        FarmProxy.UpdateFriendsList(userCookie, username);
+//        FarmProxy.UpdateFriendsList(username, userCookie);
         message = "sending the request right now";
         System.out.println("adding them");
       }
@@ -420,10 +453,11 @@ public final class Main {
   }
 
   /**
-   * This class will handle the request for displaying the friend's list of a user
-   * when they want to see it.
+   * This class will handle the request for displaying the pending requests that
+   * they can accept of a user when they want to see it.
    *
-   * @return GSON which contains the result of autocorrect.suggest()
+   * @return GSON which contains the friends list pending requests that will be
+   *         displayed.
    */
   private static class FriendPendingLoaderHandler implements Route {
     @Override
@@ -433,6 +467,32 @@ public final class Main {
       String friendslist = FarmProxy.getFriendsListPending(userCookie);
       // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the request for accepting a friend when it is clicked
+   * on from the pending requests and updating the friend's lis of eahc user as
+   * well the pending friends list of the current user.
+   *
+   * @return GSON which contains the name of the friend that is being accepted.
+   */
+  private static class FriendAcceptedHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String username = qm.value("text");
+      String friendslistpending = FarmProxy.getFriendsListPending(userCookie);
+      friendslistpending = friendslistpending.replace(username + ",", "");
+      FarmProxy.UpdateFriendsPendingAfterAdding(friendslistpending, userCookie);
+      FarmProxy.UpdateFriendsList(userCookie, username);
+      FarmProxy.UpdateFriendsList(username, userCookie);
+      // TODO: create an immutable map using the suggestions
+      Map<String, String> variables = ImmutableMap.of("list", username);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);

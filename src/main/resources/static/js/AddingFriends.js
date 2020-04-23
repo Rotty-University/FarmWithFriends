@@ -10,6 +10,7 @@ function openFriendList(form){
     const suggestionList = $("#list_of_friends");
     const pendinglist = $("#list_of_friends_pending");
     suggestionList.empty();
+    pendinglist.empty();
     const postParameters = {
         //TODO: get the text inside the input box
         text: "placeholder"
@@ -26,17 +27,31 @@ function openFriendList(form){
         }
     });
     //code for the pending below
-    //         $.post("/friendPendingLoader", postParameters, response => {
-    //     // Do something with the response here
-    //     const object = JSON.parse(response);
-    //     const list = object.list.split(",")
-    //     const arrayLength = list.length;
-    //     //showing a list of the friends when the button is clicked. 
-    //     for (let i = 0; i < arrayLength; i++) {
-    //       pendingList.append("<li class=\"pending\">"+list[i]+"</li>");
-          
-    //     } 
-    // });
+    $.post("/friendPendingLoader", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        const list = object.list.split(",")
+        const arrayLength = list.length;
+        //showing a list of the friends when the button is clicked. 
+        for (let i = 0; i < arrayLength-1; i++) {
+          pendinglist.append("<li class=\"pending\" id=\""+list[i]+"\">"+list[i]+"</li>");
+        } 
+        let elements = document.getElementsByTagName("li")
+        for (let e of elements){
+          console.log(e);
+          e.addEventListener("click", function(event) {
+            const postParams = {
+                //TODO: get the text inside the input box
+                text: event.currentTarget.innerHTML
+            };
+            $.post("/friendAccepted", postParams, response => {
+                const object = JSON.parse(response);
+                suggestionList.append("<li id=\"addedfriends\">"+object.list+"</li>");
+                document.getElementById(object.list).remove();
+            });
+          });
+        } 
+    });
 };
 //Below is where we are going to take care of adding a friend and setting a post request with the user we are trying to add.
 function sendAddRequest() {
