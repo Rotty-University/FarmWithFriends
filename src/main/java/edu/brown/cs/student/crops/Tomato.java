@@ -6,8 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.brown.cs.student.farmTrial.FarmLand;
+import edu.brown.cs.student.guihandlers.FarmingHandlers.Exclude;
 
 public class Tomato implements Crop, java.io.Serializable {
+  // farmland reference excluded for GSON serialization
+  // but NOT excluded for java serialization
+  @Exclude
   private FarmLand farmLand;
   private String name;
   private int id;

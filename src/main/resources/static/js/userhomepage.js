@@ -178,6 +178,7 @@ class Tile extends React.Component {
         toolsMap.set("water", 3);
         toolsMap.set("harvest", 4);
         toolsMap.set("delete", 5);
+        
         const dict = {row : this.props.row,
     			col : this.props.column, 
     			action : toolsMap.get(this.props.activetool)};
@@ -186,7 +187,17 @@ class Tile extends React.Component {
     	$.post("/farmland", dict, response => {
     		// get result
     		const result = JSON.parse(response);
-    		alert(result.valueOf());
+    		let row = (String)(this.props.row);
+    		let col = (String)(this.props.column);
+    		const thisTileInfo = result[row + "#" + col];
+    		console.log(result.valueOf());
+    		
+    		alert("row: " + row + 
+    				" col: " + col + 
+    				" isPlowed " + (String)(thisTileInfo[0]) +
+    				" isWatered " + (String)(thisTileInfo[1]) +
+    				" cropID: " + (String)(thisTileInfo[2]) +
+    				" crop status: " + (String)(thisTileInfo[3]));
     		// update board
     	});
     }

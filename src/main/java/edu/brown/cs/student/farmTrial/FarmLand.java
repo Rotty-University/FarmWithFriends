@@ -121,7 +121,7 @@ public class FarmLand implements Land, java.io.Serializable {
   }
 
   /**
-   * @return true if land is occupied, false if note
+   * @return true if land is occupied, false if not
    */
   public boolean isOccupied() {
     return crop != null;
