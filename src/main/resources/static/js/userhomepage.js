@@ -181,12 +181,13 @@ class Tile extends React.Component {
         const dict = {row : this.props.row,
     			col : this.props.column, 
     			action : toolsMap.get(this.props.activetool)};
-    	
-    	// send as parameter
+        // send as parameter
     	$.post("/farmland", dict, response => {
     		// get result
     		const result = JSON.parse(response);
-    		alert(result.valueOf());
+    		for(let i of result.farm) {
+    		    alert(i);
+            }
     		// update board
     	});
     }
