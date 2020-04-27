@@ -11,11 +11,12 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.brown.cs.student.crops.Crop;
-import edu.brown.cs.student.crops.Tomato;
+import edu.brown.cs.student.crops.ACrop;
+import edu.brown.cs.student.crops.SingleHarvestCrop;
 import edu.brown.cs.student.repl.Command;
 import edu.brown.cs.student.repl.REPL;
 
+//TODO: rename this to FarmViewer
 public class FarmTrialApp {
   // welcome to my farm
   private TestFarm serializedFarm;
@@ -117,7 +118,7 @@ public class FarmTrialApp {
 
         if (j.isOccupied()) {
           // there is a crop on this land
-          Crop c = j.getCrop();
+          ACrop c = j.getCrop();
 
           // update crop if necessary
           c.updateStatus(now);
@@ -196,7 +197,7 @@ public class FarmTrialApp {
         return;
       }
 
-      l.setCrop(new Tomato(thePlantation[x][y]));
+      l.setCrop(new SingleHarvestCrop(thePlantation[x][y]));
 
       showFarm();
 
@@ -237,7 +238,7 @@ public class FarmTrialApp {
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
       FarmLand l = thePlantation[x][y];
-      Crop c = l.getCrop();
+      ACrop c = l.getCrop();
 
       if (!l.isOccupied()) {
         pw.println("Can't harvest here, your didn't plant anything");
