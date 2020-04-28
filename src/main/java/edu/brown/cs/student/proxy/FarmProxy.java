@@ -527,6 +527,7 @@ public final class FarmProxy {
     } catch (SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
+      System.out.println("ERROR");
     }
     // This will update the friend list of the other user.
 
