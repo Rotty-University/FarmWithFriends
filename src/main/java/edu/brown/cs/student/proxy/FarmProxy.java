@@ -40,6 +40,8 @@ public final class FarmProxy {
       prep.close();
       prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
       prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
+      prep.executeUpdate();
       // , PRIMARY KEY(username)
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text);");
@@ -48,6 +50,10 @@ public final class FarmProxy {
       prep.close();
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text);");
+      prep.executeUpdate();
+      prep.close();
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer);");
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -109,6 +115,27 @@ public final class FarmProxy {
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
+      prep = conn.prepareStatement(
+          "INSERT INTO user_inventory VALUES (?, ?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?);");
+      prep.setString(1, username);
+      prep.setInt(2, 0);
+      prep.setInt(3, 0);
+      prep.setInt(4, 0);
+      prep.setInt(5, 0);
+      prep.setInt(6, 0);
+      prep.setInt(7, 0);
+      prep.setInt(8, 0);
+      prep.setInt(9, 0);
+      prep.setInt(10, 0);
+      prep.setInt(11, 0);
+      prep.setInt(12, 0);
+      prep.setInt(13, 0);
+      prep.setInt(14, 0);
+      prep.setInt(15, 0);
+
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -478,6 +505,31 @@ public final class FarmProxy {
     }
 
     return farmclass;
+
+  }
+
+  /**
+   * This method will update the inventory of the user.
+   *
+   * @param username the username for whom to update inventory for
+   * @param fruit    a string that represents the fruit name
+   * @param number   the number to update the inventory of that fruit to.
+   */
+  public static void updateInventory(String username, String fruit, int number) {
+    PreparedStatement prep;
+    try {
+      // update the string that represents the friend list pending.
+      prep = conn.prepareStatement("UPDATE user_inventory SET " + fruit + "= ? WHERE username=?;");
+      prep.setInt(1, number);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      System.out.println("ERROR");
+    }
+    // This will update the friend list of the other user.
 
   }
 
