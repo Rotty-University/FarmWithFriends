@@ -252,10 +252,13 @@ public final class Main {
       }
       userCookie = username;
       res.cookie(username, username);
+      req.session(true);
+      req.session().attribute(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
 //      app = new FarmViewer(repl, "myFarm", userCookie);
 //      // init farming handlers
-//      farmingHandlers = new FarmingHandlers(app);
+////      farmingHandlers = new FarmingHandlers(app);
+//      farmingHandlers.setApp(app);
       return new ModelAndView(variables, "user_home.ftl");
     }
   }
@@ -317,14 +320,19 @@ public final class Main {
       // insert this user information into the database.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
           Arrays.toString(salt), email);
+      System.out.println("user creation" + req.session().attributes().size());
       userCookie = username;
       res.cookie(username, username);
+      req.session(true);
+      req.session().attribute(username, username);
+      System.out.println("after creation" + req.session().attributes().size());
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
           username);
 //      // init app
 //      app = new FarmViewer(repl, "myFarm", userCookie);
 //      // init farming handlers
-//      farmingHandlers = new FarmingHandlers(app);
+////      farmingHandlers = new FarmingHandlers(app);
+//      farmingHandlers.setApp(app);
       return new ModelAndView(variables, "new_user.ftl");
     }
   }
@@ -362,10 +370,13 @@ public final class Main {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
-      if (req.cookies().containsKey(userCookie)) {
+      System.out.println("before" + req.session().attributes().size());
+      if (req.session().attributes().contains(userCookie)) {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
+        req.session().removeAttribute(userCookie);
         userCookie = null;
+        System.out.println(req.session().attributes().size());
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";
