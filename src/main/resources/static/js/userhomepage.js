@@ -130,6 +130,7 @@ class Table extends React.Component {
     constructor(props){
         super(props);
     }
+
     render(){
         let rows = [];
         for (var i = 0; i < this.props.rows; i++){
@@ -139,7 +140,7 @@ class Table extends React.Component {
                 let cellID = `cell${i}-${idx}`
                 cell.push(<td key={cellID} id={cellID}><Tile
                     type={"ploughed"}
-                    spritepath={"css/images/testsprite.png"}
+                    spritepath={"css/images/testgrass.png"}
                     row={i}
                     column={idx}
                     watered={false}
@@ -166,6 +167,9 @@ class Tile extends React.Component {
 
     constructor(props) {
         super(props);
+        this.state = {
+            spritepath: "css/images/testgrass.png",
+        }
         this.handleClick = this.handleClick.bind(this);
     }
 
@@ -178,34 +182,40 @@ class Tile extends React.Component {
         toolsMap.set("water", 3);
         toolsMap.set("harvest", 4);
         toolsMap.set("delete", 5);
-        
+
         const dict = {row : this.props.row,
-    			col : this.props.column, 
-    			action : toolsMap.get(this.props.activetool)};
-    	
-    	// send as parameter
-    	$.post("/farmland", dict, response => {
-    		// get result
-    		const result = JSON.parse(response);
-    		let row = (String)(this.props.row);
-    		let col = (String)(this.props.column);
-    		const thisTileInfo = result[row + "#" + col];
-    		console.log(result.valueOf());
-    		
-    		alert("row: " + row + 
-    				" col: " + col + 
-    				" isPlowed " + (String)(thisTileInfo[0]) +
-    				" isWatered " + (String)(thisTileInfo[1]) +
-    				" cropID: " + (String)(thisTileInfo[2]) +
-    				" crop status: " + (String)(thisTileInfo[3]));
-    		// update board
-    	});
+            col : this.props.column,
+            action : toolsMap.get(this.props.activetool)};
+
+        // send as parameter
+        $.post("/farmland", dict, response => {
+            // get result
+            const result = JSON.parse(response);
+            let row = (String)(this.props.row);
+            let col = (String)(this.props.column);
+            const thisTileInfo = result[row + "#" + col];
+            console.log(result.valueOf());
+
+            alert("row: " + row +
+                " col: " + col +
+                " isPlowed " + (String)(thisTileInfo[0]) +
+                " isWatered " + (String)(thisTileInfo[1]) +
+                " cropID: " + (String)(thisTileInfo[2]) +
+                " crop status: " + (String)(thisTileInfo[3]));
+            // update board
+
+            //logic for what the spritepath should be goes here
+            let x = "css/images/testsprite.png";
+
+            //This is updating the visual appearance of the tile:
+            this.setState({spritepath: x})
+        });
     }
 
     render() {
     	// needs to re render all farm tiles
         return (
-            <img onClick={this.handleClick} className={"tileImage"} src={this.props.spritepath}/>
+            <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
         );
     }
 }
