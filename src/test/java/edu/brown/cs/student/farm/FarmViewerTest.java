@@ -1,9 +1,11 @@
 package edu.brown.cs.student.farm;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.PrintWriter;
 import java.time.Duration;
+import java.time.Instant;
 
 import org.junit.After;
 import org.junit.Before;
@@ -47,14 +49,32 @@ public class FarmViewerTest {
     plow(xy);
     plant(xy);
     water(xy);
+    Instant justNow = Instant.now();
     assertTrue(cropAt(0, 0).getDurationUntilNextStage().equals(Duration.ofSeconds(3)));
     assertTrue(cropAt(0, 0).getCropStatus() == 0);
 
-    Thread.sleep(10000);
+    // wait 8 seconds
+    Thread.sleep(8000);
 
+    water(xy);
     show();
     assertTrue(cropAt(0, 0).getCropStatus() == 2);
     assertTrue(cropAt(0, 0).getDurationUntilNextStage().equals(Duration.ofSeconds(4)));
+    assertEquals(justNow.plus(Duration.ofSeconds(14)).getEpochSecond(),
+        cropAt(0, 0).getNextStageInstant().getEpochSecond());
+
+    // wait 10 seconds
+    Thread.sleep(10000);
+
+    show();
+    assertEquals(cropAt(0, 0).getCropStatus(), 3);
+    assertEquals(app.getThePlantation()[0][0].isWatered(Instant.now()), false);
+
+    // wait 1 second, land is dry, should still move on to stage 4
+    Thread.sleep(1000);
+
+    show();
+    assertEquals(cropAt(0, 0).getCropStatus(), 4);
   }
 
   // helpers
