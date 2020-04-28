@@ -1,10 +1,17 @@
 package edu.brown.cs.student.proxy;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import edu.brown.cs.student.farm.FarmFile;
 
 /**
  * This will handle all the queries and everything that has to do with the base
@@ -40,7 +47,7 @@ public final class FarmProxy {
 
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm_data text, new_user integer, friends text, friendspending text);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text);");
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -344,6 +351,133 @@ public final class FarmProxy {
       e.printStackTrace();
     }
     // This will update the friend list of the other user.
+
+  }
+
+  /**
+   * This method will initialize the user farm when they start the game.
+   *
+   * @param username the user for who we are setting the farm to.
+   * @param farm     The farm object and in this case a TestFarm
+   */
+  public static void initializeFarm(String username, FarmFile farm) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("INSERT INTO user_data(farm) VALUES (?);");
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream oos;
+      try {
+        oos = new ObjectOutputStream(bos);
+
+        oos.writeObject(farm);
+        oos.flush();
+        oos.close();
+        bos.close();
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      byte[] data = bos.toByteArray();
+      prep.setBytes(1, data);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+  }
+
+  /**
+   * This method will save the user farm whenever they do something or log out.
+   *
+   * @param username the user for who we are setting the farm to.
+   * @param farm     The farm object and in this case a TestFarm
+   */
+  public static void saveFarm(String username, FarmFile farm) {
+    PreparedStatement prep;
+    try {
+      // update the string that represents the friend list pending.
+      prep = conn.prepareStatement("UPDATE user_data SET farm= ? WHERE username=?;");
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream oos;
+      try {
+        oos = new ObjectOutputStream(bos);
+
+        oos.writeObject(farm);
+        oos.flush();
+        oos.close();
+        bos.close();
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      byte[] data = bos.toByteArray();
+      prep.setBytes(1, data);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+  }
+
+  /**
+   * This method will load the user farm for when the user logs in.
+   *
+   * @param username the user for who we are loading the farm for
+   * @return Will return the farm file instance.
+   */
+  public static FarmFile loadFarm(String username) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    ByteArrayInputStream bais = null;
+    ObjectInputStream ins = null;
+    FarmFile farmclass = null;
+    try {
+      prep = conn.prepareStatement("SELECT farm FROM user_data WHERE username=?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        byte[] bytess = rs.getBytes(1);
+        if (bytess == null) {
+          return null;
+        }
+        bais = new ByteArrayInputStream(bytess);
+      }
+      if (bais == null) {
+        return farmclass;
+      }
+      try {
+        ins = new ObjectInputStream(bais);
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return null;
+
+      }
+      try {
+        farmclass = (FarmFile) ins.readObject();
+      } catch (ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return null;
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return null;
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      return null;
+    }
+
+    return farmclass;
 
   }
 
