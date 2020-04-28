@@ -114,6 +114,8 @@ public final class Main {
     Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
     Spark.post("/friendAccepted", new FriendAcceptedHandler());
     Spark.post("/farmland", farmingHandlers.new FarmingHandler());
+    Spark.post("/mapMaker", new MapMaker());
+    Spark.post("/mapRetriever", new MapRetriever());
   }
 
   /**
@@ -316,7 +318,7 @@ public final class Main {
       }
       // insert this user information into the database.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
-          Arrays.toString(salt), email);
+          Arrays.toString(salt), email, 1);
       userCookie = username;
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
@@ -515,6 +517,51 @@ public final class Main {
       // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", username);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the making of the random map so that it is constant
+   * for all users.
+   *
+   */
+  private static class MapMaker implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String dictionarydata = qm.value("dictionary_data");
+      System.out.println("THE data is" + qm.value("dictionary_data"));
+      System.out.println(qm.value("dictionary_data").getClass().getName());
+      FarmProxy.insertMapIntoDataBase(1, dictionarydata);
+      Map<String, String> variables = ImmutableMap.of("data", dictionarydata);
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the making of the random map so that it is constant
+   * for all users.
+   *
+   */
+  private static class MapRetriever implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
+      System.out.println(id);
+      String mapdata = FarmProxy.getMapFromDataBase(id);
+      System.out.println();
+      System.out.println();
+      System.out.println();
+      System.out.println();
+
+      System.out.println("THE STRINGMDFNFSDNFJNSDJFJSDNFJ" + mapdata);
+      Map<String, String> variables = ImmutableMap.of("data", mapdata);
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }

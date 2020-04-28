@@ -42,6 +42,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
       prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
+      prep.executeUpdate();
       // , PRIMARY KEY(username)
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text);");
@@ -49,11 +51,15 @@ public final class FarmProxy {
 
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer);");
+      prep.executeUpdate();
+      prep.close();
+      prep = conn
+          .prepareStatement("CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text);");
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -99,7 +105,7 @@ public final class FarmProxy {
    * @param email          take in the email as a string.
    */
   public static void insertUserInfoIntoDatabase(String username, String hashedpassword, String salt,
-      String email) {
+      String email, int mapid) {
     PreparedStatement prep;
     try {
       prep = conn.prepareStatement("INSERT INTO user_info VALUES (?, ?, ?, ?);");
@@ -107,14 +113,16 @@ public final class FarmProxy {
       prep.setString(2, hashedpassword);
       prep.setString(3, salt);
       prep.setString(4, email);
+//      prep.setInt(5, mapid);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_data(username, friends, friendspending) VALUES (?, ?,?);");
+          "INSERT INTO user_data(username, friends, friendspending, mapid) VALUES (?, ?,?,?);");
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
+      prep.setInt(4, mapid);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -531,6 +539,86 @@ public final class FarmProxy {
     }
     // This will update the friend list of the other user.
 
+  }
+
+  /**
+   * This method will insert the map into the data base with the counter for which
+   * map this is.
+   *
+   * @param mapdata the data of the farm represented as a string.
+   */
+  public static void insertMapIntoDataBase(int id, String mapdata) {
+    PreparedStatement prep;
+
+    try {
+      prep = conn.prepareStatement("INSERT INTO user_maps VALUES (?,?);");
+      prep.setInt(1, id);
+      prep.setString(2, mapdata);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+  }
+
+  /**
+   * This method will retrieve the map from the database so that it can be loaded
+   * into
+   *
+   * @param id the id that represents the map id we will use to retrieve the map
+   *           data.
+   * @return reutrn the map data as a text to be sent to the front end.
+   */
+  public static String getMapFromDataBase(int id) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    String mapdata = null;
+    try {
+      prep = conn.prepareStatement("SELECT mapdata FROM user_maps WHERE mapid = ?;");
+      prep.setInt(1, id);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        mapdata = rs.getString(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return null;
+    }
+    return mapdata;
+  }
+
+  /**
+   * This method will retrieve the map from the database so that it can be loaded
+   * into
+   *
+   * @param id the user id of the user.
+   * @return return the integer that represents the mad id of the user.
+   */
+  public static int getMapIDofUserFromDataBase(String id) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    int mapid = -1;
+    try {
+      prep = conn.prepareStatement("SELECT mapid FROM user_data WHERE username = ?;");
+      prep.setString(1, id);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        mapid = rs.getInt(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return -1;
+    }
+    return mapid;
   }
 
 }
