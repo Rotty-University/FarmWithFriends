@@ -38,10 +38,10 @@ import spark.template.freemarker.FreeMarkerEngine;
 public final class Main {
 
   private static final int DEFAULT_PORT = 4567;
-  private REPL repl;
+  private static REPL repl;
   private static final Gson GSON = new Gson();
-  private FarmViewer app;
-  private FarmingHandlers farmingHandlers;
+  private static FarmViewer app;
+  private static FarmingHandlers farmingHandlers;
 
   /**
    * The initial method called when execution begins.
@@ -67,8 +67,8 @@ public final class Main {
 
     // Process commands in a REPL
     repl = new REPL(System.in);
-
-    // init app
+//MOVED TO NEWUSERPAGEHANDLER BELOW
+//    // init app
     app = new FarmViewer(repl, "myFarm");
     // init farming handlers
     farmingHandlers = new FarmingHandlers(app);
@@ -253,6 +253,9 @@ public final class Main {
       userCookie = username;
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
+//      app = new FarmViewer(repl, "myFarm", userCookie);
+//      // init farming handlers
+//      farmingHandlers = new FarmingHandlers(app);
       return new ModelAndView(variables, "user_home.ftl");
     }
   }
@@ -318,6 +321,10 @@ public final class Main {
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
           username);
+//      // init app
+//      app = new FarmViewer(repl, "myFarm", userCookie);
+//      // init farming handlers
+//      farmingHandlers = new FarmingHandlers(app);
       return new ModelAndView(variables, "new_user.ftl");
     }
   }
@@ -351,9 +358,14 @@ public final class Main {
   private static class LogOutHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
+      if (userCookie == null) {
+        res.redirect("/login");
+        return new ModelAndView(null, "home.ftl");
+      }
       if (req.cookies().containsKey(userCookie)) {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
+        userCookie = null;
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";

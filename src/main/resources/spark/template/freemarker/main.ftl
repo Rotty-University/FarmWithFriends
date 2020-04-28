@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/html5bp.css">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/map_data.css">
   </head>
   <body>
      ${content}
@@ -21,6 +22,7 @@
      <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
      <!-- Load React components & helper functions. -->
      <script src="js/AddingFriends.js"></script>
+     <script src="js/map_creation.js"></script>
      <script src="js/userhomepage.js" type="text/babel"></script>
   </body>
   <!-- See http://html5boilerplate.com/ for a good place to start
