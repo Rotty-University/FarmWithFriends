@@ -1,4 +1,4 @@
-package edu.brown.cs.student.farmTrial;
+package edu.brown.cs.student.farm;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -54,9 +54,25 @@ public class FarmLand implements Land, java.io.Serializable {
       crop.updateStatus(now);
     }
 
+    // already watered
     if (isWatered(now)) {
-      // already watered, only update next time to dry
+      Instant oldNextDryInstant = nextDryInstant;
+      // update next time to dry
       nextDryInstant = now.plus(durationToDry);
+
+      if (isOccupied()) {
+        // update nextStageInstant if possible
+        if (crop.getNextStageInstant().equals(Instant.MAX)) {
+          crop.startGrowing(oldNextDryInstant);
+        }
+
+        // pause growth if nextStageInstant is on or after next time to dry
+        if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
+          crop.pauseGrowing(nextDryInstant);
+        }
+
+        crop.updateStatus(now);
+      }
 
       return false;
     }
@@ -68,12 +84,18 @@ public class FarmLand implements Land, java.io.Serializable {
 
     // crop starts growing if
     // (1) there is a crop and
-    // (2) (crop is pausing OR seeded on dry land) and
+    // (2) crop is pausing and
     // (3) it's not infested
     // TODO: add infested condition
-    if (isOccupied() && (crop.getNextStageInstant().equals(Instant.MAX)
-        || crop.getNextStageInstant().equals(Instant.MIN))) {
+    if (isOccupied() && crop.getNextStageInstant().equals(Instant.MAX)) {
       crop.startGrowing(now);
+
+      // pause growth if nextStageInstant is on or after next time to dry
+      if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
+        crop.pauseGrowing(nextDryInstant);
+      }
+
+      crop.updateStatus(now);
     }
 
     return true;

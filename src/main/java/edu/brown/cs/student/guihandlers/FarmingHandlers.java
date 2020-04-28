@@ -7,19 +7,19 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
-import edu.brown.cs.student.farmTrial.FarmLand;
-import edu.brown.cs.student.farmTrial.FarmTrialApp;
+import edu.brown.cs.student.farm.FarmLand;
+import edu.brown.cs.student.farm.FarmViewer;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
 public class FarmingHandlers {
-  FarmTrialApp app;
+  FarmViewer app;
   PrintWriter pw;
   private final Gson GSON = new Gson();
 
-  public FarmingHandlers(FarmTrialApp a) {
+  public FarmingHandlers(FarmViewer a) {
     app = a;
     pw = new PrintWriter(System.out);
   }

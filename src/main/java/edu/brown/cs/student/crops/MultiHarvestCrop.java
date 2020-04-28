@@ -6,20 +6,20 @@ import java.util.Set;
 
 import edu.brown.cs.student.farm.FarmLand;
 
-public class SingleHarvestCrop extends ACrop {
+public class MultiHarvestCrop extends ACrop {
 
-  public SingleHarvestCrop(FarmLand l, int currentStatus) {
+  public MultiHarvestCrop(FarmLand l, int currentStatus) {
     super(l, currentStatus);
   }
 
   @Override
   protected void initName() {
-    setName("Demo Crop");
+    setName("Multiharvest Crop");
   }
 
   @Override
   protected void initID() {
-    setID(6969);
+    setID(9696);
   }
 
   @Override
@@ -31,6 +31,7 @@ public class SingleHarvestCrop extends ACrop {
 
   @Override
   protected void initLifeCycleTimes() {
+
     Duration[] lifeCycleTimes = new Duration[5];
     lifeCycleTimes[0] = Duration.ofSeconds(3);
     lifeCycleTimes[1] = Duration.ofSeconds(4);
@@ -48,19 +49,19 @@ public class SingleHarvestCrop extends ACrop {
 
   @Override
   protected void initMinMaxYield() {
-    setMinYield(3);
-    setMaxYield(8);
+    setMinYield(0);
+    setMaxYield(2);
   }
 
   @Override
   protected void initMaxHarvestTimes() {
-    setMaxHarvestTimes(1);
+    setMaxHarvestTimes(2);
   }
 
   @Override
   protected void initInfestChances() {
-    setSproutInfestChance(0.2);
-    setMatureInfestChance(0.75);
+    setSproutInfestChance(0.9);
+    setMatureInfestChance(0.12);
   }
 
   /**
@@ -70,7 +71,7 @@ public class SingleHarvestCrop extends ACrop {
   @Override
   public ACrop respawn() {
     if (getCurrentHarvestTimes() > 1) {
-      ACrop newCrop = new SingleHarvestCrop(getFarmLand(), 2);
+      ACrop newCrop = new MultiHarvestCrop(getFarmLand(), 2);
       newCrop.setCurrentHarvestTimes(getCurrentHarvestTimes() - 1);
 
       return newCrop;

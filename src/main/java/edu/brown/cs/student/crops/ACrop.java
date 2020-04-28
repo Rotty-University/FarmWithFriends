@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 
-import edu.brown.cs.student.farmTrial.FarmLand;
+import edu.brown.cs.student.farm.FarmLand;
 
 public abstract class ACrop implements java.io.Serializable {
   private FarmLand farmLand;
@@ -21,12 +21,13 @@ public abstract class ACrop implements java.io.Serializable {
   private int maxYield;
   private int yield;
   private int maxHarvestTimes;
+  private int currentHarvestTimes;
   private double sproutInfestChance;
   private double matureInfestChance;
   private boolean isSproutInfested;
   private boolean isMatureInfested;
 
-  public ACrop(FarmLand l) {
+  public ACrop(FarmLand l, int currentStatus) {
     // record instant this crop is grown
     Instant now = Instant.now();
 
@@ -63,11 +64,14 @@ public abstract class ACrop implements java.io.Serializable {
     // bind this crop to its land, like a slave basically
     farmLand = l;
 
-    // 0: seeded
-    cropStatus = 0;
+    // 0: seeded or 2: mature (for multiharvest crops)
+    cropStatus = currentStatus;
+
+    // default currentHarvestTimes to max
+    currentHarvestTimes = maxHarvestTimes;
 
     // first duration
-    durationUntilNextStage = lifeCycleTimes[0];
+    durationUntilNextStage = lifeCycleTimes[cropStatus];
 
     // auto wither time from seeded stage
     witheredInstant = now.plus(witherDuration);
@@ -75,10 +79,10 @@ public abstract class ACrop implements java.io.Serializable {
     // time next stage
     if (farmLand.isWatered(now)) {
       // watered, start timer
-      nextStageInstant = now.plus(lifeCycleTimes[0]);
+      startGrowing(now);
     } else {
       // not watered, start growing AS SOON AS it's watered
-      nextStageInstant = Instant.MIN;
+      stopGrowing();
     }
 
     // randomly generate yield
@@ -120,18 +124,6 @@ public abstract class ACrop implements java.io.Serializable {
 
   public boolean updateStatus(Instant now) {
     boolean isChanged = false;
-
-    // a better way to deal with "seed in a dry land":
-    // if instantNextStage == min, then don't update at all (i.e. skip)
-    if (nextStageInstant.equals(Instant.MIN)) {
-      if (now.isAfter(witheredInstant)) {
-        wither(witheredInstant);
-
-        return true;
-      } else {
-        return isChanged;
-      }
-    }
 
     // if already withered, no need to update
     if (cropStatus == 5) {
@@ -273,6 +265,10 @@ public abstract class ACrop implements java.io.Serializable {
     return durationUntilNextStage;
   }
 
+  public int getCurrentHarvestTimes() {
+    return currentHarvestTimes;
+  }
+
   // -------------------------------------------------------------------
 
   // concrete setters
@@ -332,6 +328,10 @@ public abstract class ACrop implements java.io.Serializable {
     witherDuration = d;
   }
 
+  public void setCurrentHarvestTimes(int c) {
+    currentHarvestTimes = c;
+  }
+
   // -------------------------------------------------------------------
 
   // abstract initializers
@@ -351,6 +351,10 @@ public abstract class ACrop implements java.io.Serializable {
 
   protected abstract void initInfestChances();
 
+  // -------------------------------------------------------------------
+
+  // abstract helper methods
+  public abstract ACrop respawn();
   // -------------------------------------------------------------------
 
 } // end of class

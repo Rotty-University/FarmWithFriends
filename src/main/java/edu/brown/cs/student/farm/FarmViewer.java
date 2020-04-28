@@ -1,4 +1,4 @@
-package edu.brown.cs.student.farmTrial;
+package edu.brown.cs.student.farm;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,18 +16,18 @@ import edu.brown.cs.student.crops.SingleHarvestCrop;
 import edu.brown.cs.student.repl.Command;
 import edu.brown.cs.student.repl.REPL;
 
-//TODO: rename this to FarmViewer
-public class FarmTrialApp {
+public class FarmViewer {
   // welcome to my farm
-  private TestFarm serializedFarm;
+  private FarmFile serializedFarm;
   private FarmLand[][] thePlantation;
 
   // user data
   private Map<Integer, Integer> inventory;
   private String farmName;
 
-  public FarmTrialApp(REPL repl) {
+  public FarmViewer(REPL repl, String farmName) {
     // init
+    this.farmName = farmName;
     initializeFarm();
 
     repl.register("plant", new PlantCommand());
@@ -43,15 +43,13 @@ public class FarmTrialApp {
   void initializeFarm() {
     System.out.println("Welcome to my farm");
 
-    farmName = "myFarm";
-
     try {
       // Reading the object from a file
       FileInputStream file = new FileInputStream(farmName + ".ser");
       ObjectInputStream in = new ObjectInputStream(file);
 
       // Method for deserialization of object
-      serializedFarm = (TestFarm) in.readObject();
+      serializedFarm = (FarmFile) in.readObject();
 
       // retrieve values from deserialized object
       thePlantation = serializedFarm.getThePlantation();
@@ -73,7 +71,7 @@ public class FarmTrialApp {
       }
 
       // init new farm to save
-      serializedFarm = new TestFarm(thePlantation, inventory, farmName);
+      serializedFarm = new FarmFile(thePlantation, inventory, farmName, 1);
 
       System.out.println("No save file found, creating a new farm");
     } // end of catch
@@ -107,7 +105,7 @@ public class FarmTrialApp {
   }
 
   // print the current layout of the farm
-  void showFarm() {
+  public Instant showFarm() {
     Instant now = Instant.now();
     System.out.println("Farm shown at: " + now);
 
@@ -137,6 +135,8 @@ public class FarmTrialApp {
 
       System.out.println();
     }
+
+    return now;
   }
 
   // ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ public class FarmTrialApp {
         return;
       }
 
-      l.setCrop(new SingleHarvestCrop(thePlantation[x][y]));
+      l.setCrop(new SingleHarvestCrop(thePlantation[x][y], 0));
 
       showFarm();
 
@@ -239,11 +239,14 @@ public class FarmTrialApp {
       int y = Integer.parseInt(tokens[1]);
       FarmLand l = thePlantation[x][y];
       ACrop c = l.getCrop();
+      Instant now = Instant.now();
 
       if (!l.isOccupied()) {
         pw.println("Can't harvest here, your didn't plant anything");
         return;
       }
+
+      c.updateStatus(now);
 
       if (c.getCropStatus() == 3 || c.getCropStatus() == 4) {
         // can harvest
@@ -253,9 +256,8 @@ public class FarmTrialApp {
         // update inventory
         inventory.put(id, inventory.getOrDefault(id, 0) + yield);
 
-        // update land status
-        // TODO: if crop can harvest multiple times
-        l.setCrop(null);
+        // update crop/land status
+        l.setCrop(l.getCrop().respawn());
 
         pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
       } else if (c.getCropStatus() == 5) {
@@ -289,6 +291,10 @@ public class FarmTrialApp {
   // mutators ------------------------------------------------------------
   public FarmLand[][] getThePlantation() {
     return thePlantation;
+  }
+
+  public void setThePlantation(FarmLand[][] f) {
+    thePlantation = f;
   }
 
   /**

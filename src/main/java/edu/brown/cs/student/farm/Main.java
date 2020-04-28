@@ -1,4 +1,4 @@
-package edu.brown.cs.student.farmTrial;
+package edu.brown.cs.student.farm;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public final class Main {
   private static final int DEFAULT_PORT = 4567;
   private REPL repl;
   private static final Gson GSON = new Gson();
-  private FarmTrialApp app;
+  private FarmViewer app;
   private FarmingHandlers farmingHandlers;
 
   /**
@@ -69,7 +69,7 @@ public final class Main {
     repl = new REPL(System.in);
 
     // init app
-    app = new FarmTrialApp(repl);
+    app = new FarmViewer(repl, "myFarm");
     // init farming handlers
     farmingHandlers = new FarmingHandlers(app);
 
