@@ -24,10 +24,6 @@ public class FarmingHandlers {
     pw = new PrintWriter(System.out);
   }
 
-  public void setApp(FarmViewer app) {
-    this.app = app;
-  }
-
   public class FarmingHandler implements Route {
 
     @Override
