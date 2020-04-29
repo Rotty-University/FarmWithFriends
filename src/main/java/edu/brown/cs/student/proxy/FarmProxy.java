@@ -36,7 +36,7 @@ public final class FarmProxy {
     try {
       conn = DriverManager.getConnection(urlToDB);
       PreparedStatement prep;
-      // simulator databases
+//      // simulator databases
 //      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
 //      prep.executeUpdate();
 //
@@ -48,17 +48,17 @@ public final class FarmProxy {
 //      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
 //      prep.executeUpdate();
 //      // , PRIMARY KEY(username)
-//      prep = conn.prepareStatement(
-//          "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text);");
-//      prep.executeUpdate();
-//
-//      prep.close();
+
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text);");
+      prep.executeUpdate();
+      prep.close();
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer, avocados integer, lettuce integer, potatoes integer, cucumbers integer, carrots integer, greenbeans integer, cherries integer, grapes integer, lemons integer, papayas integer, peaches integer, pineapples integer, pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, broccoli int, lavendar int, rosemary int);");
+          "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer, avocados integer, lettuce integer, potatoes integer, cucumbers integer, carrots integer, greenbeans integer, cherries integer, grapes integer, lemons integer, papayas integer, peaches integer, pineapples integer, pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, broccoli int, lavendar int, rosemary int, demo_crop int, demo_crop2 int);");
       prep.executeUpdate();
       prep.close();
       prep = conn
@@ -129,7 +129,7 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_inventory VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?);");
+          "INSERT INTO user_inventory VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?,?,?);");
       prep.setString(1, username);
       prep.setInt(2, 0);
       prep.setInt(3, 0);
@@ -165,7 +165,8 @@ public final class FarmProxy {
       prep.setInt(33, 0);
       prep.setInt(34, 0);
       prep.setInt(35, 0);
-//      prep.setInt(37, 0);
+      prep.setInt(36, 0);
+      prep.setInt(37, 0);
 
       prep.addBatch();
       prep.executeBatch();
@@ -607,10 +608,10 @@ public final class FarmProxy {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list pending.
-      prep = conn.prepareStatement("UPDATE user_inventory SET ? = ? WHERE username=?;");
-      prep.setString(1, cropName);
-      prep.setInt(2, number);
-      prep.setString(3, userName);
+      prep = conn
+          .prepareStatement("UPDATE user_inventory SET " + cropName + " = ? WHERE username=?;");
+      prep.setInt(1, number);
+      prep.setString(2, userName);
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {

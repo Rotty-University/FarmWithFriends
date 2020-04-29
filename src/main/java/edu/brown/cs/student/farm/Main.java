@@ -71,11 +71,21 @@ public final class Main {
 
     // Process commands in a REPL
     repl = new REPL(System.in);
-//MOVED TO NEWUSERPAGEHANDLER BELOW
+
+//// uncomment here to use commandline only
+//    // *************************************
+//    // *** DO NOT DELETE, I WILL KILL YOU***
+//    // *************************************
+//    // set database for commandline use
+//    FarmProxy.setUpDataBase();
 //    // init app
-//    app = new FarmViewer(repl, "myFarm");
+//    app = new FarmViewer(repl, "JUnitTest");
 //    // init farming handlers
-//    farmingHandlers = new FarmingHandlers(app);
+//    String[] tokens = {
+//        "JUnitTest"
+//    };
+//    app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
+//// -------------------------
 
     FarmProxy.setUpDataBase();
     // Stars the GUI server
@@ -119,6 +129,25 @@ public final class Main {
     Spark.post("/friendAccepted", new FriendAcceptedHandler());
     Spark.post("/mapMaker", new MapMaker());
     Spark.post("/mapRetriever", new MapRetriever());
+  }
+
+  // call this whenever someone logs in and the game starts
+  private static void initFarmViewerAndHandler() {
+    if (userCookie.equals("")) {
+      // no current user, fail silently
+      return;
+    }
+
+    // current user exists, init app
+    app = new FarmViewer(repl, userCookie);
+    String[] tokens = {
+        userCookie
+    };
+    app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
+
+    // init farming handlers
+    farmingHandlers = new FarmingHandlers(app);
+    Spark.post("/farmland", farmingHandlers.new FarmingHandler());
   }
 
   /**
@@ -185,6 +214,18 @@ public final class Main {
         return new ModelAndView(null, "home.ftl");
       }
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
+
+      // create new farm for user if it doesn't exist
+      FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
+      if (nextFarmFile == null) {
+        // TODO: fix initializeFarm in proxy
+        FarmProxy.initializeFarm(userCookie);
+
+        nextFarmFile = FarmProxy.loadFarm(userCookie);
+      }
+      // init farm and start game
+      initFarmViewerAndHandler();
+
       return new ModelAndView(variables, "user_home.ftl");
     }
   }
@@ -257,16 +298,8 @@ public final class Main {
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
 
-      // init app
-      app = new FarmViewer(repl, userCookie);
-      String[] tokens = {
-          userCookie
-      };
-      app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
-
-      // init farming handlers
-      farmingHandlers = new FarmingHandlers(app);
-      Spark.post("/farmland", farmingHandlers.new FarmingHandler());
+      // init farm and start game
+      initFarmViewerAndHandler();
 
       return new ModelAndView(variables, "user_home.ftl");
     }
@@ -344,7 +377,7 @@ public final class Main {
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
           username);
 
-      // init app
+      // make new farm for this user if it doesn't exist
       FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
       if (nextFarmFile == null) {
         // TODO: fix initializeFarm in proxy
@@ -352,15 +385,10 @@ public final class Main {
 
         nextFarmFile = FarmProxy.loadFarm(userCookie);
       }
-      app = new FarmViewer(repl, userCookie);
-      String[] tokens = {
-          userCookie
-      };
-      app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
 
-      // init farming handlers
-      farmingHandlers = new FarmingHandlers(app);
-      Spark.post("/farmland", farmingHandlers.new FarmingHandler());
+      // init farm and start game
+      initFarmViewerAndHandler();
+
       return new ModelAndView(variables, "new_user.ftl");
     }
 

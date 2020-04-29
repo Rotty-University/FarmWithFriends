@@ -14,7 +14,7 @@ public class MultiHarvestCrop extends ACrop {
 
   @Override
   protected void initName() {
-    setName("Multiharvest Crop");
+    setName("demo_crop2");
   }
 
   @Override

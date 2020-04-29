@@ -24,7 +24,7 @@ public class FarmViewerTest {
     REPL repl = new REPL(System.in);
     FarmProxy.setUpDataBase();
 
-    String testerName = "JUnitTestFarm";
+    String testerName = "JUnitTest";
 
     FarmFile nextFarmFile = FarmProxy.loadFarm(testerName);
     if (nextFarmFile == null) {
