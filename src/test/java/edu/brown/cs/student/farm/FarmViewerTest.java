@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.brown.cs.student.crops.ACrop;
+import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.REPL;
 
 public class FarmViewerTest {
@@ -21,17 +22,28 @@ public class FarmViewerTest {
   @Before
   public void setUp() throws Exception {
     REPL repl = new REPL(System.in);
-    // init app
-    app = new FarmViewer(repl, "JUnitTestFarm");
 
-    FarmLand[][] newFarm = new FarmLand[1][2];
-    for (int i = 0; i < newFarm.length; i++) {
-      for (int j = 0; j < newFarm[0].length; j++) {
-        newFarm[i][j] = new FarmLand();
+    String testerName = "JUnitTestFarm";
+
+    FarmFile nextFarmFile = FarmProxy.loadFarm(testerName);
+    if (nextFarmFile == null) {
+      // TODO: fix initializeFarm in proxy
+      FarmProxy.initializeFarm(testerName);
+
+      nextFarmFile = FarmProxy.loadFarm(testerName);
+    }
+
+    // farm already exists, erase and proceed
+    FarmLand[][] f = new FarmLand[1][2];
+
+    for (int i = 0; i < f.length; i++) {
+      for (int j = 0; j < f[0].length; j++) {
+        f[i][j] = new FarmLand();
       }
     }
 
-    app.setThePlantation(newFarm);
+    app = new FarmViewer(repl, testerName);
+    app.setThePlantation(f);
     app.saveFarm();
   }
 

@@ -6,12 +6,13 @@ public class FarmFile implements java.io.Serializable {
   private FarmLand[][] thePlantation;
 
   // user data
-  private int ownerID;
-  private String farmName = ""; // default name empty string
+  private String ownerName;
+  private String farmName; // default name empty string
 
-  public FarmFile(FarmLand[][] p, int ownerID) {
+  public FarmFile(FarmLand[][] p, String ownerName, String farmName) {
     thePlantation = p;
-    this.ownerID = ownerID;
+    this.ownerName = ownerName;
+    this.farmName = farmName;
   }
 
   // mutators ----------------------------------------------------------------
@@ -30,17 +31,17 @@ public class FarmFile implements java.io.Serializable {
   }
 
   /**
-   * @return the farm's owner id
+   * @return the farm's owner name
    */
-  public int getOwnerID() {
-    return ownerID;
+  public String getOwnerName() {
+    return ownerName;
   }
 
   /**
-   * @param id the new owner's user id
+   * @param id the new owner's name
    */
-  public void setOwnerID(int id) {
-    ownerID = id;
+  public void setOwnerName(String name) {
+    ownerName = name;
   }
 
   /**
