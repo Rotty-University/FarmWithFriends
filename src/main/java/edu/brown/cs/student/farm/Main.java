@@ -147,6 +147,7 @@ public final class Main {
   static String message = "";
   static String createMessage = "";
   static String userCookie = null;
+  static int userID;
 
   /**
    * Handle requests to the home page of the farm simulator where the user will
@@ -252,6 +253,7 @@ public final class Main {
         message = "The password is incorrect. Please try again";
         res.redirect("/login");
       }
+      userID = Integer.parseInt(userInfo[4]);
       userCookie = username;
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
@@ -306,6 +308,7 @@ public final class Main {
       SecureRandom random = new SecureRandom();
       byte[] hashedPassword = null;
       byte[] salt = new byte[16];
+      StringBuilder uniqueid = new StringBuilder();
       random.nextBytes(salt);
       MessageDigest md;
       try {
@@ -316,10 +319,19 @@ public final class Main {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
+//      for (int i = 0; i < username.length(); i++) {
+//        char c = username.charAt(i);
+//        int asciival = c;
+//        uniqueid.append(asciival);
+//      }
+//      int uniqueuserid = Integer.parseInt(uniqueid.toString());
+      int userid = username.hashCode();
+      userID = userid;
       // insert this user information into the database.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
-          Arrays.toString(salt), email, 1);
+          Arrays.toString(salt), email, 1, userid);
       userCookie = username;
+
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
           username);
@@ -329,6 +341,7 @@ public final class Main {
 //      farmingHandlers = new FarmingHandlers(app);
       return new ModelAndView(variables, "new_user.ftl");
     }
+
   }
 
   /**
@@ -368,6 +381,7 @@ public final class Main {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
         userCookie = null;
+        userID = -1;
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";
@@ -555,12 +569,6 @@ public final class Main {
       int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
       System.out.println(id);
       String mapdata = FarmProxy.getMapFromDataBase(id);
-      System.out.println();
-      System.out.println();
-      System.out.println();
-      System.out.println();
-
-      System.out.println("THE STRINGMDFNFSDNFJNSDJFJSDNFJ" + mapdata);
       Map<String, String> variables = ImmutableMap.of("data", mapdata);
       GSON.toJson(variables);
       return GSON.toJson(variables);
