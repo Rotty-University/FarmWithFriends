@@ -41,7 +41,7 @@ public class FarmingHandlers {
       switch (action) {
       case 0:
         // update status
-        app.new ShowCommand().execute(commands, pw);
+        app.updateFarm();
 
         break;
 
