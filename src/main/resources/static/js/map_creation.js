@@ -16,8 +16,35 @@ var total_x = 20; //Total width
 				
 				
 		});
-		function makeMap(){
+		function makeInitialMap(){
 			console.log("in function");
+			document.getElementById("map_table").style.display = "none"
+			document.getElementById("map_table").innerHTML = "";
+			fillTable();
+			setBasicElements();
+			fullfillTerrain();
+			for(i=0;i<tolerance;i++) cleanUpMap();
+			console.log(counter);
+			const postParameters = {
+				dictionary_data: JSON.stringify(dictionaryy)
+			};
+			console.log("we are here about to send over the data to make the map");
+			$.post("/mapMaker", postParameters, response => {
+				const object = JSON.parse(response);
+				const dictionaryyy = JSON.parse(object.data)
+				console.log(dictionaryyy["19,18"][0])
+				console.log(Object.keys(dictionaryyy).length);
+				for(let x = 1; x<total_x+1;x++){
+					for(let y = 1; y<total_y+1;y++){
+						console.log(dictionaryyy[x.toString()+","+y.toString()]);
+						changeElementType(dictionaryyy[x.toString()+","+y.toString()][0],dictionaryyy[x.toString()+","+y.toString()][1],dictionaryyy[x.toString()+","+y.toString()][2]);
+					}
+				}
+				document.getElementById("map_table").style.display = "block";
+			});
+			
+		};
+		function makeMap(){
 			if(my_var%2 === 0){
 				document.getElementById("map_table").innerHTML = "";
 				fillTable();
@@ -27,18 +54,40 @@ var total_x = 20; //Total width
 				my_var++;
 				console.log(counter);
 			}else{
-				console.log("helloo");
-				// for(let i = 0; i<total_x*total_y;i++){
-				// 	changeElementType(total_options[i][0],total_options[i][1],total_options[i][2]);
-				// }
-				for(let i = 0; i<total_x;i++){
-					for(let j = 0; j<total_y;j++){
-						changeElementType(dictionaryy[x+","+y][0],dictionaryy[x+","+y][1],dictionaryy[x+","+y][2]);
+				console.log("In the else statement");
+				document.getElementById("map_table").innerHTML = "";
+				fillTable();
+				setBasicElements();
+				console.log(Object.keys(dictionaryy).length);
+				for(let x = 1; x<total_x+1;x++){
+					for(let y = 1; y<total_y+1;y++){
+						changeElementType(dictionaryy[x.toString()+","+y.toString()][0],dictionaryy[x.toString()+","+y.toString()][1],dictionaryy[x.toString()+","+y.toString()][2]);
 					}
 				}
 				my_var++;
 			}
 			document.getElementById("map_table").style.display = "block";
+		};
+		function makeMapFromDataBase(){
+			document.getElementById("map_table").innerHTML = "";
+			fillTable();
+			setBasicElements();
+			const postParameters = {
+				dictionary_data: "placeholder"
+			};
+			$.post("/mapRetriever", postParameters, response => {
+				console.log("YESSIR");
+				const object = JSON.parse(response);
+				let dictionaryyy = JSON.parse(object.data)
+				console.log(dictionaryyy["1,1"]);
+				for(let x = 1; x<total_x+1;x++){
+					for(let y = 1; y<total_y+1;y++){
+						
+						changeElementType(dictionaryyy[x.toString()+","+y.toString()][0],dictionaryyy[x.toString()+","+y.toString()][1],dictionaryyy[x.toString()+","+y.toString()][2]);
+					}
+				}
+				document.getElementById("map_table").style.display = "block";
+				});
 		};
 		function closeMap(){
 			document.getElementById("map_table").style.display = "none";
@@ -136,7 +185,9 @@ var total_x = 20; //Total width
 						
 						//alert("Found item at: " + x + ' (x=' + ( x + 1 )+ ')- ' + y + ' (y = ' + (y+1) + ') and will switch for the one at: ' + random_x + '(x = ' + (random_x + 1 ) + ')-' + random_y + '( y = ' + (random_y + 1) + ')');
 						changeElementType(x+1,y+1,map[random_x][random_y]);
-						dictionaryy[x+1+","+y+1] = map[random_x][random_y];
+						let new_x  = x+1
+						let new_y = y+1
+						dictionaryy[new_x+","+new_y] = [new_x,new_y,map[random_x][random_y]];
 						counter++;
 					
 					}
@@ -320,6 +371,8 @@ var total_x = 20; //Total width
 				// logM("Random seed element: "  + random_empty);
 				x = random_empty.split(",")[0];
 				y = random_empty.split(",")[1];
+				x = parseInt(x);
+				y = parseInt(y)
 				selector = "#space_"+x+'-'+y;
 				var element = $(selector);
 				
