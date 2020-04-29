@@ -418,7 +418,7 @@ public final class FarmProxy {
   public static void initializeFarm(String userID, FarmFile farm) {
     PreparedStatement prep;
     try {
-      prep = conn.prepareStatement("INSERT INTO user_data(farm) VALUES (?) WHERE userid=?;");
+      prep = conn.prepareStatement("INSERT INTO user_data(farm) VALUES (?) WHERE username=?;");
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream oos;
       try {
@@ -494,7 +494,7 @@ public final class FarmProxy {
     ObjectInputStream ins = null;
     FarmFile farmclass = null;
     try {
-      prep = conn.prepareStatement("SELECT farm FROM user_data WHERE userid=?;");
+      prep = conn.prepareStatement("SELECT farm FROM user_data WHERE username=?;");
       prep.setString(1, userID);
       rs = prep.executeQuery();
       while (rs.next()) {
@@ -540,15 +540,16 @@ public final class FarmProxy {
   /**
    * This method will update the inventory of the user.
    *
-   * @param userID  the username for whom to update inventory for
-   * @param fruitId a string that represents the fruit name
-   * @param number  the number to update the inventory of that fruit to.
+   * @param userID    the username for whom to update inventory for
+   * @param fruitname a string that represents the fruit name
+   * @param number    the number to update the inventory of that fruit to.
    */
-  public static void updateInventory(String userID, String fruitId, int number) {
+  public static void updateInventory(String userID, String fruitname, int number) {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list pending.
-      prep = conn.prepareStatement("UPDATE user_inventory SET " + fruitId + "= ? WHERE userid=?;");
+      prep = conn
+          .prepareStatement("UPDATE user_inventory SET " + fruitname + "= ? WHERE username=?;");
       prep.setInt(1, number);
       prep.setString(2, userID);
       prep.executeUpdate();
