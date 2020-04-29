@@ -2,87 +2,99 @@ package edu.brown.cs.student.crops;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Set;
 
-import edu.brown.cs.student.farmTrial.FarmLand;
+import edu.brown.cs.student.farm.FarmLand;
 
-public class Tomato implements Crop, java.io.Serializable {
+public abstract class ACrop implements java.io.Serializable {
   private FarmLand farmLand;
   private String name;
   private int id;
   private int cropStatus;
-  private Set<String> desiredTerrain;
+  private Set<String> desiredTerrains;
   private Duration[] lifeCycleTimes;
   private Duration durationUntilNextStage;
   private Duration witherDuration;
   private Instant witheredInstant;
   private Instant nextStageInstant;
-  private final int minYield;
-  private final int maxYield;
+  private int minYield;
+  private int maxYield;
   private int yield;
   private int maxHarvestTimes;
+  private int currentHarvestTimes;
+  private double sproutInfestChance;
+  private double matureInfestChance;
+  private boolean isSproutInfested;
+  private boolean isMatureInfested;
 
-  public Tomato(FarmLand l) {
+  public ACrop(FarmLand l, int currentStatus) {
     // record instant this crop is grown
     Instant now = Instant.now();
 
-    // bind this crop to its land, like a slave basically
-    farmLand = l;
-    // set land isOccupied to true, since this crop exists
-    l.setIsOccupied(true);
+    // SET CHILD CLASS VARIABLES---------------------------
 
-    name = "Tomato";
+    // initialize this crop's name
+    initName();
 
-    // place holder id
-    id = 1;
+    // init this crop's ID
+    initID();
 
-    // 0: seeded
-    cropStatus = 0;
+    // init this crop's terrain set
+    initDesiredTerrain();
 
-    // place holder desired terrain
-    desiredTerrain = new HashSet<String>();
-    desiredTerrain.add("soil");
-
-    // place holder
-    lifeCycleTimes = new Duration[5];
-    lifeCycleTimes[0] = Duration.ofSeconds(3);
-    lifeCycleTimes[1] = Duration.ofSeconds(4);
-    lifeCycleTimes[2] = Duration.ofSeconds(6);
-    lifeCycleTimes[3] = Duration.ofSeconds(5);
-    lifeCycleTimes[4] = Duration.ofSeconds(600);
-
-    // first duration
-    durationUntilNextStage = lifeCycleTimes[0];
+    // init this crop's lifeCycleTimes
+    initLifeCycleTimes();
 
     // default wither duration for each stage except harvest
-    witherDuration = Duration.ofSeconds(10);
+    initWitherDuration();
 
-    // place holder: auto wither time from seeded stage
+    // init min and max yield
+    initMinMaxYield();
+
+    // init max harvest times
+    initMaxHarvestTimes();
+
+    // init probabilities this crop gets infected
+    initInfestChances();
+
+    // ----------------------------------------------------
+
+    // SET PARENT CLASS VARIABLES -------------------------
+
+    // bind this crop to its land, like a slave basically
+    farmLand = l;
+
+    // 0: seeded or 2: mature (for multiharvest crops)
+    cropStatus = currentStatus;
+
+    // default currentHarvestTimes to max
+    currentHarvestTimes = maxHarvestTimes;
+
+    // first duration
+    durationUntilNextStage = lifeCycleTimes[cropStatus];
+
+    // auto wither time from seeded stage
     witheredInstant = now.plus(witherDuration);
 
     // time next stage
     if (farmLand.isWatered(now)) {
       // watered, start timer
-      nextStageInstant = now.plus(lifeCycleTimes[0]);
+      startGrowing(now);
     } else {
       // not watered, start growing AS SOON AS it's watered
-      nextStageInstant = Instant.MIN;
+      stopGrowing();
     }
-
-    // min max yield
-    minYield = 8;
-    maxYield = 12;
 
     // randomly generate yield
     yield = (int) (Math.random() * (maxYield - minYield + 1)) + minYield;
 
-    // max harvest
-    maxHarvestTimes = 4;
+    // determine whether this crop will be infested
+    isSproutInfested = Double.compare(Math.random(), sproutInfestChance) <= 0 ? true : false;
+    isMatureInfested = Double.compare(Math.random(), matureInfestChance) <= 0 ? true : false;
+    // ----------------------------------------------------
   }
 
   // Controllers ----------------------------------------------
-  @Override
   public void startGrowing(Instant now) {
     // if this crop has not grown into "stealable"
     if (cropStatus < 4) {
@@ -95,7 +107,6 @@ public class Tomato implements Crop, java.io.Serializable {
     nextStageInstant = Instant.MAX;
   }
 
-  @Override
   public void pauseGrowing(Instant now) {
     // store how much time left for startGrowing
     if (!nextStageInstant.equals(Instant.MAX)) {
@@ -111,21 +122,8 @@ public class Tomato implements Crop, java.io.Serializable {
     System.out.println("Crop automatically withered at " + witheredInstant);
   }
 
-  @Override
   public boolean updateStatus(Instant now) {
     boolean isChanged = false;
-
-    // a better way to deal with "seed in a dry land":
-    // if instantNextStage == min, then don't update at all (i.e. skip)
-    if (nextStageInstant.equals(Instant.MIN)) {
-      if (now.isAfter(witheredInstant)) {
-        wither(witheredInstant);
-
-        return true;
-      } else {
-        return isChanged;
-      }
-    }
 
     // if already withered, no need to update
     if (cropStatus == 5) {
@@ -187,6 +185,8 @@ public class Tomato implements Crop, java.io.Serializable {
       // set durationUntilNextStage for next stage
       durationUntilNextStage = lifeCycleTimes[cropStatus];
 
+      // TODO: add infestation time here
+
       // update nextStageInstant
       // NOTE: starting here, nextStageInstant marks the instant of the new stage
       // before this line, nextStageInstant marks the instant of the stage that had
@@ -198,12 +198,6 @@ public class Tomato implements Crop, java.io.Serializable {
         // pause growing
         pauseGrowing(farmLand.getNextDryInstant());
       }
-
-//      // if land is still watered AND not in harvest
-//      if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getLastDryInstant())) {
-//        // pause growing
-//        pauseGrowing(farmLand.getLastDryInstant());
-//      }
 
       isChanged = true;
     }
@@ -222,85 +216,145 @@ public class Tomato implements Crop, java.io.Serializable {
 
   // --------------------------------------------------------------
 
-  // mutators
-  @Override
+  // getters
   public String getName() {
     return name;
   }
 
-  @Override
   public int getID() {
     return id;
   }
 
-  @Override
-  public Set<String> getDesiredTerrain() {
-    return desiredTerrain;
+  public Set<String> getDesiredTerrains() {
+    return desiredTerrains;
   }
 
-  @Override
   public Duration[] getLifeCycleTimes() {
     return lifeCycleTimes;
   }
 
-  @Override
   public int getYield() {
     return yield;
   }
 
-  @Override
   public int getMaxHarvestTimes() {
     return maxHarvestTimes;
   }
 
-  @Override
   public int getCropStatus() {
     return cropStatus;
   }
 
-  @Override
   public int getMaxYield() {
     return maxYield;
   }
 
-  @Override
   public int getMinYield() {
     return minYield;
   }
 
-  @Override
   public FarmLand getFarmLand() {
     return farmLand;
   }
 
-  @Override
-  public void setFarmLand(FarmLand l) {
-    farmLand = l;
-  }
-
-  @Override
   public Instant getNextStageInstant() {
     return nextStageInstant;
   }
 
-  @Override
-  public void setNextStageInstant(Instant i) {
-    nextStageInstant = i;
-  }
-
-  @Override
-  public void setCropStatus(int s) {
-    cropStatus = s;
-  }
-
-  @Override
   public Duration getDurationUntilNextStage() {
     return durationUntilNextStage;
   }
 
-  @Override
+  public int getCurrentHarvestTimes() {
+    return currentHarvestTimes;
+  }
+
+  // -------------------------------------------------------------------
+
+  // concrete setters
+  public void setFarmLand(FarmLand l) {
+    farmLand = l;
+  }
+
+  public void setName(String n) {
+    name = n;
+  }
+
+  public void setID(int id) {
+    this.id = id;
+  }
+
+  public void setLifeCycleTimes(Duration[] d) {
+    lifeCycleTimes = d;
+  }
+
+  public void setNextStageInstant(Instant i) {
+    nextStageInstant = i;
+  }
+
+  public void setCropStatus(int s) {
+    cropStatus = s;
+  }
+
   public void setDurationUntilNextStage(Duration d) {
     durationUntilNextStage = d;
   }
+
+  public void setDesiredTerrains(Set<String> s) {
+    desiredTerrains = s;
+  }
+
+  public void setMinYield(int i) {
+    minYield = i;
+  }
+
+  public void setMaxYield(int i) {
+    maxYield = i;
+  }
+
+  public void setMaxHarvestTimes(int m) {
+    maxHarvestTimes = m;
+  }
+
+  public void setSproutInfestChance(double d) {
+    sproutInfestChance = d;
+  }
+
+  public void setMatureInfestChance(double d) {
+    matureInfestChance = d;
+  }
+
+  public void setWitherDuration(Duration d) {
+    witherDuration = d;
+  }
+
+  public void setCurrentHarvestTimes(int c) {
+    currentHarvestTimes = c;
+  }
+
+  // -------------------------------------------------------------------
+
+  // abstract initializers
+  protected abstract void initName();
+
+  protected abstract void initID();
+
+  protected abstract void initDesiredTerrain();
+
+  protected abstract void initLifeCycleTimes();
+
+  protected abstract void initWitherDuration();
+
+  protected abstract void initMinMaxYield();
+
+  protected abstract void initMaxHarvestTimes();
+
+  protected abstract void initInfestChances();
+
+  // -------------------------------------------------------------------
+
+  // abstract helper methods
+  public abstract ACrop respawn();
+  // -------------------------------------------------------------------
 
 } // end of class

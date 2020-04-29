@@ -1,0 +1,41 @@
+.row{
+	clear:both;
+}
+.col{
+	float:left;
+}
+.element{
+	border: 1px gray solid;
+	height:20px;
+	width:20px;
+	font-size:7px;
+}
+.selected{
+	border: 1px black solid !important;
+}
+
+.forest_space{
+	background-color: #0b7445;
+	color:white;
+}
+.water_space{
+	background-color: blue;
+	color:white;
+}
+.dessert_space{
+	background-color: yellow;
+	color:black;
+}
+.sabana_space{
+	background-color: #17e88a;
+	color:black;
+}
+#map_table{
+	width:500px;
+	vertical-align: middle;
+	margin: auto;
+	margin-right: auto;
+  margin-left: auto;
+	padding: 250px;
+	float: center;
+}

@@ -1,15 +1,14 @@
-package edu.brown.cs.student.farmTrial;
+package edu.brown.cs.student.farm;
 
 import java.time.Duration;
 import java.time.Instant;
 
-import edu.brown.cs.student.crops.Crop;
+import edu.brown.cs.student.crops.ACrop;
 
 public class FarmLand implements Land, java.io.Serializable {
   private String terrain;
-  private Crop crop;
+  private ACrop crop;
   private boolean isPlowed;
-  private boolean isOccupied;
   private Instant lastDryInstant;
   private Instant nextDryInstant;
 
@@ -22,8 +21,6 @@ public class FarmLand implements Land, java.io.Serializable {
     setCrop(null);
     // not plowed
     setIsPlowed(false);
-    // not occupied
-    setIsOccupied(false);
     // last dry instant defaults to now
     setLastDryInstant(now);
     // next dry instant defaults to now
@@ -51,15 +48,31 @@ public class FarmLand implements Land, java.io.Serializable {
    * @return true if water status changes, false if not
    */
   public boolean water(Instant now, Duration durationToDry) {
-    if (isOccupied) {
+    if (isOccupied()) {
       // NOTE: order matters here, don't move this down
       // update crop status before growing first
       crop.updateStatus(now);
     }
 
+    // already watered
     if (isWatered(now)) {
-      // already watered, only update next time to dry
+      Instant oldNextDryInstant = nextDryInstant;
+      // update next time to dry
       nextDryInstant = now.plus(durationToDry);
+
+      if (isOccupied()) {
+        // update nextStageInstant if possible
+        if (crop.getNextStageInstant().equals(Instant.MAX)) {
+          crop.startGrowing(oldNextDryInstant);
+        }
+
+        // pause growth if nextStageInstant is on or after next time to dry
+        if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
+          crop.pauseGrowing(nextDryInstant);
+        }
+
+        crop.updateStatus(now);
+      }
 
       return false;
     }
@@ -71,12 +84,18 @@ public class FarmLand implements Land, java.io.Serializable {
 
     // crop starts growing if
     // (1) there is a crop and
-    // (2) (crop is pausing OR seeded on dry land) and
+    // (2) crop is pausing and
     // (3) it's not infested
     // TODO: add infested condition
-    if (isOccupied && (crop.getNextStageInstant().equals(Instant.MAX)
-        || crop.getNextStageInstant().equals(Instant.MIN))) {
+    if (isOccupied() && crop.getNextStageInstant().equals(Instant.MAX)) {
       crop.startGrowing(now);
+
+      // pause growth if nextStageInstant is on or after next time to dry
+      if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
+        crop.pauseGrowing(nextDryInstant);
+      }
+
+      crop.updateStatus(now);
     }
 
     return true;
@@ -91,14 +110,14 @@ public class FarmLand implements Land, java.io.Serializable {
   /**
    * @return the crop
    */
-  public Crop getCrop() {
+  public ACrop getCrop() {
     return crop;
   }
 
   /**
    * @param crop the crop to set
    */
-  public void setCrop(Crop crop) {
+  public void setCrop(ACrop crop) {
     this.crop = crop;
   }
 
@@ -124,17 +143,10 @@ public class FarmLand implements Land, java.io.Serializable {
   }
 
   /**
-   * @return the isOccupied
+   * @return true if land is occupied, false if not
    */
   public boolean isOccupied() {
-    return isOccupied;
-  }
-
-  /**
-   * @param isOccupied the isOccupied to set
-   */
-  public void setIsOccupied(boolean isOccupied) {
-    this.isOccupied = isOccupied;
+    return crop != null;
   }
 
   /**

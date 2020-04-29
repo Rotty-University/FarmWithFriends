@@ -3,4 +3,5 @@ target/
 .classpath
 .idea/
 **.DS_Store**
+data/farm_simulator.sqlite3
 *.csv

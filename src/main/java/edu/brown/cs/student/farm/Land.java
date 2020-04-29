@@ -1,4 +1,4 @@
-package edu.brown.cs.student.farmTrial;
+package edu.brown.cs.student.farm;
 
 public interface Land {
 

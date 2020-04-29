@@ -1,20 +1,18 @@
-package edu.brown.cs.student.farmTrial;
+package edu.brown.cs.student.farm;
 
-import java.util.HashMap;
-import java.util.Map;
+public class FarmFile implements java.io.Serializable {
 
-public class TestFarm implements java.io.Serializable {
-
+  // land and crop data
   private FarmLand[][] thePlantation;
 
   // user data
-  private Map<Integer, Integer> inventory = new HashMap<>();
-  private String farmName = "myFarm";
+  private String ownerName;
+  private String farmName; // default name empty string
 
-  public TestFarm(FarmLand[][] p, Map<Integer, Integer> m, String n) {
+  public FarmFile(FarmLand[][] p, String ownerName, String farmName) {
     thePlantation = p;
-    inventory = m;
-    farmName = n;
+    this.ownerName = ownerName;
+    this.farmName = farmName;
   }
 
   // mutators ----------------------------------------------------------------
@@ -33,17 +31,17 @@ public class TestFarm implements java.io.Serializable {
   }
 
   /**
-   * @return the inventory
+   * @return the farm's owner name
    */
-  public Map<Integer, Integer> getInventory() {
-    return inventory;
+  public String getOwnerName() {
+    return ownerName;
   }
 
   /**
-   * @param inventory the inventory to set
+   * @param id the new owner's name
    */
-  public void setInventory(Map<Integer, Integer> inventory) {
-    this.inventory = inventory;
+  public void setOwnerName(String name) {
+    ownerName = name;
   }
 
   /**
@@ -59,6 +57,7 @@ public class TestFarm implements java.io.Serializable {
   public void setFarmName(String farmName) {
     this.farmName = farmName;
   }
+
   // --------------------------------------------------------------------------
 
 }

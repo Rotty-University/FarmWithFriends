@@ -1,4 +1,4 @@
-package edu.brown.cs.student.farmTrial;
+package edu.brown.cs.student.farm;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
+import edu.brown.cs.student.guihandlers.FarmingHandlers;
 import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.REPL;
 import freemarker.template.Configuration;
@@ -38,8 +39,14 @@ import spark.template.freemarker.FreeMarkerEngine;
 public final class Main {
 
   private static final int DEFAULT_PORT = 4567;
-  private REPL repl;
+  private static REPL repl;
   private static final Gson GSON = new Gson();
+  private static FarmViewer app;
+  private static FarmingHandlers farmingHandlers;
+
+  static String message = "";
+  static String createMessage = "";
+  static String userCookie = null;
 
   /**
    * The initial method called when execution begins.
@@ -65,7 +72,12 @@ public final class Main {
 
     // Process commands in a REPL
     repl = new REPL(System.in);
-    FarmTrialApp app = new FarmTrialApp(repl);
+//MOVED TO NEWUSERPAGEHANDLER BELOW
+//    // init app
+//    app = new FarmViewer(repl, "myFarm");
+//    // init farming handlers
+//    farmingHandlers = new FarmingHandlers(app);
+
     FarmProxy.setUpDataBase();
     // Stars the GUI server
     if (options.has("gui")) {
@@ -106,6 +118,10 @@ public final class Main {
     Spark.post("/friendLoader", new FriendLoaderHandler());
     Spark.post("/posting_trade", new TradePostHandler());
     Spark.post("/tradeLoader", new TradeLoaderHandler());
+    Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
+    Spark.post("/friendAccepted", new FriendAcceptedHandler());
+    Spark.post("/mapMaker", new MapMaker());
+    Spark.post("/mapRetriever", new MapRetriever());
   }
 
   /**
@@ -134,10 +150,6 @@ public final class Main {
     return repl;
   }
 
-  static String message = "";
-  static String createMessage = "";
-  static String userCookie = null;
-
   /**
    * Handle requests to the home page of the farm simulator where the user will
    * login. This page will contain the form for the log in.
@@ -146,9 +158,9 @@ public final class Main {
   private static class LoginPageHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-      message = "";
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "message",
           message);
+      message = "";
       // checking to make sure the user isn't already logged on.Will take to their
       // homepage if they are.
       if (req.cookies().containsKey(userCookie)) {
@@ -156,6 +168,7 @@ public final class Main {
         res.redirect("/home");
         return new ModelAndView(null, "home.ftl");
       }
+
       return new ModelAndView(variables, "home.ftl");
     }
   }
@@ -242,9 +255,22 @@ public final class Main {
         message = "The password is incorrect. Please try again";
         res.redirect("/login");
       }
+//      userID = Integer.parseInt(userInfo[4]);
       userCookie = username;
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
+
+      // init app
+      app = new FarmViewer(repl, userCookie);
+      String[] tokens = {
+          userCookie
+      };
+      app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
+
+      // init farming handlers
+      farmingHandlers = new FarmingHandlers(app);
+      Spark.post("/farmland", farmingHandlers.new FarmingHandler());
+
       return new ModelAndView(variables, "user_home.ftl");
     }
   }
@@ -293,6 +319,7 @@ public final class Main {
       SecureRandom random = new SecureRandom();
       byte[] hashedPassword = null;
       byte[] salt = new byte[16];
+      StringBuilder uniqueid = new StringBuilder();
       random.nextBytes(salt);
       MessageDigest md;
       try {
@@ -303,15 +330,43 @@ public final class Main {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
+//      for (int i = 0; i < username.length(); i++) {
+//        char c = username.charAt(i);
+//        int asciival = c;
+//        uniqueid.append(asciival);
+//      }
+//      int uniqueuserid = Integer.parseInt(uniqueid.toString());
+//      int userid = username.hashCode();
+//      userID = userid;
       // insert this user information into the database.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
-          Arrays.toString(salt), email);
+          Arrays.toString(salt), email, 1);
       userCookie = username;
+
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
           username);
+
+      // init app
+      FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
+      if (nextFarmFile == null) {
+        // TODO: fix initializeFarm in proxy
+        FarmProxy.initializeFarm(userCookie);
+
+        nextFarmFile = FarmProxy.loadFarm(userCookie);
+      }
+      app = new FarmViewer(repl, userCookie);
+      String[] tokens = {
+          userCookie
+      };
+      app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
+
+      // init farming handlers
+      farmingHandlers = new FarmingHandlers(app);
+      Spark.post("/farmland", farmingHandlers.new FarmingHandler());
       return new ModelAndView(variables, "new_user.ftl");
     }
+
   }
 
   /**
@@ -343,7 +398,10 @@ public final class Main {
   private static class LogOutHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-
+      if (userCookie == null) {
+        res.redirect("/login");
+        return new ModelAndView(null, "home.ftl");
+      }
       if (req.cookies().containsKey(userCookie)) {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
@@ -371,18 +429,62 @@ public final class Main {
       QueryParamsMap qm = req.queryMap();
       String username = qm.value("text");
       String message = "";
+      Map<String, String> variables;
+      if (username.equals(userCookie)) {
+        message = "You can't add yourself. Try again.";
+        variables = ImmutableMap.of("message", message);
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
+      }
       // Making sure that the user name they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(username) == null) {
+        System.out.println("doesnt exist");
         message = "The user doesn't exist. Try adding someone else.";
       } else {
         // ADD THE OPTION OF ACCEPTING OR DECLINING FRIENDS
         System.out.println(userCookie);
-        FarmProxy.UpdateFriendsList(userCookie, username);
-        FarmProxy.UpdateFriendsList(username, userCookie);
-        message = "ADDING THIS USER TO YOUR FRIENDS LIST";
+        String friendslist = FarmProxy.getFriendsList(userCookie);
+        String[] friends = friendslist.split(",");
+        // check to make sure the user isn't already in the friends list.
+        for (String friend : friends) {
+          if (username.equals(friend)) {
+            message = "This friend is already in your friends list.";
+            variables = ImmutableMap.of("message", message);
+            GSON.toJson(variables);
+            return GSON.toJson(variables);
+          }
+        }
+        String friendslistpending = FarmProxy.getFriendsListPending(username);
+        String[] friendspending = friendslistpending.split(",");
+        // check to make sure the user isn't already in the friends list.
+        for (String friend : friendspending) {
+          if (userCookie.equals(friend)) {
+            message = "You already sent a friend request to this person.";
+            variables = ImmutableMap.of("message", message);
+            GSON.toJson(variables);
+            return GSON.toJson(variables);
+          }
+        }
+        // the user is trying to send a request to somebody that already sent to them
+        friendslistpending = FarmProxy.getFriendsListPending(userCookie);
+        friendspending = friendslistpending.split(",");
+        // check to make sure the user isn't already in the friends list.
+        for (String friend : friendspending) {
+          if (userCookie.equals(friend)) {
+            message = "This person already sent you one. Check your pending friend requests.";
+            variables = ImmutableMap.of("message", message);
+            GSON.toJson(variables);
+            return GSON.toJson(variables);
+          }
+        }
+        // add this current user who is trying to add to the pending list of the user
+        // they are trying to add
+        FarmProxy.UpdateFriendsPending(userCookie, username);
+        message = "Sending the request right now";
+        System.out.println("adding them");
       }
       // TODO: create an immutable map using the suggestions
-      Map<String, String> variables = ImmutableMap.of("message", message);
+      variables = ImmutableMap.of("message", message);
       // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);
@@ -427,4 +529,91 @@ public final class Main {
       return GSON.toJson(variables);
     }
   }
+  
+  /**
+   * This class will handle the request for displaying the pending requests that
+   * they can accept of a user when they want to see it.
+   *
+   * @return GSON which contains the friends list pending requests that will be
+   *         displayed.
+   */
+  private static class FriendPendingLoaderHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String friendslist = FarmProxy.getFriendsListPending(userCookie);
+      // TODO: create an immutable map using the suggestions
+      Map<String, String> variables = ImmutableMap.of("list", friendslist);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the request for accepting a friend when it is clicked
+   * on from the pending requests and updating the friend's lis of eahc user as
+   * well the pending friends list of the current user.
+   *
+   * @return GSON which contains the name of the friend that is being accepted.
+   */
+  private static class FriendAcceptedHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String username = qm.value("text");
+      String friendslistpending = FarmProxy.getFriendsListPending(userCookie);
+      friendslistpending = friendslistpending.replace(username + ",", "");
+      FarmProxy.UpdateFriendsPendingAfterAdding(friendslistpending, userCookie);
+      FarmProxy.UpdateFriendsList(userCookie, username);
+      FarmProxy.UpdateFriendsList(username, userCookie);
+      // TODO: create an immutable map using the suggestions
+      Map<String, String> variables = ImmutableMap.of("list", username);
+      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the making of the random map so that it is constant
+   * for all users.
+   *
+   */
+  private static class MapMaker implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      String dictionarydata = qm.value("dictionary_data");
+      System.out.println("THE data is" + qm.value("dictionary_data"));
+      System.out.println(qm.value("dictionary_data").getClass().getName());
+      FarmProxy.insertMapIntoDataBase(1, dictionarydata);
+      Map<String, String> variables = ImmutableMap.of("data", dictionarydata);
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the making of the random map so that it is constant
+   * for all users.
+   *
+   */
+  private static class MapRetriever implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      // TODO: query the value of the input you want to generate suggestions for
+      QueryParamsMap qm = req.queryMap();
+      int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
+      System.out.println(id);
+      String mapdata = FarmProxy.getMapFromDataBase(id);
+      Map<String, String> variables = ImmutableMap.of("data", mapdata);
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
 }

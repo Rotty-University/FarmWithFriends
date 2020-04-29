@@ -130,6 +130,7 @@ class Table extends React.Component {
     constructor(props){
         super(props);
     }
+
     render(){
         let rows = [];
         for (var i = 0; i < this.props.rows; i++){
@@ -139,7 +140,7 @@ class Table extends React.Component {
                 let cellID = `cell${i}-${idx}`
                 cell.push(<td key={cellID} id={cellID}><Tile
                     type={"ploughed"}
-                    spritepath={"css/images/testsprite.png"}
+                    spritepath={"css/images/testgrass.png"}
                     row={i}
                     column={idx}
                     watered={false}
@@ -166,17 +167,81 @@ class Tile extends React.Component {
 
     constructor(props) {
         super(props);
+        this.state = {
+            spritepath: "css/images/landImages/testgrass.png",
+        }
         this.handleClick = this.handleClick.bind(this);
     }
 
     //TODO this gonna be a big boi method
     handleClick() {
-        alert("you clicked me! " + this.props.row + "," + this.props.column + " active tool: " + this.props.activetool);
+        let toolsMap = new Map();
+        toolsMap.set("select", 0);
+        toolsMap.set("plough", 1);
+        toolsMap.set("plant", 2);
+        toolsMap.set("water", 3);
+        toolsMap.set("harvest", 4);
+        toolsMap.set("delete", 5);
+
+        const dict = {row : this.props.row,
+            col : this.props.column,
+            action : toolsMap.get(this.props.activetool)};
+
+        // send as parameter
+        $.post("/farmland", dict, response => {
+            // get result
+            const result = JSON.parse(response);
+            let row = (String)(this.props.row);
+            let col = (String)(this.props.column);
+            const thisTileInfo = result[row + "#" + col];
+
+//            alert("row: " + row +
+//                " col: " + col +
+//                " isPlowed " + (String)(thisTileInfo[0]) +
+//                " isWatered " + (String)(thisTileInfo[1]) +
+//                " cropID: " + (String)(thisTileInfo[2]) +
+//                " crop status: " + (String)(thisTileInfo[3]));
+            const cropStatus = thisTileInfo[3];
+            const isPlowed = thisTileInfo[0];
+            const isWatered = thisTileInfo[1];
+            const cropID = thisTileInfo[2];
+            // update board
+
+            //general path
+            let newPath = "css/images/";
+            
+            if (cropStatus != -9) {
+            	// show a crop (for now, until we figure out overlay)
+            	newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
+            	console.log(newPath);
+            } else {
+            	// no crop, just show land
+            	newPath += "landImages/";
+            	
+            	if (isPlowed == 0) {
+            		// not plowed
+            		newPath += "unplowed";
+            	} else if (isWatered == 0) {
+            		// plowed but NOT watered
+            		newPath += "plowed";
+            	} else {
+            		// plowed AND watered
+            		newPath += "watered";
+            	}
+            }
+            
+            // add file format
+            newPath += ".png";
+
+            //This is updating the visual appearance of the tile:
+            this.setState({spritepath: newPath})
+        });
     }
 
     render() {
+    	// needs to re render all farm tiles
         return (
-            <img onClick={this.handleClick} className={"tileImage"} src={this.props.spritepath}/>
+            <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
         );
     }
 }
@@ -271,8 +336,12 @@ class Friends extends React.Component {
         return (
             <div id={"friendsContainer"}>
                 <div className={"form-popup"} id={"myFriendList"}>
-                    <p>Friends List:</p>
+                    <h1 id={"title_of_friends_list"}>Friends List</h1>
                     <ul id={"list_of_friends"}>
+                    </ul>
+                    <p className={"color_of_text"}>These are your pending requests below</p>
+                    <p className={"color_of_text"}>Click on a name to accept the user</p>
+                    <ul id={"list_of_friends_pending"}>
                     </ul>
                     <button className={"friend_button"} onClick={ () => openForm('myForm') }>Add Friends</button>
                     <button type={"button"} className={"btnn cancel"} onClick={ () => closeForm('myFriendList') }>Close</button>

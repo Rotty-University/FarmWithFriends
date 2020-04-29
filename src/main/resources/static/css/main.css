@@ -190,8 +190,32 @@ td {
 .cancel:hover, .friend_button:hover{
     opacity: .8;
 }
+/* Hover effects to buttons */
+.btn:hover, .open-button:hover {
+    opacity: 1;
+}
+#message_for_friend_status{
+    color:white;
+}
+#addedfriends{
+    color:white;
+}
+#title_of_friends_list{
+    color:white;
+}
+.color_of_text{
+    color:white;
+}
 
 .friendsActivated  {
     background-color: #888d99;
 }
-
+.pending{
+    background: black;
+    padding: 5px;
+}
+#list_of_friends_pending{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
