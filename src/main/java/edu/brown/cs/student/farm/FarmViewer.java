@@ -42,7 +42,7 @@ public class FarmViewer {
   // Helper methods ------------------------------------------------------------
 
   // save current state of farm
-  void saveFarm() {
+  public void saveFarm() {
     if (thePlantation == null || serializedFarm == null) {
       return;
     }
@@ -52,7 +52,7 @@ public class FarmViewer {
     FarmProxy.saveFarm(ownerName, serializedFarm);
   }
 
-  // print the current layout of the farm
+  // update and print the current layout of the farm
   public void showFarm() {
     if (thePlantation == null) {
       System.out.println("Can't do that: no farm selected");
@@ -91,6 +91,31 @@ public class FarmViewer {
     }
   }
 
+  // ONLY update the status of the tiles
+  // used for GUI only
+  public void updateFarm() {
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
+
+      return;
+    }
+
+    Instant now = Instant.now();
+
+    for (FarmLand[] l : thePlantation) {
+      for (FarmLand j : l) {
+        // update land first
+        j.updateWaterStatus(now);
+
+        if (j.isOccupied()) {
+          // there is a crop on this land
+          // update crop if necessary
+          j.getCrop().updateStatus(now);
+        }
+      }
+    }
+  }
+
   // ---------------------------------------------------------------------------
 
   // command to set current farm to another farm
@@ -116,7 +141,7 @@ public class FarmViewer {
       thePlantation = nextFarmFile.getThePlantation();
       farmName = nextFarmFile.getFarmName();
 
-      pw.println("Welcome to" + ownerName + "'s farm");
+      System.out.println("Welcome to " + ownerName + "'s farm");
     }
 
   } // end of switch command class

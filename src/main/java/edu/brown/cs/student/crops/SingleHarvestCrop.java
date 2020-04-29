@@ -14,7 +14,7 @@ public class SingleHarvestCrop extends ACrop {
 
   @Override
   protected void initName() {
-    setName("Demo Crop");
+    setName("demo_crop");
   }
 
   @Override
