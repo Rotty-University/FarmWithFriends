@@ -31,7 +31,6 @@ public class FarmingHandlers {
       QueryParamsMap qm = req.queryMap();
       String row = qm.value("row");
       String col = qm.value("col");
-      // TODO: make this value an int in backend
       int action = Integer.parseInt(qm.value("action"));
 
       String[] commands = {

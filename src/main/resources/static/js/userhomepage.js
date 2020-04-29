@@ -196,19 +196,45 @@ class Tile extends React.Component {
             const thisTileInfo = result[row + "#" + col];
             console.log(result.valueOf());
 
-            alert("row: " + row +
-                " col: " + col +
-                " isPlowed " + (String)(thisTileInfo[0]) +
-                " isWatered " + (String)(thisTileInfo[1]) +
-                " cropID: " + (String)(thisTileInfo[2]) +
-                " crop status: " + (String)(thisTileInfo[3]));
+//            alert("row: " + row +
+//                " col: " + col +
+//                " isPlowed " + (String)(thisTileInfo[0]) +
+//                " isWatered " + (String)(thisTileInfo[1]) +
+//                " cropID: " + (String)(thisTileInfo[2]) +
+//                " crop status: " + (String)(thisTileInfo[3]));
+            const cropStatus = thisTileInfo[3];
+            const isPlowed = thisTileInfo[0];
+            const isWatered = thisTileInfo[1];
+            const cropID = thisTileInfo[2];
             // update board
 
-            //logic for what the spritepath should be goes here
-            let x = "css/images/testsprite.png";
+            //general path
+            const newPath = "css/images/";
+            
+            if (cropStatus != -9) {
+            	// show a crop (for now, until we figure out overlay)
+            	newPath += "cropImages/" + (String)(cropID) + "/"(String)(cropStatus);
+            } else {
+            	// no crop, just show land
+            	newPath += "landImages/";
+            	
+            	if (isPlowed == 0) {
+            		// not plowed
+            		newPath += "unplowed";
+            	} else if (isWatered == 0) {
+            		// plowed but NOT watered
+            		newPath += "plowed";
+            	} else {
+            		// plowed AND watered
+            		newPath += "watered";
+            	}
+            }
+            
+            // add file format
+            newPath += ".png";
 
             //This is updating the visual appearance of the tile:
-            this.setState({spritepath: x})
+            this.setState({spritepath: newPath})
         });
     }
 

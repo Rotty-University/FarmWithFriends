@@ -1,34 +1,36 @@
 package edu.brown.cs.student.farm;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 
 import edu.brown.cs.student.crops.ACrop;
 import edu.brown.cs.student.crops.SingleHarvestCrop;
+import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.Command;
 import edu.brown.cs.student.repl.REPL;
 
 public class FarmViewer {
-  // welcome to my farm
+  // user who is viewing this farm
+  private int viewerID;
+  // owner of this farm
+  private int ownerID;
+  private String ownerName;
+
+  // current farm's data
   private FarmFile serializedFarm;
   private FarmLand[][] thePlantation;
-
-  // user data
-  private Map<Integer, Integer> inventory;
   private String farmName;
 
-  public FarmViewer(REPL repl, String farmName) {
+  public FarmViewer(REPL repl, int viewerID) {
     // init
-    this.farmName = farmName;
-    initializeFarm();
+    this.viewerID = viewerID;
+    // default to no farm loaded at init
+    ownerID = -1;
+    ownerName = "";
+    serializedFarm = null;
+    thePlantation = null;
 
     repl.register("plant", new PlantCommand());
     repl.register("plow", new PlowCommand());
@@ -36,76 +38,46 @@ public class FarmViewer {
     repl.register("water", new WaterCommand());
     repl.register("harvest", new HarvestCommand());
     repl.register("inspect", new InspectInventoryCommand());
+    repl.register("switch", new SwitchCommand());
   }
 
   // Helper methods ------------------------------------------------------------
+
   // initialize the farm
   void initializeFarm() {
-    System.out.println("Welcome to my farm");
+    // TODO: copy this part into initializeFarm in proxy
+    // no file saved, create new plantation
+    thePlantation = new FarmLand[1][4];
 
-    try {
-      // Reading the object from a file
-      FileInputStream file = new FileInputStream(farmName + ".ser");
-      ObjectInputStream in = new ObjectInputStream(file);
-
-      // Method for deserialization of object
-      serializedFarm = (FarmFile) in.readObject();
-
-      // retrieve values from deserialized object
-      thePlantation = serializedFarm.getThePlantation();
-      inventory = serializedFarm.getInventory();
-
-      in.close();
-      file.close();
-
-      System.out.println("Loaded \"" + farmName + "\"");
-    } catch (Exception e) {
-      // no file saved, create new plantation
-      thePlantation = new FarmLand[1][4];
-      inventory = new HashMap<Integer, Integer>();
-
-      for (int i = 0; i < thePlantation.length; i++) {
-        for (int j = 0; j < thePlantation[0].length; j++) {
-          thePlantation[i][j] = new FarmLand();
-        }
+    for (int i = 0; i < thePlantation.length; i++) {
+      for (int j = 0; j < thePlantation[0].length; j++) {
+        thePlantation[i][j] = new FarmLand();
       }
+    }
 
-      // init new farm to save
-      serializedFarm = new FarmFile(thePlantation, inventory, farmName, 1);
-
-      System.out.println("No save file found, creating a new farm");
-    } // end of catch
-
-    // new farm or old farm, always show farm
-    showFarm();
+    // init new farm to save
+    serializedFarm = new FarmFile(thePlantation, userID);
   }
 
   // save current state of farm
   boolean saveFarm() {
-    // Serialization
-    try {
-      // Saving of object in a file
-      FileOutputStream file = new FileOutputStream(farmName + ".ser");
-      ObjectOutputStream out = new ObjectOutputStream(file);
-
-      // Method for serialization of object
-      out.writeObject(serializedFarm);
-
-      out.close();
-      file.close();
-
-      System.out.println("Your plantation has been saved successfully");
-      return true;
-
-    } catch (IOException e) {
-      e.printStackTrace();
-      System.out.println("Failed to save plantation, IOException caught");
+    if (thePlantation == null) {
+      System.out.println("Failed to save farm: no farm selected");
       return false;
     }
+
+    // TODO: fix this method in proxy
+    return FarmProxy.saveFarm(ownerID, serializedFarm);
   }
 
   // print the current layout of the farm
-  public Instant showFarm() {
+  public void showFarm() {
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
+
+      return;
+    }
+
     Instant now = Instant.now();
     System.out.println("Farm shown at: " + now);
 
@@ -135,11 +107,40 @@ public class FarmViewer {
 
       System.out.println();
     }
-
-    return now;
   }
 
   // ---------------------------------------------------------------------------
+
+  // command to set current farm to another farm
+  public class SwitchCommand implements Command {
+
+    @Override
+    public void execute(String[] tokens, PrintWriter pw) {
+      int newOwnerID = Integer.parseInt(tokens[0]);
+
+      // TODO: fix this method in proxy
+      FarmFile newFarmFile = FarmProxy.loadFarm(newOwnerID);
+      if (newFarmFile == null) {
+        // new farm's user id NOT valid, fail
+        pw.println("Failed to load farm: it does not exist");
+        return;
+      }
+
+      // new farm is valid, proceed
+      // first save current farm
+      saveFarm();
+
+      serializedFarm = newFarmFile;
+      ownerID = newOwnerID;
+      // TODO: fix this method in proxy
+      ownerName = FarmProxy.getUserNameFromDataBase(newOwnerID);
+      thePlantation = newFarmFile.getThePlantation();
+      farmName = newFarmFile.getFarmName();
+
+      pw.println("Welcome to" + ownerName + "'s farm");
+    }
+
+  } // end of switch command class
 
   // command to print the farm
   public class ShowCommand implements Command {
@@ -157,6 +158,18 @@ public class FarmViewer {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
+
+      if (thePlantation == null) {
+        System.out.println("Can't do that: no farm selected");
+
+        return;
+      }
+
+      if (viewerID != ownerID) {
+        pw.println("Can't do that: you're not the owner");
+
+        return;
+      }
 
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
@@ -182,6 +195,18 @@ public class FarmViewer {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
+
+      if (thePlantation == null) {
+        System.out.println("Can't do that: no farm selected");
+
+        return;
+      }
+
+      if (viewerID != ownerID) {
+        pw.println("Can't do that: you're not the owner");
+
+        return;
+      }
 
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
@@ -210,6 +235,12 @@ public class FarmViewer {
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
 
+      if (thePlantation == null) {
+        System.out.println("Can't do that: no farm selected");
+
+        return;
+      }
+
       Instant now = Instant.now();
 
       int x = Integer.parseInt(tokens[0]);
@@ -235,6 +266,19 @@ public class FarmViewer {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
+
+      if (thePlantation == null) {
+        System.out.println("Can't do that: no farm selected");
+
+        return;
+      }
+
+      if (viewerID != ownerID) {
+        pw.println("Can't do that: you're not the owner");
+
+        return;
+      }
+
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
       FarmLand l = thePlantation[x][y];
@@ -250,11 +294,13 @@ public class FarmViewer {
 
       if (c.getCropStatus() == 3 || c.getCropStatus() == 4) {
         // can harvest
-        int id = c.getID();
+        int cropID = c.getID();
         int yield = c.getYield();
 
         // update inventory
-        inventory.put(id, inventory.getOrDefault(id, 0) + yield);
+        // TODO: add getInventory method to proxy
+        int oldVal = FarmProxy.getOneInventoryItem(viewerID, cropID);
+        FarmProxy.updateInventory(viewerID, cropID, oldVal + yield);
 
         // update crop/land status
         l.setCrop(l.getCrop().respawn());
@@ -281,6 +327,9 @@ public class FarmViewer {
     public void execute(String[] tokens, PrintWriter pw) {
       pw.println("You have: ");
 
+      // TODO: add getter to proxy
+      Map<Integer, Integer> inventory = FarmProxy.getAllInventoryItems(viewerID);
+
       for (int i : inventory.keySet()) {
         pw.println(inventory.get(i) + " units of crop (ID: " + i + ")");
       }
@@ -298,17 +347,24 @@ public class FarmViewer {
   }
 
   /**
-   * @return the inventory
+   * @return the viewerID
    */
-  public Map<Integer, Integer> getInventory() {
-    return inventory;
+  public int getViewerID() {
+    return viewerID;
   }
 
   /**
-   * @param inventory the inventory to set
+   * @return the ownerID
    */
-  public void setInventory(Map<Integer, Integer> inventory) {
-    this.inventory = inventory;
+  public int getOwnerID() {
+    return ownerID;
+  }
+
+  /**
+   * @return the ownerName
+   */
+  public String getOwnerName() {
+    return ownerName;
   }
 
   // ---------------------------------------------------------------------------------
