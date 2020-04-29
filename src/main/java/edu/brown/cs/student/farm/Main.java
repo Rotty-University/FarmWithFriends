@@ -129,6 +129,8 @@ public final class Main {
     Spark.post("/friendAccepted", new FriendAcceptedHandler());
     Spark.post("/mapMaker", new MapMaker());
     Spark.post("/mapRetriever", new MapRetriever());
+
+    // all farmingHandler routes are made in initFarmViewerAndHandler
   }
 
   // call this whenever someone logs in and the game starts

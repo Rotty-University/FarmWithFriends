@@ -24,6 +24,14 @@ public class FarmingHandlers {
     pw = new PrintWriter(System.out);
   }
 
+  /**
+   * Takes request from GUI and perform actions on the farm, then return the new
+   * state of the farm
+   * 
+   * @author zjk97
+   * @author hlucco
+   *
+   */
   public class FarmingHandler implements Route {
 
     @Override
