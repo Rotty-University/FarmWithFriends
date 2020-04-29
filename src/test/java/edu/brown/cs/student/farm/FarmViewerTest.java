@@ -22,6 +22,7 @@ public class FarmViewerTest {
   @Before
   public void setUp() throws Exception {
     REPL repl = new REPL(System.in);
+    FarmProxy.setUpDataBase();
 
     String testerName = "JUnitTestFarm";
 
@@ -42,7 +43,12 @@ public class FarmViewerTest {
       }
     }
 
+    String[] tokens = {
+        testerName
+    };
+
     app = new FarmViewer(repl, testerName);
+    app.new SwitchCommand().execute(tokens, pw);;
     app.setThePlantation(f);
     app.saveFarm();
   }

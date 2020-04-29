@@ -43,6 +43,10 @@ public final class Main {
   private static FarmViewer app;
   private static FarmingHandlers farmingHandlers;
 
+  static String message = "";
+  static String createMessage = "";
+  static String userCookie = null;
+
   /**
    * The initial method called when execution begins.
    *
@@ -69,9 +73,9 @@ public final class Main {
     repl = new REPL(System.in);
 //MOVED TO NEWUSERPAGEHANDLER BELOW
 //    // init app
-    app = new FarmViewer(repl, "myFarm");
-    // init farming handlers
-    farmingHandlers = new FarmingHandlers(app);
+//    app = new FarmViewer(repl, "myFarm");
+//    // init farming handlers
+//    farmingHandlers = new FarmingHandlers(app);
 
     FarmProxy.setUpDataBase();
     // Stars the GUI server
@@ -113,7 +117,6 @@ public final class Main {
     Spark.post("/friendLoader", new FriendLoaderHandler());
     Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
     Spark.post("/friendAccepted", new FriendAcceptedHandler());
-    Spark.post("/farmland", farmingHandlers.new FarmingHandler());
     Spark.post("/mapMaker", new MapMaker());
     Spark.post("/mapRetriever", new MapRetriever());
   }
@@ -144,11 +147,6 @@ public final class Main {
     return repl;
   }
 
-  static String message = "";
-  static String createMessage = "";
-  static String userCookie = null;
-  static int userID;
-
   /**
    * Handle requests to the home page of the farm simulator where the user will
    * login. This page will contain the form for the log in.
@@ -167,6 +165,7 @@ public final class Main {
         res.redirect("/home");
         return new ModelAndView(null, "home.ftl");
       }
+
       return new ModelAndView(variables, "home.ftl");
     }
   }
@@ -257,9 +256,18 @@ public final class Main {
       userCookie = username;
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
-//      app = new FarmViewer(repl, "myFarm", userCookie);
-//      // init farming handlers
-//      farmingHandlers = new FarmingHandlers(app);
+
+      // init app
+      app = new FarmViewer(repl, userCookie);
+      String[] tokens = {
+          userCookie
+      };
+      app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
+
+      // init farming handlers
+      farmingHandlers = new FarmingHandlers(app);
+      Spark.post("/farmland", farmingHandlers.new FarmingHandler());
+
       return new ModelAndView(variables, "user_home.ftl");
     }
   }
@@ -335,10 +343,24 @@ public final class Main {
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
           username);
-//      // init app
-//      app = new FarmViewer(repl, "myFarm", userCookie);
-//      // init farming handlers
-//      farmingHandlers = new FarmingHandlers(app);
+
+      // init app
+      FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
+      if (nextFarmFile == null) {
+        // TODO: fix initializeFarm in proxy
+        FarmProxy.initializeFarm(userCookie);
+
+        nextFarmFile = FarmProxy.loadFarm(userCookie);
+      }
+      app = new FarmViewer(repl, userCookie);
+      String[] tokens = {
+          userCookie
+      };
+      app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
+
+      // init farming handlers
+      farmingHandlers = new FarmingHandlers(app);
+      Spark.post("/farmland", farmingHandlers.new FarmingHandler());
       return new ModelAndView(variables, "new_user.ftl");
     }
 
@@ -381,7 +403,6 @@ public final class Main {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
         userCookie = null;
-        userID = -1;
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";

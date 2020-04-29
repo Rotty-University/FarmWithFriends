@@ -41,32 +41,15 @@ public class FarmViewer {
 
   // Helper methods ------------------------------------------------------------
 
-  // initialize the farm
-  void initializeFarm() {
-    // TODO: copy this part into initializeFarm in proxy
-    // no file saved, create new plantation
-    thePlantation = new FarmLand[1][4];
-
-    for (int i = 0; i < thePlantation.length; i++) {
-      for (int j = 0; j < thePlantation[0].length; j++) {
-        thePlantation[i][j] = new FarmLand();
-      }
-    }
-
-    // init new farm to save
-    serializedFarm = new FarmFile(thePlantation, userName, "");
-  }
-
   // save current state of farm
-  boolean saveFarm() {
-    if (thePlantation == null) {
-      return false;
+  void saveFarm() {
+    if (thePlantation == null || serializedFarm == null) {
+      return;
     }
 
     // update farm file references
     serializedFarm.setThePlantation(thePlantation);
-    // TODO: fix this method in proxy
-    return FarmProxy.saveFarm(ownerName, serializedFarm);
+    FarmProxy.saveFarm(ownerName, serializedFarm);
   }
 
   // print the current layout of the farm
@@ -115,9 +98,6 @@ public class FarmViewer {
 
     @Override
     public void execute(String[] tokens, PrintWriter pw) {
-      // first save current farm
-      saveFarm();
-
       String nextOwnerName = tokens[0];
 
       FarmFile nextFarmFile = FarmProxy.loadFarm(nextOwnerName);
@@ -128,6 +108,8 @@ public class FarmViewer {
       }
 
       // new farm is valid, proceed
+      // first save current farm
+      saveFarm();
 
       ownerName = nextOwnerName;
       serializedFarm = nextFarmFile;

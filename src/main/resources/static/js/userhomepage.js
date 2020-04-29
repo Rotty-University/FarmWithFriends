@@ -168,7 +168,7 @@ class Tile extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            spritepath: "css/images/testgrass.png",
+            spritepath: "css/images/landImages/testgrass.png",
         }
         this.handleClick = this.handleClick.bind(this);
     }
@@ -194,7 +194,6 @@ class Tile extends React.Component {
             let row = (String)(this.props.row);
             let col = (String)(this.props.column);
             const thisTileInfo = result[row + "#" + col];
-            console.log(result.valueOf());
 
 //            alert("row: " + row +
 //                " col: " + col +
@@ -209,11 +208,12 @@ class Tile extends React.Component {
             // update board
 
             //general path
-            const newPath = "css/images/";
+            let newPath = "css/images/";
             
             if (cropStatus != -9) {
             	// show a crop (for now, until we figure out overlay)
-            	newPath += "cropImages/" + (String)(cropID) + "/"(String)(cropStatus);
+            	newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
+            	console.log(newPath);
             } else {
             	// no crop, just show land
             	newPath += "landImages/";
