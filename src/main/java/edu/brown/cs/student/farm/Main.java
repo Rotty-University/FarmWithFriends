@@ -494,7 +494,16 @@ public final class Main {
   private static class TradePostHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      return "";
+      QueryParamsMap qm = req.queryMap();
+      Map<String, String> variables;
+      String cropS = qm.value("cSell");
+      String quantS = qm.value("qSell");
+      String cropB = qm.value("cBuy");
+      String quantB = qm.value("qBuy");
+      FarmProxy.updateTradingCenter(userCookie, cropS, quantS, cropB, quantB);
+      variables = ImmutableMap.of("message", "hello :)");
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
     }
   }
 
@@ -523,8 +532,20 @@ public final class Main {
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
       String tradeCenter = FarmProxy.getTradingCenter();
+      StringBuilder htmlCode = new StringBuilder();
+      htmlCode.append("<tr><th>Seller</th><th>Crop Selling</th>" +
+              "<th>Ammount</th><th>Crop Requesting</th><th>Ammount</th></tr>");
+      String[] rows = tradeCenter.split(";");
+      for (String r : rows) {
+        htmlCode.append("<tr>");
+        String[] col = r.split(",");
+        for (String c : col) {
+          htmlCode.append("<td>").append(c).append("</td>");
+        }
+        htmlCode.append("</tr>");
+      }
       System.out.println(tradeCenter);
-      Map<String, String> variables = ImmutableMap.of("list", tradeCenter);
+      Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }

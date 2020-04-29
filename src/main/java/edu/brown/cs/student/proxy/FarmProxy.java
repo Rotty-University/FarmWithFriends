@@ -320,17 +320,17 @@ public final class FarmProxy {
    * @param cropBuy   id of crop that is requested in return
    * @param buyQ      quantity of cropBuy asked for
    */
-  public static void updateTradingCenter(String seller, int cropSell, int sellQ, int cropBuy, int buyQ) {
+  public static void updateTradingCenter(String seller, String cropSell, String sellQ, String cropBuy, String buyQ) {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list.
-      prep = conn.prepareStatement("INSERT INTO trading_center (user_seller, id_sell, sell_quantity, " +
-              "id_buy, buy_quantity) VALUES (?,?,?,?,?);");
+      prep = conn.prepareStatement("INSERT INTO trading_center (trader, crop_sell, quant_sell, " +
+              "crop_buy, quant_buy) VALUES (?,?,?,?,?);");
       prep.setString(1, seller);
-      prep.setString(2, cropSell + "");
-      prep.setString(3, sellQ + "");
-      prep.setString(4, cropBuy + "");
-      prep.setString(5, buyQ + "");
+      prep.setString(2, cropSell);
+      prep.setString(3, sellQ);
+      prep.setString(4, cropBuy);
+      prep.setString(5, buyQ);
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {

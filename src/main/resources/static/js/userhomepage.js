@@ -262,20 +262,20 @@ class Shop extends React.Component {
             <h1>Shop and Trade</h1>
             <button className={"add_button"} onClick={ () => openForm('newTrade') }>List a Trade</button>
             <p>Trade List:</p>
-            <button onClick={() => openTradeList() }>test load</button>
-            <ul id={"trade_list"}>
-            </ul>
+            <button onClick={() => openTradeList() }>Load Trades</button>
+            <table id={"trade_list"} width={1000}>
+            </table>
             <div className={"form-popup"} id={"newTrade"}>
                 <h1>Post a Trade</h1>
                 <label htmlFor={"sell_id"}><b>Crop to Trade</b></label>
                 <input type={"text"} id={"sell_id_text"} placeholder={"Enter Name of Crop"} name={"sell_id"}required></input>
                 <label htmlFor="sell_quantity"><b>Quantity (between 1 and 5)</b>:</label>
-                <input type="number" id="sell_quantity" name="sell_quantity" min="1" max="5"></input>
+                <input type="number" id={"sell_quantity"} name="sell_quantity" min="1" max="5"></input>
                 <br></br>
                 <label htmlFor={"buy_id"}><b>Crop Requested</b></label>
                 <input type={"text"} id={"buy_id_text"} placeholder={"Enter Name of Crop"} name={"buy_id"}required></input>
                 <label htmlFor="buy_quantity"><b>Quantity (between 1 and 5)</b>:</label>
-                <input type="number" id="buy_quantity" name="buy_quantity" min="1" max="5"></input>
+                <input type="number" id={"buy_quantity"} name="buy_quantity" min="1" max="5"></input>
                 <button type={"button"} className={"btnn"} id={"post_trade_button"} onClick={ () => addTradeListing() }>Post Trade</button>
                 <button type={"button"} className={"btnn cancel"} onClick={ () => closeAddForm('newTrade') }>Close</button>
             </div>
@@ -296,38 +296,35 @@ function openTradeList(){
     $.post("/tradeLoader", postParameters, response => {
         // Do something with the response here
         const object = JSON.parse(response);
-        const list = object.list.split(";")
-        const arrayLength = list.length;
         //showing a list of the friends when the button is clicked.
-        for (let i = 0; i < arrayLength; i++) {
-            console.log(list[i])
-            suggestionList.append("<li>" + list[i] + "</li>");
-            console.log("suggestion list = " + suggestionList);
-        }
+        suggestionList.append(object.list);
     });
 };
 
 function addTradeListing() {
     const submit = $("#post_trade_button");
     console.log(submit.innerHTML);
-    const input = $("#addfriendstext");
-    const message = $("#message_for_friend_status");
+    const cropS = $("#sell_id_text");
+    const quantS = $("#sell_quantity");
+    const cropB = $("#buy_id_text");
+    const quantB = $("#buy_quantity");
     submit.click(function(event){
         const postParameters = {
             //TODO: get the text inside the input box
-            text: input.val()
+            cSell: cropS.val(),
+            qSell: quantS.val(),
+            cBuy: cropB.val(),
+            qBuy: quantB.val()
         };
         console.log(postParameters.text);
         //send the post and show the message from the backend.
         $.post("/posting_trade", postParameters, response => {
             // Do something with the response here
             const object = JSON.parse(response);
-            const message_to_player = object.message;
-            //message to output to the user about if we are adding the friend or not.
-            message.empty()
-            message.append(message_to_player);
         });
     });
+    document.getElementById("shopContainer").className = "";
+    document.getElementById("newTrade").style.display = "none";
 };
 
 class Friends extends React.Component {
