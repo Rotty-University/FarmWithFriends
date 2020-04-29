@@ -46,16 +46,16 @@ public final class FarmProxy {
       prep.executeUpdate();
       // , PRIMARY KEY(username)
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text, userid integer);");
+          "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text);");
       prep.executeUpdate();
 
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, userid integer);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_inventory(username text,userid integer, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer, avocados integer, lettuce integer, potatoes integer, cucumbers integer, carrots integer, greenbeans integer, cherries integer, grapes integer, lemons integer, papayas integer, peaches integer, pineapples integer, pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, broccoli int, lavendar int, rosemary int);");
+          "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer, avocados integer, lettuce integer, potatoes integer, cucumbers integer, carrots integer, greenbeans integer, cherries integer, grapes integer, lemons integer, papayas integer, peaches integer, pineapples integer, pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, broccoli int, lavendar int, rosemary int);");
       prep.executeUpdate();
       prep.close();
       prep = conn
@@ -105,32 +105,30 @@ public final class FarmProxy {
    * @param email          take in the email as a string.
    */
   public static void insertUserInfoIntoDatabase(String username, String hashedpassword, String salt,
-      String email, int mapid, int userid) {
+      String email, int mapid) {
     PreparedStatement prep;
     try {
-      prep = conn.prepareStatement("INSERT INTO user_info VALUES (?, ?, ?, ?,?);");
+      prep = conn.prepareStatement("INSERT INTO user_info VALUES (?, ?, ?, ?);");
       prep.setString(1, username);
       prep.setString(2, hashedpassword);
       prep.setString(3, salt);
       prep.setString(4, email);
-      prep.setInt(5, userid);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_data(username, friends, friendspending, mapid, userid) VALUES (?, ?,?,?, ?);");
+          "INSERT INTO user_data(username, friends, friendspending, mapid) VALUES (?, ?,?,?);");
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
       prep.setInt(4, mapid);
-      prep.setInt(5, userid);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_inventory VALUES (?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?);");
+          "INSERT INTO user_inventory VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?);");
       prep.setString(1, username);
-      prep.setInt(2, userid);
+      prep.setInt(2, 0);
       prep.setInt(3, 0);
       prep.setInt(4, 0);
       prep.setInt(5, 0);
@@ -164,7 +162,6 @@ public final class FarmProxy {
       prep.setInt(33, 0);
       prep.setInt(34, 0);
       prep.setInt(35, 0);
-      prep.setInt(36, 0);
 //      prep.setInt(37, 0);
 
       prep.addBatch();
@@ -193,12 +190,11 @@ public final class FarmProxy {
       prep.setString(1, username);
       rs = prep.executeQuery();
       while (rs.next()) {
-        infoToReturn = new String[5];
+        infoToReturn = new String[4];
         infoToReturn[0] = rs.getString(1);
         infoToReturn[1] = rs.getString(2);
         infoToReturn[2] = rs.getString(3);
         infoToReturn[3] = rs.getString(4);
-        infoToReturn[4] = String.valueOf(rs.getInt(5));
       }
       rs.close();
       prep.close();
@@ -419,10 +415,10 @@ public final class FarmProxy {
    * @param userID the user for who we are setting the farm to.
    * @param farm   The farm object and in this case a TestFarm
    */
-  public static void initializeFarm(int userID, FarmFile farm) {
+  public static void initializeFarm(String userID, FarmFile farm) {
     PreparedStatement prep;
     try {
-      prep = conn.prepareStatement("INSERT INTO user_data(farm) VALUES (?) WHERE userid=?;");
+      prep = conn.prepareStatement("INSERT INTO user_data(farm) VALUES (?) WHERE username=?;");
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream oos;
       try {
@@ -438,7 +434,7 @@ public final class FarmProxy {
       }
       byte[] data = bos.toByteArray();
       prep.setBytes(1, data);
-      prep.setInt(2, userID);
+      prep.setString(2, userID);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -455,7 +451,7 @@ public final class FarmProxy {
    * @param userID the user for who we are setting the farm to.
    * @param farm   The farm object and in this case a TestFarm
    */
-  public static void saveFarm(int userID, FarmFile farm) {
+  public static void saveFarm(String userID, FarmFile farm) {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list pending.
@@ -475,7 +471,7 @@ public final class FarmProxy {
       }
       byte[] data = bos.toByteArray();
       prep.setBytes(1, data);
-      prep.setInt(2, userID);
+      prep.setString(2, userID);
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -491,15 +487,15 @@ public final class FarmProxy {
    * @param userID the user for who we are loading the farm for
    * @return Will return the farm file instance.
    */
-  public static FarmFile loadFarm(int userID) {
+  public static FarmFile loadFarm(String userID) {
     PreparedStatement prep;
     ResultSet rs = null;
     ByteArrayInputStream bais = null;
     ObjectInputStream ins = null;
     FarmFile farmclass = null;
     try {
-      prep = conn.prepareStatement("SELECT farm FROM user_data WHERE userid=?;");
-      prep.setInt(1, userID);
+      prep = conn.prepareStatement("SELECT farm FROM user_data WHERE username=?;");
+      prep.setString(1, userID);
       rs = prep.executeQuery();
       while (rs.next()) {
         byte[] bytess = rs.getBytes(1);
@@ -544,17 +540,18 @@ public final class FarmProxy {
   /**
    * This method will update the inventory of the user.
    *
-   * @param userID  the username for whom to update inventory for
-   * @param fruitId a string that represents the fruit name
-   * @param number  the number to update the inventory of that fruit to.
+   * @param userID    the username for whom to update inventory for
+   * @param fruitname a string that represents the fruit name
+   * @param number    the number to update the inventory of that fruit to.
    */
-  public static void updateInventory(int userID, String fruitId, int number) {
+  public static void updateInventory(String userID, String fruitname, int number) {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list pending.
-      prep = conn.prepareStatement("UPDATE user_inventory SET " + fruitId + "= ? WHERE userid=?;");
+      prep = conn
+          .prepareStatement("UPDATE user_inventory SET " + fruitname + "= ? WHERE username=?;");
       prep.setInt(1, number);
-      prep.setInt(2, userID);
+      prep.setString(2, userID);
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -646,31 +643,31 @@ public final class FarmProxy {
     return mapid;
   }
 
-  /**
-   * This method will get the username of a player based on user id.
-   *
-   * @param id the user id for which to get player name of.
-   * @return a string that represents the username.
-   */
-  public static String getUserNameFromUserId(int id) {
-    PreparedStatement prep;
-    ResultSet rs = null;
-    String username = null;
-    try {
-      prep = conn.prepareStatement("SELECT username FROM user_info WHERE userid = ?;");
-      prep.setInt(1, id);
-      rs = prep.executeQuery();
-      while (rs.next()) {
-        username = rs.getString(1);
-      }
-      prep.close();
-      rs.close();
-    } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      return username;
-    }
-    return username;
-  }
+//  /**
+//   * This method will get the username of a player based on user id.
+//   *
+//   * @param id the user id for which to get player name of.
+//   * @return a string that represents the username.
+//   */
+//  public static String getUserNameFromUserId(int id) {
+//    PreparedStatement prep;
+//    ResultSet rs = null;
+//    String username = null;
+//    try {
+//      prep = conn.prepareStatement("SELECT username FROM user_info WHERE userid = ?;");
+//      prep.setInt(1, id);
+//      rs = prep.executeQuery();
+//      while (rs.next()) {
+//        username = rs.getString(1);
+//      }
+//      prep.close();
+//      rs.close();
+//    } catch (SQLException e) {
+//      // TODO Auto-generated catch block
+//      e.printStackTrace();
+//      return username;
+//    }
+//    return username;
+//  }
 
 }

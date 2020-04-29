@@ -253,7 +253,7 @@ public final class Main {
         message = "The password is incorrect. Please try again";
         res.redirect("/login");
       }
-      userID = Integer.parseInt(userInfo[4]);
+//      userID = Integer.parseInt(userInfo[4]);
       userCookie = username;
       res.cookie(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
@@ -325,11 +325,11 @@ public final class Main {
 //        uniqueid.append(asciival);
 //      }
 //      int uniqueuserid = Integer.parseInt(uniqueid.toString());
-      int userid = username.hashCode();
-      userID = userid;
+//      int userid = username.hashCode();
+//      userID = userid;
       // insert this user information into the database.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
-          Arrays.toString(salt), email, 1, userid);
+          Arrays.toString(salt), email, 1);
       userCookie = username;
 
       res.cookie(username, username);
@@ -456,9 +456,7 @@ public final class Main {
         // add this current user who is trying to add to the pending list of the user
         // they are trying to add
         FarmProxy.UpdateFriendsPending(userCookie, username);
-//        FarmProxy.UpdateFriendsList(userCookie, username);
-//        FarmProxy.UpdateFriendsList(username, userCookie);
-        message = "sending the request right now";
+        message = "Sending the request right now";
         System.out.println("adding them");
       }
       // TODO: create an immutable map using the suggestions
