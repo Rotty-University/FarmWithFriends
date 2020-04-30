@@ -83,6 +83,8 @@ class Home extends React.Component {
         super(props);
         this.state = {
             prevselectedtool: "select",
+            m : 0,
+            n : 0
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
@@ -103,10 +105,22 @@ class Home extends React.Component {
         this.setState({prevselectedtool: newTool});
     }
 
+    componentDidMount() {
+    	$.get("/farmDimensions").done(function(response) {
+            const result = JSON.parse(response);
 
+            const prevTool = this.state.prevselectedtool;
+            this.setState({
+            	prevselectedtool : prevTool,
+            	m : result[0],
+            	n : result[1]
+            })
+//            alert(this.state.m);
+    	}.bind(this));
+    }
+    
     render() {
-
-        let table = this.generateFarmArray(1, 4, this.state.prevselectedtool);
+        let table = this.generateFarmArray(this.state.m, this.state.n, this.state.prevselectedtool);
 
         return (
             <div className={"homeContainer"} onClick={this.resetTool}>
@@ -201,37 +215,13 @@ class Tile extends React.Component {
 //                " isWatered " + (String)(thisTileInfo[1]) +
 //                " cropID: " + (String)(thisTileInfo[2]) +
 //                " crop status: " + (String)(thisTileInfo[3]));
-            const cropStatus = thisTileInfo[3];
             const isPlowed = thisTileInfo[0];
             const isWatered = thisTileInfo[1];
             const cropID = thisTileInfo[2];
-            // update board
-
-            //general path
-            let newPath = "css/images/";
+            const cropStatus = thisTileInfo[3];
             
-            if (cropStatus != -9) {
-            	// show a crop (for now, until we figure out overlay)
-            	newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
-            	console.log(newPath);
-            } else {
-            	// no crop, just show land
-            	newPath += "landImages/";
-            	
-            	if (isPlowed == 0) {
-            		// not plowed
-            		newPath += "unplowed";
-            	} else if (isWatered == 0) {
-            		// plowed but NOT watered
-            		newPath += "plowed";
-            	} else {
-            		// plowed AND watered
-            		newPath += "watered";
-            	}
-            }
-            
-            // add file format
-            newPath += ".png";
+            // get new path
+            const newPath = getNewSpritePath(isPlowed, isWatered, cropID, cropStatus);
 
             //This is updating the visual appearance of the tile:
             this.setState({spritepath: newPath})
@@ -239,7 +229,6 @@ class Tile extends React.Component {
     }
 
     render() {
-    	// needs to re render all farm tiles
         return (
             <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
         );
@@ -300,5 +289,53 @@ class Settings extends React.Component {
         )
     }
 }
+
+// helper functions
+
+// based on inputs, return the correct sprite path for a tile
+function getNewSpritePath(isPlowed, isWatered, cropID, cropStatus) {
+    //general path
+    let newPath = "css/images/";
+    
+    if (cropStatus != -9) {
+    	// show a crop (for now, until we figure out overlay)
+    	newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
+    	console.log(newPath);
+    } else {
+    	// no crop, just show land
+    	newPath += "landImages/";
+    	
+    	if (isPlowed == 0) {
+    		// not plowed
+    		newPath += "unplowed";
+    	} else if (isWatered == 0) {
+    		// plowed but NOT watered
+    		newPath += "plowed";
+    	} else {
+    		// plowed AND watered
+    		newPath += "watered";
+    	}
+    }
+    
+    // add file format
+    newPath += ".png";
+    
+    return newPath;
+}
+
+// get the dimensions of current farm (for first render)
+function getFarmDimensions() {
+	
+	return $.get("/farmDimensions", response => {
+        const result = JSON.parse(response);
+        
+        return result;
+        });
+	
+}
+
+//setInterval(function() {
+//	alert("hello"); }, 3000);
+// ----------------------------------------------
 
 ReactDOM.render(<Main/>, document.getElementById('nav_bar_container'));

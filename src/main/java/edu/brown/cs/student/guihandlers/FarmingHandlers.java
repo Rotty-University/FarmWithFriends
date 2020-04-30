@@ -27,7 +27,7 @@ public class FarmingHandlers {
   /**
    * Takes request from GUI and perform actions on the farm, then return the new
    * state of the farm
-   * 
+   *
    * @author zjk97
    * @author hlucco
    *
@@ -113,6 +113,22 @@ public class FarmingHandlers {
       return GSON.toJson(hm);
     }
 
-  }
+  } // end of farmingHandler class
+
+  public class GetFarmDimensionsHandler implements Route {
+
+    @Override
+    public String handle(Request req, Response res) throws Exception {
+      int m = app.getThePlantation().length;
+      int n = app.getThePlantation()[0].length;
+
+      int[] ret = {
+          m, n
+      };
+
+      return GSON.toJson(ret);
+    }
+
+  } // end of getFarmDimensionsHandler class
 
 } // end of class

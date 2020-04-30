@@ -114,6 +114,8 @@ public class FarmViewer {
         }
       }
     }
+
+    saveFarm();
   }
 
   // ---------------------------------------------------------------------------
@@ -141,7 +143,7 @@ public class FarmViewer {
       thePlantation = nextFarmFile.getThePlantation();
       farmName = nextFarmFile.getFarmName();
 
-      System.out.println("Welcome to " + ownerName + "'s farm");
+      System.out.println("Hello" + viewerName + ", " + "welcome to " + ownerName + "'s farm");
     }
 
   } // end of switch command class

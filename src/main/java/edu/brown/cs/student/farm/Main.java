@@ -72,20 +72,20 @@ public final class Main {
     // Process commands in a REPL
     repl = new REPL(System.in);
 
-//// uncomment here to use commandline only
-//    // *************************************
-//    // *** DO NOT DELETE, I WILL KILL YOU***
-//    // *************************************
-//    // set database for commandline use
-//    FarmProxy.setUpDataBase();
-//    // init app
-//    app = new FarmViewer(repl, "JUnitTest");
-//    // init farming handlers
-//    String[] tokens = {
-//        "JUnitTest"
-//    };
-//    app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
-//// -------------------------
+// uncomment here to use commandline only
+    // *************************************
+    // *** DO NOT DELETE, I WILL KILL YOU***
+    // *************************************
+    // set database for commandline use
+    FarmProxy.setUpDataBase();
+    // init app
+    app = new FarmViewer(repl, "JUnitTest");
+    // init farming handlers
+    String[] tokens = {
+        "JUnitTest"
+    };
+    app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
+// -------------------------
 
     FarmProxy.setUpDataBase();
     // Stars the GUI server
@@ -150,6 +150,7 @@ public final class Main {
     // init farming handlers
     farmingHandlers = new FarmingHandlers(app);
     Spark.post("/farmland", farmingHandlers.new FarmingHandler());
+    Spark.get("/farmDimensions", farmingHandlers.new GetFarmDimensionsHandler());
   }
 
   /**
