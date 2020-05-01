@@ -1,48 +1,44 @@
-var total_x = 20; //Total width
-		var total_y = 20; // Total height
+		var total_x = 6; //Total width
+		var total_y = 6; // Total height
 		var total_elements = total_x * total_y; //Total of elements in the matrix
 		var map = createArray(total_x, total_y);
 		var map_empty = [];
 		var basic_elements = [];
-		var tolerance = 12; // Number of consecutive blocks of the same type to make it right
+		var tolerance = 3; // Number of consecutive blocks of the same type to make it right
 		var allow_multiples_seeds = true; //If this is set up to true, once we cannot continue expanding a current seed, we are going to generate a new one.
 		var total_options = [];
 		let counter  =0;
 		let my_var = 0;
 		let dictionaryy = {};
-	
-		$(document).ready(function(){ //Document start
-			document.getElementById("map_table").style.display = "none"
-				
-				
-		});
+		//will be used to count the number of total free spaces available through subtraction with total. 
+		let waterSpaceCount = {};
+		//This function will make the first ever map to store into the database.
 		function makeInitialMap(){
-			console.log("in function");
 			document.getElementById("map_table").style.display = "none"
 			document.getElementById("map_table").innerHTML = "";
 			fillTable();
 			setBasicElements();
 			fullfillTerrain();
 			for(i=0;i<tolerance;i++) cleanUpMap();
-			console.log(counter);
 			const postParameters = {
-				dictionary_data: JSON.stringify(dictionaryy)
+				dictionary_data: JSON.stringify(dictionaryy),
+				free_space: (total_y*total_x)- Object.keys(waterSpaceCount).length,
+				water_space_data : JSON.stringify(waterSpaceCount)
 			};
 			console.log("we are here about to send over the data to make the map");
 			$.post("/mapMaker", postParameters, response => {
 				const object = JSON.parse(response);
 				const dictionaryyy = JSON.parse(object.data)
-				console.log(dictionaryyy["19,18"][0])
 				console.log(Object.keys(dictionaryyy).length);
 				for(let x = 1; x<total_x+1;x++){
 					for(let y = 1; y<total_y+1;y++){
-						console.log(dictionaryyy[x.toString()+","+y.toString()]);
 						changeElementType(dictionaryyy[x.toString()+","+y.toString()][0],dictionaryyy[x.toString()+","+y.toString()][1],dictionaryyy[x.toString()+","+y.toString()][2]);
 					}
 				}
 				document.getElementById("map_table").style.display = "block";
 			});
-			
+			dictionaryy = {};
+			waterSpaceCount = {};
 		};
 		function makeMap(){
 			if(my_var%2 === 0){
@@ -52,7 +48,6 @@ var total_x = 20; //Total width
 				fullfillTerrain();
 				for(i=0;i<tolerance;i++) cleanUpMap();
 				my_var++;
-				console.log(counter);
 			}else{
 				console.log("In the else statement");
 				document.getElementById("map_table").innerHTML = "";
@@ -65,6 +60,8 @@ var total_x = 20; //Total width
 					}
 				}
 				my_var++;
+				dictionaryy = {};
+				waterSpaceCount = {};
 			}
 			document.getElementById("map_table").style.display = "block";
 		};
@@ -76,16 +73,22 @@ var total_x = 20; //Total width
 				dictionary_data: "placeholder"
 			};
 			$.post("/mapRetriever", postParameters, response => {
-				console.log("YESSIR");
+				console.log("In the mapRetriever");
 				const object = JSON.parse(response);
-				let dictionaryyy = JSON.parse(object.data)
-				console.log(dictionaryyy["1,1"]);
-				for(let x = 1; x<total_x+1;x++){
-					for(let y = 1; y<total_y+1;y++){
+				let map_dictionary_with_objectlocations = JSON.parse(object.data);
+				let mapNeededVariable = object.mapNeeded;
+				console.log(mapNeededVariable);
+				if(mapNeededVariable === "false"){
+					for(let x = 1; x<total_x+1;x++){
+						for(let y = 1; y<total_y+1;y++){
 						
-						changeElementType(dictionaryyy[x.toString()+","+y.toString()][0],dictionaryyy[x.toString()+","+y.toString()][1],dictionaryyy[x.toString()+","+y.toString()][2]);
+							changeElementType(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
+						}
 					}
+				}else{
+					makeInitialMap();
 				}
+
 				document.getElementById("map_table").style.display = "block";
 				});
 		};
@@ -185,10 +188,18 @@ var total_x = 20; //Total width
 						
 						//alert("Found item at: " + x + ' (x=' + ( x + 1 )+ ')- ' + y + ' (y = ' + (y+1) + ') and will switch for the one at: ' + random_x + '(x = ' + (random_x + 1 ) + ')-' + random_y + '( y = ' + (random_y + 1) + ')');
 						changeElementType(x+1,y+1,map[random_x][random_y]);
-						let new_x  = x+1
-						let new_y = y+1
-						dictionaryy[new_x+","+new_y] = [new_x,new_y,map[random_x][random_y]];
-						counter++;
+						let new_xx  = x+1
+						let new_yy = y+1
+						dictionaryy[new_xx+","+new_yy] = [new_xx,new_yy,map[random_x][random_y]];
+						//checking if this location was in dictionary as water space but has now changed. 
+						if(waterSpaceCount.hasOwnProperty(new_xx+","+new_yy) && map[random_x][random_y] != 'water_space'){
+							delete waterSpaceCount[new_xx+","+new_yy];
+							console.log("IN HERE");
+						}
+						//adding to the dictionary if it is of water space so we know much non-farmable space there is. 
+						if(map[random_x][random_y] === 'water_space'){
+							waterSpaceCount[new_xx+","+new_yy] = 1;
+						}
 					
 					}
 					
@@ -342,8 +353,9 @@ var total_x = 20; //Total width
 					//storing in array and dictionary so we can get a repeat. 
 					total_options.push([new_x,new_y,basic_elements[type].class])
 					dictionaryy[new_x+","+new_y] = [new_x,new_y,basic_elements[type].class];
-					console.log(total_options[0])
-					// counter++;
+					if(basic_elements[type].class === 'water_space'){
+						waterSpaceCount[new_x+","+new_y] = 1;
+					}
 					tries = max_tries + 1;
 					basic_elements[type].added.push(new_x+","+new_y);
 					added = true;
@@ -380,7 +392,10 @@ var total_x = 20; //Total width
 					changeElementType(x,y,basic_elements[type].class);
 					total_options.push([x,y,basic_elements[type].class]);
 					dictionaryy[x+","+y] = [x,y,basic_elements[type].class];
-					// counter++;
+					if(basic_elements[type].class === 'water_space'){
+						console.log('true');
+						waterSpaceCount[x+","+y] = 1;
+					}
 					added = true;
 					basic_elements[type].added.push(x+","+y);
 					// logM("Removing " + random_empty + " from the list of empty spaces");

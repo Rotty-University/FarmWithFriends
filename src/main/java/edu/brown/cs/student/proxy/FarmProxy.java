@@ -54,15 +54,15 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, already_loaded_map int);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer, avocados integer, lettuce integer, potatoes integer, cucumbers integer, carrots integer, greenbeans integer, cherries integer, grapes integer, lemons integer, papayas integer, peaches integer, pineapples integer, pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, broccoli int, lavendar int, rosemary int, demo_crop int, demo_crop2 int);");
       prep.executeUpdate();
       prep.close();
-      prep = conn
-          .prepareStatement("CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text);");
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text, free_space integer);");
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -172,8 +172,7 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't insert intot he database.");
     }
 
   }
@@ -183,7 +182,7 @@ public final class FarmProxy {
    *
    * @param username It will take in the username the user has entered as the
    *                 string.
-   * @return It will return a stirng array that represents the user information.
+   * @return It will return a string array that represents the user information.
    */
   public static String[] getUserInfoFromDataBaseForLogIn(String username) {
     String[] infoToReturn = null;
@@ -278,10 +277,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database");
     }
-    // This will update the friend list of the other user.
 
   }
 
@@ -356,8 +353,7 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
     // This will update the friend list of the other user.
 
@@ -406,10 +402,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
-    // This will update the friend list of the other user.
 
   }
 
@@ -441,8 +435,7 @@ public final class FarmProxy {
         oos.close();
         bos.close();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't perform operation.");
       }
       byte[] data = bos.toByteArray();
       prep.setBytes(1, data);
@@ -451,8 +444,7 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
 
   }
@@ -478,8 +470,7 @@ public final class FarmProxy {
         oos.close();
         bos.close();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't perform operation.");
       }
       byte[] data = bos.toByteArray();
       prep.setBytes(1, data);
@@ -487,8 +478,7 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
 
   }
@@ -522,26 +512,23 @@ public final class FarmProxy {
       try {
         ins = new ObjectInputStream(bais);
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't query into the database.");
         return null;
 
       }
       try {
         farmclass = (FarmFile) ins.readObject();
       } catch (ClassNotFoundException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't read to this class.");
         return null;
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't perform operation.");
         return null;
       }
       rs.close();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
+      System.err.println("ERROR: Can't query into the database.");
       return null;
     }
 
@@ -564,9 +551,8 @@ public final class FarmProxy {
       rs.close();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       System.out.println("ERROR");
+      return -1;
     }
 
     return ret;
@@ -589,9 +575,8 @@ public final class FarmProxy {
       rs.close();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       System.out.println("ERROR");
+      return null;
     }
 
     return ret;
@@ -615,11 +600,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       System.out.println("ERROR");
     }
-    // This will update the friend list of the other user.
 
   }
 
@@ -629,19 +611,19 @@ public final class FarmProxy {
    *
    * @param mapdata the data of the farm represented as a string.
    */
-  public static void insertMapIntoDataBase(int id, String mapdata) {
+  public static void insertMapIntoDataBase(int id, String mapdata, int free_space) {
     PreparedStatement prep;
 
     try {
-      prep = conn.prepareStatement("INSERT INTO user_maps VALUES (?,?);");
+      prep = conn.prepareStatement("INSERT INTO user_maps VALUES (?,?,?);");
       prep.setInt(1, id);
       prep.setString(2, mapdata);
+      prep.setInt(3, free_space);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
 
   }
@@ -668,16 +650,90 @@ public final class FarmProxy {
       prep.close();
       rs.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
       return null;
     }
     return mapdata;
   }
 
   /**
+   * This method will update the the free space that is available in a map.
+   *
+   * @param id        the id for the map in which we want to update the free space
+   *                  of.
+   * @param freeSpace the number to which we want to set the free space to.
+   */
+  public static void updateFreeSpaceInMaps(int id, int freeSpace) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_maps SET free_space=? WHERE mapid=?;");
+      prep.setInt(1, freeSpace);
+      prep.setInt(2, id);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  /**
+   * This method will return the amount of free spaces in the map given the id.
+   *
+   * @param id The id for which we will update the free space for.
+   * @return the int representing the amount of free space left in the map.
+   *         Returns -1 if errors.
+   */
+  public static int getFreeSpaceFromMap(int id) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    int freeSpace = -1;
+    try {
+      prep = conn.prepareStatement("SELECT free_space FROM user_maps WHERE mapid = ?;");
+      prep.setInt(1, id);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        freeSpace = rs.getInt(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      return freeSpace;
+    }
+    return freeSpace;
+  }
+
+  /**
+   * This method will retrieve the information of the most recent map that will be
+   * used to check to see if we need to make a new map.
+   *
+   * @return It will return an array of Strings representing the info on the map.
+   */
+  public static String[] getDataFromMostRecentMap() {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    String[] mapInfo = null;
+    try {
+      prep = conn.prepareStatement("SELECT * FROM user_maps ORDER BY mapid DESC LIMIT 1;");
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        mapInfo = new String[3];
+        mapInfo[0] = String.valueOf(rs.getInt(1));
+        mapInfo[1] = rs.getString(2);
+        mapInfo[2] = String.valueOf(rs.getInt(3));
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      System.err.println("ERROR in getting from recent");
+      return mapInfo;
+    }
+    return mapInfo;
+  }
+
+  /**
    * This method will retrieve the map from the database so that it can be loaded
-   * into
+   * up for the user in the front end.
    *
    * @param id the user id of the user.
    * @return return the integer that represents the mad id of the user.
@@ -696,8 +752,6 @@ public final class FarmProxy {
       prep.close();
       rs.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       return -1;
     }
     return mapid;

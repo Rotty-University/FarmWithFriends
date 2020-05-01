@@ -46,6 +46,8 @@ public final class Main {
   static String message = "";
   static String createMessage = "";
   static String userCookie = null;
+  static int currentMapID = 1;
+  static int freeSpaceInMap;
 
   /**
    * The initial method called when execution begins.
@@ -287,7 +289,6 @@ public final class Main {
         md.update(salt);
         hashedPassword = md.digest(password.getBytes(StandardCharsets.UTF_8));
       } catch (NoSuchAlgorithmException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       // check if the hash from the database matches this hash
@@ -298,6 +299,9 @@ public final class Main {
 //      userID = Integer.parseInt(userInfo[4]);
       userCookie = username;
       res.cookie(username, username);
+      // keeping track of the logged in user.
+      req.session(true);
+      req.session().attribute(username, username);
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
 
       // init farm and start game
@@ -359,23 +363,42 @@ public final class Main {
         md.update(salt);
         hashedPassword = md.digest(password.getBytes(StandardCharsets.UTF_8));
       } catch (NoSuchAlgorithmException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
-//      for (int i = 0; i < username.length(); i++) {
-//        char c = username.charAt(i);
-//        int asciival = c;
-//        uniqueid.append(asciival);
-//      }
-//      int uniqueuserid = Integer.parseInt(uniqueid.toString());
-//      int userid = username.hashCode();
-//      userID = userid;
+//      // THIS IS WHERE WE WILL TAKE CARE OF MAKING WHAT MAP WILL SHOW UP.
+      String[] mapInfo = FarmProxy.getDataFromMostRecentMap();
+      // only read if this is not null
+      if (mapInfo != null) {
+        System.out.println("In the if statment in making new user so getting data not null");
+        int mapid = Integer.parseInt(mapInfo[0]);
+        int freespace = Integer.parseInt(mapInfo[2]);
+        // if there is no free space meaning that each user already holds a place here,
+        // then make a new map by incrementing the map counter.
+        if (freespace == 0) {
+          System.out.println("no free space so will increment the currentMap Id");
+          currentMapID = mapid + 1;
+          // else just make the currentMap the one from the database. the free space will
+          // be adjusted later.
+        } else {
+          currentMapID = mapid;
+          freeSpaceInMap = freespace;
+        }
+      }
+      // NEED TO GET RID OF THIS.
+      else {
+        currentMapID = 1;
+        freeSpaceInMap = -1;
+      }
+
       // insert this user information into the database.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
-          Arrays.toString(salt), email, 1);
+          Arrays.toString(salt), email, currentMapID);
       userCookie = username;
 
       res.cookie(username, username);
+      req.session(true);
+      req.session().attribute(username, username);
+
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
           username);
 
@@ -429,10 +452,13 @@ public final class Main {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
-      if (req.cookies().containsKey(userCookie)) {
+      System.out.println("before" + req.session().attributes().size());
+      if (req.session().attributes().contains(userCookie)) {
         System.out.println("dfgdfgdgd");
         res.removeCookie(userCookie);
+        req.session().removeAttribute(userCookie);
         userCookie = null;
+        System.out.println(req.session().attributes().size());
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";
@@ -452,7 +478,6 @@ public final class Main {
   private static class AddingFriendsHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       String username = qm.value("text");
       String message = "";
@@ -510,9 +535,7 @@ public final class Main {
         message = "Sending the request right now";
         System.out.println("adding them");
       }
-      // TODO: create an immutable map using the suggestions
       variables = ImmutableMap.of("message", message);
-      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
@@ -527,12 +550,9 @@ public final class Main {
   private static class FriendLoaderHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       String friendslist = FarmProxy.getFriendsList(userCookie);
-      // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
-      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
@@ -548,12 +568,9 @@ public final class Main {
   private static class FriendPendingLoaderHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       String friendslist = FarmProxy.getFriendsListPending(userCookie);
-      // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
-      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
@@ -569,7 +586,6 @@ public final class Main {
   private static class FriendAcceptedHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       String username = qm.value("text");
       String friendslistpending = FarmProxy.getFriendsListPending(userCookie);
@@ -577,9 +593,7 @@ public final class Main {
       FarmProxy.UpdateFriendsPendingAfterAdding(friendslistpending, userCookie);
       FarmProxy.UpdateFriendsList(userCookie, username);
       FarmProxy.UpdateFriendsList(username, userCookie);
-      // TODO: create an immutable map using the suggestions
       Map<String, String> variables = ImmutableMap.of("list", username);
-      // TODO: return a Json of the suggestions (HINT: use the GSON instance)
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
@@ -596,9 +610,11 @@ public final class Main {
       // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       String dictionarydata = qm.value("dictionary_data");
-      System.out.println("THE data is" + qm.value("dictionary_data"));
-      System.out.println(qm.value("dictionary_data").getClass().getName());
-      FarmProxy.insertMapIntoDataBase(1, dictionarydata);
+      int freeSpace = Integer.parseInt(qm.value("free_space"));
+      FarmProxy.insertMapIntoDataBase(currentMapID, dictionarydata, freeSpace);
+      if (freeSpaceInMap == -1) {
+        freeSpaceInMap = freeSpace;
+      }
       Map<String, String> variables = ImmutableMap.of("data", dictionarydata);
       GSON.toJson(variables);
       return GSON.toJson(variables);
@@ -613,12 +629,21 @@ public final class Main {
   private static class MapRetriever implements Route {
     @Override
     public String handle(Request req, Response res) {
-      // TODO: query the value of the input you want to generate suggestions for
       QueryParamsMap qm = req.queryMap();
       int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
       System.out.println(id);
-      String mapdata = FarmProxy.getMapFromDataBase(id);
-      Map<String, String> variables = ImmutableMap.of("data", mapdata);
+      String needMap = "false";
+      String mapdata = FarmProxy.getMapFromDataBase(currentMapID);
+      if (mapdata == null) {
+        System.out.println("MAP DATA IS NULL");
+        needMap = "true";
+        mapdata = "{}";
+      } else {
+        FarmProxy.updateFreeSpaceInMaps(currentMapID, freeSpaceInMap - 1);
+      }
+      // Will need to pass in variable to the map that will be used to black out areas
+      // taken already by players.
+      Map<String, String> variables = ImmutableMap.of("data", mapdata, "mapNeeded", needMap);
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
