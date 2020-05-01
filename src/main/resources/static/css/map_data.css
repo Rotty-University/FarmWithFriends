@@ -31,11 +31,10 @@
 	color:black;
 }
 #map_table{
-	width:500px;
 	vertical-align: middle;
 	margin: auto;
 	margin-right: auto;
-  margin-left: auto;
+  	margin-left: auto;
 	padding: 250px;
 	float: center;
 }

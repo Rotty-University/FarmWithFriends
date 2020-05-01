@@ -213,6 +213,7 @@ td {
 .pending{
     background: black;
     padding: 5px;
+    cursor :pointer;
 }
 #list_of_friends_pending{
     list-style-type: none;
