@@ -399,7 +399,7 @@ public final class Main {
       // insert this user information into the database.
       // change the false back to true eventually.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
-          Arrays.toString(salt), email, currentMapID, "false");
+          Arrays.toString(salt), email, currentMapID, "true");
       userCookie = username;
 
       res.cookie(username, username);

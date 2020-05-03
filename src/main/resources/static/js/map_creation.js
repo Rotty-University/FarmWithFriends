@@ -33,7 +33,7 @@
   			console.log(row_num);
   			console.log(col_num);
   			if(map_information[(row_num+1)+','+(col_num+1)][2] === 'water_space' ){
-  				document.getElementById("message_for_user_on_click").append("Sorry! Can't have your farm here. It's water!'. Please pick somewhere else.");
+  				document.getElementById("message_for_user_on_click").append("Sorry! Can't have your farm here. It's water!. Please pick somewhere else.");
   			}else if(map_information[(row_num+1)+','+(col_num+1)][2] === 'black_space'){
 				document.getElementById("message_for_user_on_click").append("Sorry! Can't have your farm here. it is already occupied.");
   			}else{
@@ -56,8 +56,11 @@
   			
 
 		}
-		//This function will make the first ever map to store into the database.
-		function makeInitialMap(){
+		/**
+		This function will be called when we need a new map built if the other map is filled up already. The backend will send a signal for when this map
+		should be created and this map will be stored in the database in the backend. 
+		**/
+		function makeMapWhenNoFreeSpace(){
 			document.getElementById("map_table").style.display = "none"
 			document.getElementById("map_table").innerHTML = "";
 			fillTable();
@@ -85,31 +88,31 @@
 			dictionaryy = {};
 			waterSpaceCount = {};
 		};
-		function makeMap(){
-			if(my_var%2 === 0){
-				document.getElementById("map_table").innerHTML = "";
-				fillTable();
-				setBasicElements();
-				fullfillTerrain();
-				for(i=0;i<tolerance;i++) cleanUpMap();
-				my_var++;
-			}else{
-				console.log("In the else statement");
-				document.getElementById("map_table").innerHTML = "";
-				fillTable();
-				setBasicElements();
-				console.log(Object.keys(dictionaryy).length);
-				for(let x = 1; x<total_x+1;x++){
-					for(let y = 1; y<total_y+1;y++){
-						changeElementType(dictionaryy[x.toString()+","+y.toString()][0],dictionaryy[x.toString()+","+y.toString()][1],dictionaryy[x.toString()+","+y.toString()][2]);
-					}
-				}
-				my_var++;
-				dictionaryy = {};
-				waterSpaceCount = {};
-			}
-			document.getElementById("map_table").style.display = "block";
-		};
+		// function makeMap(){
+		// 	if(my_var%2 === 0){
+		// 		document.getElementById("map_table").innerHTML = "";
+		// 		fillTable();
+		// 		setBasicElements();
+		// 		fullfillTerrain();
+		// 		for(i=0;i<tolerance;i++) cleanUpMap();
+		// 		my_var++;
+		// 	}else{
+		// 		console.log("In the else statement");
+		// 		document.getElementById("map_table").innerHTML = "";
+		// 		fillTable();
+		// 		setBasicElements();
+		// 		console.log(Object.keys(dictionaryy).length);
+		// 		for(let x = 1; x<total_x+1;x++){
+		// 			for(let y = 1; y<total_y+1;y++){
+		// 				changeElementType(dictionaryy[x.toString()+","+y.toString()][0],dictionaryy[x.toString()+","+y.toString()][1],dictionaryy[x.toString()+","+y.toString()][2]);
+		// 			}
+		// 		}
+		// 		my_var++;
+		// 		dictionaryy = {};
+		// 		waterSpaceCount = {};
+		// 	}
+		// 	document.getElementById("map_table").style.display = "block";
+		// };
 		function makeMapFromDataBase(){
 			document.getElementById("map_table").innerHTML = "";
 			fillTable();
@@ -132,7 +135,7 @@
 						}
 					}
 				}else{
-					makeInitialMap();
+					makeMapWhenNoFreeSpace();
 				}
 
 				document.getElementById("map_table").style.display = "block";
