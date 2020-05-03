@@ -41,6 +41,6 @@
 	position: absolute;
 	/*This is what is causing it to be like this.*/
 	right: 400px;
-	bottom: 300px;
+	bottom: 100px;
 	text-align: center;
 }
