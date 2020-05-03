@@ -38,16 +38,9 @@
 	color:black;
 }
 #map_table{
-/*	vertical-align: middle;
-	margin: auto;
-	margin-right: auto;
-  	margin-left: auto;*/
-/*	padding: 250px;*/
-/*	float: center;*/
-/*	display: flex;
-	justify-content: center;
-	align-items: center;*/
 	position: absolute;
-	right: 200px;
+	/*This is what is causing it to be like this.*/
+	right: 400px;
+	bottom: 300px;
 	text-align: center;
 }
