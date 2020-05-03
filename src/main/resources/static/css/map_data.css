@@ -5,13 +5,16 @@
 	float:left;
 }
 .element{
-	border: 1px gray solid;
-	height:20px;
+/*	border: 1px gray solid;
+*/	height:20px;
 	width:20px;
 	font-size:7px;
+		display: inline-block;
+/*	justify-content: center;
+	align-items: center;*/
 }
 .selected{
-	border: 1px black solid !important;
+/*	border: 1px black solid !important;*/
 }
 
 .forest_space{
@@ -30,11 +33,21 @@
 	background-color: #17e88a;
 	color:black;
 }
+.black_space{
+	background-color: black;
+	color:black;
+}
 #map_table{
-	vertical-align: middle;
+/*	vertical-align: middle;
 	margin: auto;
 	margin-right: auto;
-  	margin-left: auto;
-	padding: 250px;
-	float: center;
+  	margin-left: auto;*/
+/*	padding: 250px;*/
+/*	float: center;*/
+/*	display: flex;
+	justify-content: center;
+	align-items: center;*/
+	position: absolute;
+	right: 200px;
+	text-align: center;
 }

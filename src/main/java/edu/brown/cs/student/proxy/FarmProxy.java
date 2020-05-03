@@ -37,16 +37,16 @@ public final class FarmProxy {
       conn = DriverManager.getConnection(urlToDB);
       PreparedStatement prep;
 //      // simulator databases
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
-//      prep.executeUpdate();
-//
-//      prep.close();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
-//      prep.executeUpdate();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
-//      prep.executeUpdate();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
-//      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
+      prep.executeUpdate();
+
+      prep.close();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
+      prep.executeUpdate();
 //      // , PRIMARY KEY(username)
 
       prep = conn.prepareStatement(
@@ -54,7 +54,7 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, already_loaded_map int);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, isNewUser text);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
@@ -108,7 +108,7 @@ public final class FarmProxy {
    * @param email          take in the email as a string.
    */
   public static void insertUserInfoIntoDatabase(String username, String hashedpassword, String salt,
-      String email, int mapid) {
+      String email, int mapid, String newUser) {
     PreparedStatement prep;
     try {
       prep = conn.prepareStatement("INSERT INTO user_info VALUES (?, ?, ?, ?);");
@@ -120,11 +120,12 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_data(username, friends, friendspending, mapid) VALUES (?, ?,?,?);");
+          "INSERT INTO user_data(username, friends, friendspending, mapid, isNewUser) VALUES (?, ?,?,?,?);");
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
       prep.setInt(4, mapid);
+      prep.setString(5, newUser);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -755,6 +756,68 @@ public final class FarmProxy {
       return -1;
     }
     return mapid;
+  }
+
+  /**
+   * This method will update the map data from a click from the user whenever they
+   * select their option.
+   *
+   * @param id      The id of the map to update.
+   * @param mapdata The data to update the mapdata with.
+   */
+  public static void updateTheMapData(int id, String mapdata) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_maps SET mapdata=? WHERE mapid=?;");
+      prep.setString(1, mapdata);
+      prep.setInt(2, id);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  /**
+   * This method will update whether or not the user is a new user anymore so that
+   * they can acess the home page and all the other functionlities of the game. If
+   * they are still a new user they will be directed to the new user page.
+   *
+   * @param username   the username for who to update the status for.
+   * @param indication the status we are updating it to. true or false.
+   */
+  public static void updateNewUserIndication(String username, String status) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_data SET isNewUser=? WHERE username=?;");
+      prep.setString(1, status);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  public static String getStatusOfUser(String username) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    String status = null;
+    try {
+      prep = conn.prepareStatement("SELECT isNewUser FROM user_data WHERE username = ?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        status = rs.getString(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      return status;
+    }
+    return status;
   }
 
 //  /**

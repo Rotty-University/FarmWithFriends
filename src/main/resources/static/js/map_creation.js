@@ -1,17 +1,61 @@
-		var total_x = 6; //Total width
-		var total_y = 6; // Total height
+		var total_x = 20; //Total width
+		var total_y = 20; // Total height
 		var total_elements = total_x * total_y; //Total of elements in the matrix
 		var map = createArray(total_x, total_y);
 		var map_empty = [];
 		var basic_elements = [];
-		var tolerance = 3; // Number of consecutive blocks of the same type to make it right
+		var tolerance = 10; // Number of consecutive blocks of the same type to make it right
 		var allow_multiples_seeds = true; //If this is set up to true, once we cannot continue expanding a current seed, we are going to generate a new one.
 		var total_options = [];
 		let counter  =0;
 		let my_var = 0;
 		let dictionaryy = {};
+		//this dictionary will be set from the the getting map from database so we can use it in the clickhandler. 
+		let map_information= {};
 		//will be used to count the number of total free spaces available through subtraction with total. 
 		let waterSpaceCount = {};
+		/**
+		This is the method that will take care of when the user clicks on the map to track where their map will be. This function will update the map
+		so that visually, the map location turns black and it will send a post request to the backend so that the map will be logically updated in the 
+		backend. 
+		*/
+		function mapClickHandler(){
+			document.getElementById("message_for_user_on_click").innerHTML = "";
+			console.log(event.pageX);
+			console.log(event.pageY);
+			let map_obj = $("#map_table");
+			console.log(map_obj.offset());
+			const col_val = event.pageX - map_obj.offset().left;
+  			const row_val = event.pageY - map_obj.offset().top;
+  			//Getting the indices of the row and column.
+  			let row_num = Math.floor(row_val/20);
+  			let col_num = Math.floor(col_val/20);
+  			console.log(row_num);
+  			console.log(col_num);
+  			if(map_information[(row_num+1)+','+(col_num+1)][2] === 'water_space' ){
+  				document.getElementById("message_for_user_on_click").append("Sorry! Can't have your farm here. It's water!'. Please pick somewhere else.");
+  			}else if(map_information[(row_num+1)+','+(col_num+1)][2] === 'black_space'){
+				document.getElementById("message_for_user_on_click").append("Sorry! Can't have your farm here. it is already occupied.");
+  			}else{
+  				let farm_type = map_information[(row_num+1)+','+(col_num+1)][2];
+  				map_information[(row_num+1)+','+(col_num+1)][2] = 'black_space';
+  				changeElementType(row_num+1, col_num+1, "black_space");
+  				const postParameters = {
+  					dictionary_data: JSON.stringify(map_information),
+  					row: row_num,
+  					col: col_num,
+  					new_user: 'false',
+  					farmtype: farm_type
+  				}
+  				$.post("/clickOnMap" , postParameters, response =>{
+  					window.location.replace("http://localhost:4567/home");
+  				});
+  				
+
+  			}
+  			
+
+		}
 		//This function will make the first ever map to store into the database.
 		function makeInitialMap(){
 			document.getElementById("map_table").style.display = "none"
@@ -37,6 +81,7 @@
 				}
 				document.getElementById("map_table").style.display = "block";
 			});
+			map_information = dictionaryy;
 			dictionaryy = {};
 			waterSpaceCount = {};
 		};
@@ -77,6 +122,7 @@
 				const object = JSON.parse(response);
 				let map_dictionary_with_objectlocations = JSON.parse(object.data);
 				let mapNeededVariable = object.mapNeeded;
+				map_information = map_dictionary_with_objectlocations;
 				console.log(mapNeededVariable);
 				if(mapNeededVariable === "false"){
 					for(let x = 1; x<total_x+1;x++){
