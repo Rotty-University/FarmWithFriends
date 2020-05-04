@@ -86,6 +86,7 @@ class Home extends React.Component {
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
+        this.closeTheDiv = this.closeTheDiv.bind(this)
     }
 
     generateFarmArray(rows, columns, activetool) {
@@ -102,12 +103,14 @@ class Home extends React.Component {
         selected.className = "toolbarSelected";
         this.setState({prevselectedtool: newTool});
     }
+    closeTheDiv(){
+        document.getElementById("map_viewer").innerHTML = "";
+    }
 
 
     render() {
-
+        this.closeTheDiv()
         let table = this.generateFarmArray(1, 4, this.state.prevselectedtool);
-
         return (
             <div className={"homeContainer"} onClick={this.resetTool}>
                 <div className={"farmContainer"}>
@@ -284,16 +287,15 @@ class GameMap extends React.Component {
         let col = object.col;
         map_information = map_dictionary_with_objectlocations;
         map_dictionary_with_objectlocations[row+","+col][2] = "white_space";
-        console.log(mapNeededVariable);
             for(let x = 1; x<total_x+1;x++){
                 for(let y = 1; y<total_y+1;y++){
-                    changeElementTypeHere(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
+                    changeElementTypee(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
                 }
             }
         document.getElementById("map_viewer").style.display = "block";
         });   
     }
-    changeElementTypeHere(x,y,cl){ 
+    changeElementTypee(x,y,cl){ 
         selector = "#spacee_"+x+'-'+y;
         var element = $(selector);
         $.each(basic_elements, function(index,value){
@@ -302,12 +304,12 @@ class GameMap extends React.Component {
         element.removeClass('empty').addClass('selected').addClass(cl);
     }
     render() {
+        this.handleClick()
         return (
 
             <div>
             <button onClick={ () => showMapp() } >Click to Show the Map your on</button>
             <p>Your farm location is the white space</p>
-            <div id={"map_viewer"}></div>
             </div>
             
         );
