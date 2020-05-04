@@ -152,6 +152,7 @@ public final class Main {
     app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
 
     // init farming handlers
+    System.out.println("farming handlers initialized");
     farmingHandlers = new FarmingHandlers(app);
     Spark.post("/farmland", farmingHandlers.new FarmingHandler());
     Spark.get("/farmDimensions", farmingHandlers.new GetFarmDimensionsHandler());
