@@ -5,13 +5,16 @@
 	float:left;
 }
 .element{
-	border: 1px gray solid;
-	height:20px;
+/*	border: 1px gray solid;
+*/	height:20px;
 	width:20px;
 	font-size:7px;
+		display: inline-block;
+/*	justify-content: center;
+	align-items: center;*/
 }
 .selected{
-	border: 1px black solid !important;
+/*	border: 1px black solid !important;*/
 }
 
 .forest_space{
@@ -30,12 +33,26 @@
 	background-color: #17e88a;
 	color:black;
 }
+.white_space{
+	background-color: white;
+	color: white;
+}
+.black_space{
+	background-color: black;
+	color:black;
+}
+
 #map_table{
-	width:500px;
-	vertical-align: middle;
-	margin: auto;
-	margin-right: auto;
-  margin-left: auto;
-	padding: 250px;
-	float: center;
+	position: absolute;
+	/*This is what is causing it to be like this.*/
+	right: 400px;
+	bottom: 100px;
+	text-align: center;
+}
+#map_viewer{
+	position: absolute;
+	/*This is what is causing it to be like this.*/
+	right: 600px;
+	bottom: 200px;
+	text-align: center;
 }

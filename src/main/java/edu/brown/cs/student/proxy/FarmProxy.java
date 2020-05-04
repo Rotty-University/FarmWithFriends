@@ -31,22 +31,22 @@ public final class FarmProxy {
    * This method will set up the database connection and will make sure to create
    * the tables if they do not exist within the database.
    */
-  public static void setUpDataBase() {
-    String urlToDB = "jdbc:sqlite:" + "data/farm_simulator.sqlite3";
+  public static void setUpDataBase(String path) {
+    String urlToDB = "jdbc:sqlite:" + path;
     try {
       conn = DriverManager.getConnection(urlToDB);
       PreparedStatement prep;
 //      // simulator databases
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
-//      prep.executeUpdate();
-//
-//      prep.close();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
-//      prep.executeUpdate();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
-//      prep.executeUpdate();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
-//      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
+      prep.executeUpdate();
+
+      prep.close();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
+      prep.executeUpdate();
 //      // , PRIMARY KEY(username)
 
       prep = conn.prepareStatement(
@@ -54,15 +54,15 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, isNewUser text, row int, col int);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer, avocados integer, lettuce integer, potatoes integer, cucumbers integer, carrots integer, greenbeans integer, cherries integer, grapes integer, lemons integer, papayas integer, peaches integer, pineapples integer, pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, broccoli int, lavendar int, rosemary int, demo_crop int, demo_crop2 int);");
       prep.executeUpdate();
       prep.close();
-      prep = conn
-          .prepareStatement("CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text);");
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text, free_space integer);");
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -77,6 +77,16 @@ public final class FarmProxy {
    */
   public static Connection getConnection() {
     return conn;
+  }
+
+  /**
+   * This method sets the static connection variable in the proxy class.
+   *
+   * @param connection the connection to set the connection variable of this
+   *                   class.
+   */
+  public static void setConnection(Connection connection) {
+    conn = connection;
   }
 
   public static String getUserNameFromDataBase(String username) {
@@ -108,7 +118,7 @@ public final class FarmProxy {
    * @param email          take in the email as a string.
    */
   public static void insertUserInfoIntoDatabase(String username, String hashedpassword, String salt,
-      String email, int mapid) {
+      String email, int mapid, String newUser) {
     PreparedStatement prep;
     try {
       prep = conn.prepareStatement("INSERT INTO user_info VALUES (?, ?, ?, ?);");
@@ -120,11 +130,14 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_data(username, friends, friendspending, mapid) VALUES (?, ?,?,?);");
+          "INSERT INTO user_data(username, friends, friendspending, mapid, isNewUser, row, col) VALUES (?, ?,?,?,?,?,?);");
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
       prep.setInt(4, mapid);
+      prep.setString(5, newUser);
+      prep.setInt(6, -1);
+      prep.setInt(7, -1);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -172,8 +185,7 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't insert intot he database.");
     }
 
   }
@@ -183,7 +195,7 @@ public final class FarmProxy {
    *
    * @param username It will take in the username the user has entered as the
    *                 string.
-   * @return It will return a stirng array that represents the user information.
+   * @return It will return a string array that represents the user information.
    */
   public static String[] getUserInfoFromDataBaseForLogIn(String username) {
     String[] infoToReturn = null;
@@ -278,10 +290,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database");
     }
-    // This will update the friend list of the other user.
 
   }
 
@@ -356,8 +366,7 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
     // This will update the friend list of the other user.
 
@@ -406,10 +415,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
-    // This will update the friend list of the other user.
 
   }
 
@@ -441,8 +448,7 @@ public final class FarmProxy {
         oos.close();
         bos.close();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't perform operation.");
       }
       byte[] data = bos.toByteArray();
       prep.setBytes(1, data);
@@ -451,8 +457,7 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
 
   }
@@ -478,8 +483,7 @@ public final class FarmProxy {
         oos.close();
         bos.close();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't perform operation.");
       }
       byte[] data = bos.toByteArray();
       prep.setBytes(1, data);
@@ -487,8 +491,7 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
 
   }
@@ -522,26 +525,23 @@ public final class FarmProxy {
       try {
         ins = new ObjectInputStream(bais);
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't query into the database.");
         return null;
 
       }
       try {
         farmclass = (FarmFile) ins.readObject();
       } catch (ClassNotFoundException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't read to this class.");
         return null;
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.err.println("ERROR: Can't perform operation.");
         return null;
       }
       rs.close();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
+      System.err.println("ERROR: Can't query into the database.");
       return null;
     }
 
@@ -564,9 +564,8 @@ public final class FarmProxy {
       rs.close();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       System.out.println("ERROR");
+      return -1;
     }
 
     return ret;
@@ -589,9 +588,8 @@ public final class FarmProxy {
       rs.close();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       System.out.println("ERROR");
+      return null;
     }
 
     return ret;
@@ -615,11 +613,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       System.out.println("ERROR");
     }
-    // This will update the friend list of the other user.
 
   }
 
@@ -629,19 +624,19 @@ public final class FarmProxy {
    *
    * @param mapdata the data of the farm represented as a string.
    */
-  public static void insertMapIntoDataBase(int id, String mapdata) {
+  public static void insertMapIntoDataBase(int id, String mapdata, int free_space) {
     PreparedStatement prep;
 
     try {
-      prep = conn.prepareStatement("INSERT INTO user_maps VALUES (?,?);");
+      prep = conn.prepareStatement("INSERT INTO user_maps VALUES (?,?,?);");
       prep.setInt(1, id);
       prep.setString(2, mapdata);
+      prep.setInt(3, free_space);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
     }
 
   }
@@ -668,16 +663,90 @@ public final class FarmProxy {
       prep.close();
       rs.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("ERROR: Can't query into the database.");
       return null;
     }
     return mapdata;
   }
 
   /**
+   * This method will update the the free space that is available in a map.
+   *
+   * @param id        the id for the map in which we want to update the free space
+   *                  of.
+   * @param freeSpace the number to which we want to set the free space to.
+   */
+  public static void updateFreeSpaceInMaps(int id, int freeSpace) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_maps SET free_space=? WHERE mapid=?;");
+      prep.setInt(1, freeSpace);
+      prep.setInt(2, id);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  /**
+   * This method will return the amount of free spaces in the map given the id.
+   *
+   * @param id The id for which we will update the free space for.
+   * @return the int representing the amount of free space left in the map.
+   *         Returns -1 if errors.
+   */
+  public static int getFreeSpaceFromMap(int id) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    int freeSpace = -1;
+    try {
+      prep = conn.prepareStatement("SELECT free_space FROM user_maps WHERE mapid = ?;");
+      prep.setInt(1, id);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        freeSpace = rs.getInt(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      return freeSpace;
+    }
+    return freeSpace;
+  }
+
+  /**
+   * This method will retrieve the information of the most recent map that will be
+   * used to check to see if we need to make a new map.
+   *
+   * @return It will return an array of Strings representing the info on the map.
+   */
+  public static String[] getDataFromMostRecentMap() {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    String[] mapInfo = null;
+    try {
+      prep = conn.prepareStatement("SELECT * FROM user_maps ORDER BY mapid DESC LIMIT 1;");
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        mapInfo = new String[3];
+        mapInfo[0] = String.valueOf(rs.getInt(1));
+        mapInfo[1] = rs.getString(2);
+        mapInfo[2] = String.valueOf(rs.getInt(3));
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      System.err.println("ERROR in getting from recent");
+      return mapInfo;
+    }
+    return mapInfo;
+  }
+
+  /**
    * This method will retrieve the map from the database so that it can be loaded
-   * into
+   * up for the user in the front end.
    *
    * @param id the user id of the user.
    * @return return the integer that represents the mad id of the user.
@@ -696,38 +765,134 @@ public final class FarmProxy {
       prep.close();
       rs.close();
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       return -1;
     }
     return mapid;
   }
 
-//  /**
-//   * This method will get the username of a player based on user id.
-//   *
-//   * @param id the user id for which to get player name of.
-//   * @return a string that represents the username.
-//   */
-//  public static String getUserNameFromUserId(int id) {
-//    PreparedStatement prep;
-//    ResultSet rs = null;
-//    String username = null;
-//    try {
-//      prep = conn.prepareStatement("SELECT username FROM user_info WHERE userid = ?;");
-//      prep.setInt(1, id);
-//      rs = prep.executeQuery();
-//      while (rs.next()) {
-//        username = rs.getString(1);
-//      }
-//      prep.close();
-//      rs.close();
-//    } catch (SQLException e) {
-//      // TODO Auto-generated catch block
-//      e.printStackTrace();
-//      return username;
-//    }
-//    return username;
-//  }
+  /**
+   * This method will update the map data from a click from the user whenever they
+   * select their option.
+   *
+   * @param id      The id of the map to update.
+   * @param mapdata The data to update the mapdata with.
+   */
+  public static void updateTheMapData(int id, String mapdata) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_maps SET mapdata=? WHERE mapid=?;");
+      prep.setString(1, mapdata);
+      prep.setInt(2, id);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  /**
+   * This method will update whether or not the user is a new user anymore so that
+   * they can acess the home page and all the other functionlities of the game. If
+   * they are still a new user they will be directed to the new user page.
+   *
+   * @param username   the username for who to update the status for.
+   * @param indication the status we are updating it to. true or false.
+   */
+  public static void updateNewUserIndication(String username, String status) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_data SET isNewUser=? WHERE username=?;");
+      prep.setString(1, status);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  /**
+   * This method will get the status of the user determining whether or not they
+   * are a new user.
+   *
+   * @param username the user for who to get status of.
+   * @return the status of the user represented as a string.
+   */
+  public static String getStatusOfUser(String username) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    String status = null;
+    try {
+      prep = conn.prepareStatement("SELECT isNewUser FROM user_data WHERE username = ?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        status = rs.getString(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      return status;
+    }
+    return status;
+  }
+
+  /**
+   * This method will set the row and the column of where the user clicks on the
+   * map.
+   *
+   * @param username the username for who to update.
+   * @param row      the row they picked.
+   * @param col      the column they picked.
+   */
+  public static void updateTheRowAndColumnofUserLocationInMap(String username, int row, int col) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_data SET row=? WHERE username=?;");
+      prep.setInt(1, row);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+      prep = conn.prepareStatement("UPDATE user_data SET col=? WHERE username=?;");
+      prep.setInt(1, col);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  /**
+   * This method will return the row and column of where the user clicked on the
+   * map. it will be used to show the current user map so they know where they
+   * chose their location.
+   *
+   * @param username the user for who to get the coords for.
+   * @return the coordinates represented in an integer array.
+   */
+  public static int[] getRowAndColumnOfUserMapLocation(String username) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    int[] coord = null;
+    try {
+      prep = conn.prepareStatement("SELECT row,col FROM user_data WHERE username = ?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        coord = new int[2];
+        coord[0] = rs.getInt(1);
+        coord[1] = rs.getInt(2);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      return coord;
+    }
+    return coord;
+  }
 
 }

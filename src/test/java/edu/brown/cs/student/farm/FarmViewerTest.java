@@ -22,7 +22,7 @@ public class FarmViewerTest {
   @Before
   public void setUp() throws Exception {
     REPL repl = new REPL(System.in);
-    FarmProxy.setUpDataBase();
+    FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
 
     String testerName = "JUnitTest";
 
