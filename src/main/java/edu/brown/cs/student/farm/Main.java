@@ -89,7 +89,7 @@ public final class Main {
 //    app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
 //// -------------------------
 
-    FarmProxy.setUpDataBase();
+    FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
     // Stars the GUI server
     if (options.has("gui")) {
       runSparkServer((int) options.valueOf("port"));
@@ -132,6 +132,7 @@ public final class Main {
     Spark.post("/mapMaker", new MapMaker());
     Spark.post("/mapRetriever", new MapRetriever());
     Spark.post("clickOnMap", new ClickOnMapHandler());
+    Spark.get("/mapRetrieverForMapsComponent", new MapRetrieverForReact());
 
     // all farmingHandler routes are made in initFarmViewerAndHandler
   }
@@ -635,7 +636,7 @@ public final class Main {
       QueryParamsMap qm = req.queryMap();
       int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
       String needMap = "false";
-      String mapdata = FarmProxy.getMapFromDataBase(currentMapID);
+      String mapdata = FarmProxy.getMapFromDataBase(id);
       if (mapdata == null) {
         System.out.println("MAP DATA IS NULL");
         needMap = "true";
@@ -662,12 +663,35 @@ public final class Main {
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
       String mapData = qm.value("dictionary_data");
+      String row = qm.value("row");
+      String col = qm.value("col");
+      FarmProxy.updateTheRowAndColumnofUserLocationInMap(userCookie, Integer.parseInt(row),
+          Integer.parseInt(col));
       // Updating the map so it knows the space that is already occupied and the user
       // can't click on.
       FarmProxy.updateTheMapData(currentMapID, mapData);
       FarmProxy.updateNewUserIndication(userCookie, "false");
       Map<String, String> variables = ImmutableMap.of("data", mapData);
       res.redirect("/home");
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the making of the random map so that it is constant
+   * for all users.
+   *
+   */
+  private static class MapRetrieverForReact implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
+      String mapdata = FarmProxy.getMapFromDataBase(id);
+      int[] coords = FarmProxy.getRowAndColumnOfUserMapLocation(userCookie);
+      String row = String.valueOf(coords[0]);
+      String col = String.valueOf(coords[1]);
+      Map<String, String> variables = ImmutableMap.of("data", mapdata, "row", row, "col", col);
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }

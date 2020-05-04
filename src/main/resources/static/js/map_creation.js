@@ -42,8 +42,8 @@
   				changeElementType(row_num+1, col_num+1, "black_space");
   				const postParameters = {
   					dictionary_data: JSON.stringify(map_information),
-  					row: row_num,
-  					col: col_num,
+  					row: (row_num+1),
+  					col: (col_num+1),
   					new_user: 'false',
   					farmtype: farm_type
   				}
