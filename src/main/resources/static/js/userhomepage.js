@@ -105,9 +105,7 @@ class Home extends React.Component {
 
 
     render() {
-
         let table = this.generateFarmArray(1, 4, this.state.prevselectedtool);
-
         return (
             <div className={"homeContainer"} onClick={this.resetTool}>
                 <div className={"farmContainer"}>
