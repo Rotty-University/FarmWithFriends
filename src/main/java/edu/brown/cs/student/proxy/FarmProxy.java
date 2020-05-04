@@ -31,8 +31,8 @@ public final class FarmProxy {
    * This method will set up the database connection and will make sure to create
    * the tables if they do not exist within the database.
    */
-  public static void setUpDataBase() {
-    String urlToDB = "jdbc:sqlite:" + "data/farm_simulator.sqlite3";
+  public static void setUpDataBase(String path) {
+    String urlToDB = "jdbc:sqlite:" + path;
     try {
       conn = DriverManager.getConnection(urlToDB);
       PreparedStatement prep;
@@ -54,7 +54,7 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, isNewUser text);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, isNewUser text, row int, col int);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
@@ -77,6 +77,16 @@ public final class FarmProxy {
    */
   public static Connection getConnection() {
     return conn;
+  }
+
+  /**
+   * This method sets the static connection variable in the proxy class.
+   *
+   * @param connection the connection to set the connection variable of this
+   *                   class.
+   */
+  public static void setConnection(Connection connection) {
+    conn = connection;
   }
 
   public static String getUserNameFromDataBase(String username) {
@@ -120,12 +130,14 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_data(username, friends, friendspending, mapid, isNewUser) VALUES (?, ?,?,?,?);");
+          "INSERT INTO user_data(username, friends, friendspending, mapid, isNewUser, row, col) VALUES (?, ?,?,?,?,?,?);");
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
       prep.setInt(4, mapid);
       prep.setString(5, newUser);
+      prep.setInt(6, -1);
+      prep.setInt(7, -1);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -801,6 +813,13 @@ public final class FarmProxy {
 
   }
 
+  /**
+   * This method will get the status of the user determining whether or not they
+   * are a new user.
+   *
+   * @param username the user for who to get status of.
+   * @return the status of the user represented as a string.
+   */
   public static String getStatusOfUser(String username) {
     PreparedStatement prep;
     ResultSet rs = null;
@@ -820,31 +839,60 @@ public final class FarmProxy {
     return status;
   }
 
-//  /**
-//   * This method will get the username of a player based on user id.
-//   *
-//   * @param id the user id for which to get player name of.
-//   * @return a string that represents the username.
-//   */
-//  public static String getUserNameFromUserId(int id) {
-//    PreparedStatement prep;
-//    ResultSet rs = null;
-//    String username = null;
-//    try {
-//      prep = conn.prepareStatement("SELECT username FROM user_info WHERE userid = ?;");
-//      prep.setInt(1, id);
-//      rs = prep.executeQuery();
-//      while (rs.next()) {
-//        username = rs.getString(1);
-//      }
-//      prep.close();
-//      rs.close();
-//    } catch (SQLException e) {
-//      // TODO Auto-generated catch block
-//      e.printStackTrace();
-//      return username;
-//    }
-//    return username;
-//  }
+  /**
+   * This method will set the row and the column of where the user clicks on the
+   * map.
+   *
+   * @param username the username for who to update.
+   * @param row      the row they picked.
+   * @param col      the column they picked.
+   */
+  public static void updateTheRowAndColumnofUserLocationInMap(String username, int row, int col) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_data SET row=? WHERE username=?;");
+      prep.setInt(1, row);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+      prep = conn.prepareStatement("UPDATE user_data SET col=? WHERE username=?;");
+      prep.setInt(1, col);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR in update");
+    }
+
+  }
+
+  /**
+   * This method will return the row and column of where the user clicked on the
+   * map. it will be used to show the current user map so they know where they
+   * chose their location.
+   *
+   * @param username the user for who to get the coords for.
+   * @return the coordinates represented in an integer array.
+   */
+  public static int[] getRowAndColumnOfUserMapLocation(String username) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    int[] coord = null;
+    try {
+      prep = conn.prepareStatement("SELECT row,col FROM user_data WHERE username = ?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        coord = new int[2];
+        coord[0] = rs.getInt(1);
+        coord[1] = rs.getInt(2);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      return coord;
+    }
+    return coord;
+  }
 
 }
