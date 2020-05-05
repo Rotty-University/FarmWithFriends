@@ -635,16 +635,22 @@ public final class FarmProxy {
   public static Map<String, Integer> getAllInventoryItems(String userName) {
     PreparedStatement prep;
     Map<String, Integer> ret = new HashMap<>();
+    String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+    "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
+    "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
+    "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
+
     try {
       prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
       prep.setString(1, userName);
 
       ResultSet rs = prep.executeQuery();
       while (rs.next()) {
-        String key = rs.getString(1);
-        int value = rs.getInt(2);
-
-        ret.put(key, value);
+        for (int i = 0; i < cropNames.length; i++) {
+          String key = cropNames[i];
+          int value = rs.getInt(i + 2);
+          ret.put(key, value);
+        }
       }
       rs.close();
       prep.close();
@@ -659,8 +665,8 @@ public final class FarmProxy {
   /**
    * This method will update the inventory of the user.
    *
-   * @param userID    the username for whom to update inventory for
-   * @param fruitname a string that represents the fruit name
+   * @param userName  the username for whom to update inventory for
+   * @param cropName  a string that represents the fruit name
    * @param number    the number to update the inventory of that fruit to.
    */
   public static void updateInventory(String userName, String cropName, int number) {

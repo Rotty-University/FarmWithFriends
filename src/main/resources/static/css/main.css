@@ -220,3 +220,22 @@ td {
     margin: 0;
     padding: 0;
 }
+
+.column-left {
+    float: left;
+    padding: 10px;
+    width: 25%;
+}
+
+.column-right {
+    float: left;
+    padding: 10px;
+    width: 75%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}

@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -129,7 +130,9 @@ public final class Main {
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
     Spark.post("/posting_trade", new TradePostHandler());
+    Spark.post("/retrieve_sell", new GetInventoryHandler());
     Spark.post("/tradeLoader", new TradeLoaderHandler());
+    Spark.post("/inventoryLoader", new DisplayInventoryHandler());
     Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
     Spark.post("/friendAccepted", new FriendAcceptedHandler());
     Spark.post("/mapMaker", new MapMaker());
@@ -590,7 +593,7 @@ public final class Main {
       String tradeCenter = FarmProxy.getTradingCenter();
       StringBuilder htmlCode = new StringBuilder();
       htmlCode.append("<tr><th>Seller</th><th>Crop Selling</th>" +
-              "<th>Amount</th><th>Crop Requesting</th><th>Ammount</th></tr>");
+              "<th>Amount</th><th>Crop Requesting</th><th>Ammount</th><th></th></tr>");
       String[] rows = tradeCenter.split(";");
       for (String r : rows) {
         htmlCode.append("<tr>");
@@ -598,9 +601,46 @@ public final class Main {
         for (String c : col) {
           htmlCode.append("<td>").append(c).append("</td>");
         }
+        htmlCode.append("<td>").append("<button onClick=makeTrade(\"" + r+ "\")>Accept</button>").append("</td>");
         htmlCode.append("</tr>");
       }
       System.out.println(tradeCenter);
+      Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  private static class GetInventoryHandler implements Route {
+
+    @Override
+    public Object handle(Request request, Response response) {
+      QueryParamsMap qm = request.queryMap();
+      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(userCookie);
+      StringBuilder htmlCode = new StringBuilder();
+      for (String r : userInventory.keySet()) {
+        htmlCode.append("<option value=\"" + r + "\">" + r + "</option>");
+      }
+      Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  private static class DisplayInventoryHandler implements Route {
+
+    @Override
+    public Object handle(Request request, Response response) {
+      QueryParamsMap qm = request.queryMap();
+      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(userCookie);
+      StringBuilder htmlCode = new StringBuilder();
+      htmlCode.append("<tr><th>Crop</th><th>Amount</th></tr>");
+      for (String r : userInventory.keySet()) {
+        htmlCode.append("<tr>");
+        htmlCode.append("<td>").append(r).append("</td>");
+        htmlCode.append("<td>").append(userInventory.get(r)).append("</td>");
+        htmlCode.append("<\tr>");
+      }
       Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
       GSON.toJson(variables);
       return GSON.toJson(variables);

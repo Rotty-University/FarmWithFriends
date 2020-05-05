@@ -322,20 +322,29 @@ class Shop extends React.Component {
         return (
         <div id={"shopContainer"} >
             <h1>Shop and Trade</h1>
-            <button className={"add_button"} onClick={ () => openForm('newTrade') }>List a Trade</button>
+            <button className={"add_button"} onClick={ () => openTradeForm() }>List a Trade</button>
             <p>Trade List:</p>
-            <button onClick={() => openTradeList() }>Load Trades</button>
-            <table id={"trade_list"} width={1000}>
-            </table>
+            <div className="row">
+                <div className="column-left">
+                    <button onClick={() => openInventory() }>Show Inventory</button>
+                    <table id={"inventory"} width={300}>
+                    </table>
+                </div>
+                <div className="column-right">
+                    <button onClick={() => openTradeList() }>Load Trades</button>
+                    <table id={"trade_list"} width={1000}>
+                    </table>
+                </div>
+            </div>
             <div className={"form-popup"} id={"newTrade"}>
                 <h1>Post a Trade</h1>
                 <label htmlFor={"sell_id"}><b>Crop to Trade</b></label>
-                <input type={"text"} id={"sell_id_text"} placeholder={"Enter Name of Crop"} name={"sell_id"}required></input>
+                <select id={"sell_id"} required></select>
                 <label htmlFor="sell_quantity"><b>Quantity (between 1 and 5)</b>:</label>
                 <input type="number" id={"sell_quantity"} name="sell_quantity" min="1" max="5"></input>
                 <br></br>
                 <label htmlFor={"buy_id"}><b>Crop Requested</b></label>
-                <input type={"text"} id={"buy_id_text"} placeholder={"Enter Name of Crop"} name={"buy_id"}required></input>
+                <select id={"buy_id"} required></select>
                 <label htmlFor="buy_quantity"><b>Quantity (between 1 and 5)</b>:</label>
                 <input type="number" id={"buy_quantity"} name="buy_quantity" min="1" max="5"></input>
                 <button type={"button"} className={"btnn"} id={"post_trade_button"} onClick={ () => addTradeListing() }>Post Trade</button>
@@ -346,7 +355,28 @@ class Shop extends React.Component {
     }
 }
 
+function makeTrade(trade_data) {
+    console.log(trade_data)
+};
 
+function openTradeForm() {
+    document.getElementById('newTrade').style.display = "block";
+    const inventory = $("#sell_id");
+    const availableCrops = $("#buy_id");
+    inventory.empty();
+    availableCrops.empty();
+    const postParameters = {
+        //TODO: get the text inside the input box
+        text: "placeholder"
+    };
+    $.post("/retrieve_sell", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        //showing a list of the friends when the button is clicked.
+        inventory.append(object.list);
+        availableCrops.append(object.list);
+    });
+};
 
 function openTradeList(){
     const suggestionList = $("#trade_list");
@@ -363,29 +393,41 @@ function openTradeList(){
     });
 };
 
+function openInventory(){
+    const suggestionList = $("#inventory");
+    suggestionList.empty();
+    const postParameters = {
+        //TODO: get the text inside the input box
+        text: "placeholder"
+    };
+    $.post("/inventoryLoader", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        //showing a list of the friends when the button is clicked.
+        suggestionList.append(object.list);
+    });
+};
+
 function addTradeListing() {
     const submit = $("#post_trade_button");
     console.log(submit.innerHTML);
-    const cropS = $("#sell_id_text");
+    const cropS = $("#sell_id");
     const quantS = $("#sell_quantity");
-    const cropB = $("#buy_id_text");
+    const cropB = $("#buy_id");
     const quantB = $("#buy_quantity");
-    submit.click(function(event){
-        const postParameters = {
-            //TODO: get the text inside the input box
-            cSell: cropS.val(),
-            qSell: quantS.val(),
-            cBuy: cropB.val(),
-            qBuy: quantB.val()
-        };
-        console.log(postParameters.text);
-        //send the post and show the message from the backend.
-        $.post("/posting_trade", postParameters, response => {
-            // Do something with the response here
-            const object = JSON.parse(response);
-        });
+    const postParameters = {
+        //TODO: get the text inside the input box
+        cSell: cropS.val(),
+        qSell: quantS.val(),
+        cBuy: cropB.val(),
+        qBuy: quantB.val()
+    };
+    console.log(postParameters.text);
+    //send the post and show the message from the backend.
+    $.post("/posting_trade", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
     });
-    document.getElementById("shopContainer").className = "";
     document.getElementById("newTrade").style.display = "none";
 };
 
