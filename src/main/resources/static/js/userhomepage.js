@@ -46,8 +46,8 @@ class NavBar extends React.Component {
                 <p onClick={this.props.action}><a href={"#"}><img id={"map"} src={"css/images/iconMap.svg"} height={40} width={40}/></a></p>
                 <Friends id={"friends"}/>
                 <p className={"nav-bar-active"} onClick={this.props.action}><a href={"#"}><img  id={"home"} src={"css/images/iconHome.svg"} height={40} width={40}/></a></p>
-                <p onClick={this.props.action}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>
-                <p onClick={this.props.action}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>
+                {/*<p onClick={this.props.action}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>*/}
+                {/*<p onClick={this.props.action}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>*/}
                 <p><a href={"/logout"}><img src={"css/images/iconLeave.svg"} height={40} width={40}/></a></p>
             </div>
         );
@@ -171,9 +171,12 @@ class Tile extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            spritepath: "css/images/landImages/testgrass.png",
+            spritepath: "css/images/landImages/unplowed.png",
+            updating: false,
         }
         this.handleClick = this.handleClick.bind(this);
+        this.initupdate = this.initupdate.bind(this);
+        this.handleupdate = this.handleupdate.bind(this);
     }
 
     //TODO this gonna be a big boi method
@@ -241,7 +244,64 @@ class Tile extends React.Component {
         });
     }
 
+    initupdate() {
+        if (!this.state.updating) {
+            setInterval(this.handleupdate, 1000);
+            this.setState({updating: true})
+        }
+    }
+
+    handleupdate() {
+        const dict = {row : this.props.row,
+            col : this.props.column,
+            action : 0};
+
+        // send as parameter
+        $.post("/farmland", dict, response => {
+            // get result
+            const result = JSON.parse(response);
+            let row = (String)(this.props.row);
+            let col = (String)(this.props.column);
+            const thisTileInfo = result[row + "#" + col];
+            const cropStatus = thisTileInfo[3];
+            const isPlowed = thisTileInfo[0];
+            const isWatered = thisTileInfo[1];
+            const cropID = thisTileInfo[2];
+            // update board
+
+            //general path
+            let newPath = "css/images/";
+
+            if (cropStatus != -9) {
+                // show a crop (for now, until we figure out overlay)
+                newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
+                console.log(newPath);
+            } else {
+                // no crop, just show land
+                newPath += "landImages/";
+
+                if (isPlowed == 0) {
+                    // not plowed
+                    newPath += "unplowed";
+                } else if (isWatered == 0) {
+                    // plowed but NOT watered
+                    newPath += "plowed";
+                } else {
+                    // plowed AND watered
+                    newPath += "watered";
+                }
+            }
+
+            // add file format
+            newPath += ".png";
+
+            //This is updating the visual appearance of the tile:
+            this.setState({spritepath: newPath})
+        });
+    }
+
     render() {
+        this.initupdate()
     	// needs to re render all farm tiles
         return (
             <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>

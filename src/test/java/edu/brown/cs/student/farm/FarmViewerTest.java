@@ -1,64 +1,64 @@
-package edu.brown.cs.student.farm;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.PrintWriter;
-import java.time.Duration;
-import java.time.Instant;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import edu.brown.cs.student.crops.ACrop;
-import edu.brown.cs.student.proxy.FarmProxy;
-import edu.brown.cs.student.repl.REPL;
-
-public class FarmViewerTest {
-  FarmViewer app;
-  PrintWriter pw = new PrintWriter(System.out);
-
-  @Before
-  public void setUp() throws Exception {
-    REPL repl = new REPL(System.in);
-    FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
-
-    String testerName = "JUnitTest";
-
-    FarmFile nextFarmFile = FarmProxy.loadFarm(testerName);
-    if (nextFarmFile == null) {
-      // TODO: fix initializeFarm in proxy
-      FarmProxy.initializeFarm(testerName);
-
-      nextFarmFile = FarmProxy.loadFarm(testerName);
-    }
-
-    // farm already exists, erase and proceed
-    FarmLand[][] f = new FarmLand[1][2];
-
-    for (int i = 0; i < f.length; i++) {
-      for (int j = 0; j < f[0].length; j++) {
-        f[i][j] = new FarmLand();
-      }
-    }
-
-    String[] tokens = {
-        testerName
-    };
-
-    app = new FarmViewer(repl, testerName);
-    app.new SwitchCommand().execute(tokens, pw);;
-    app.setThePlantation(f);
-    app.saveFarm();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-  }
-
-  @Test
-  public void plantThenWater() throws InterruptedException {
+//package edu.brown.cs.student.farm;
+//
+//import static org.junit.Assert.assertEquals;
+//import static org.junit.Assert.assertTrue;
+//
+//import java.io.PrintWriter;
+//import java.time.Duration;
+//import java.time.Instant;
+//
+//import org.junit.After;
+//import org.junit.Before;
+//import org.junit.Test;
+//
+//import edu.brown.cs.student.crops.ACrop;
+//import edu.brown.cs.student.proxy.FarmProxy;
+//import edu.brown.cs.student.repl.REPL;
+//
+//public class FarmViewerTest {
+//  FarmViewer app;
+//  PrintWriter pw = new PrintWriter(System.out);
+//
+//  @Before
+//  public void setUp() throws Exception {
+//    REPL repl = new REPL(System.in);
+//    FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
+//
+//    String testerName = "JUnitTest";
+//
+//    FarmFile nextFarmFile = FarmProxy.loadFarm(testerName);
+//    if (nextFarmFile == null) {
+//      // TODO: fix initializeFarm in proxy
+//      FarmProxy.initializeFarm(testerName);
+//
+//      nextFarmFile = FarmProxy.loadFarm(testerName);
+//    }
+//
+//    // farm already exists, erase and proceed
+//    FarmLand[][] f = new FarmLand[1][2];
+//
+//    for (int i = 0; i < f.length; i++) {
+//      for (int j = 0; j < f[0].length; j++) {
+//        f[i][j] = new FarmLand();
+//      }
+//    }
+//
+//    String[] tokens = {
+//        testerName
+//    };
+//
+//    app = new FarmViewer(repl, testerName);
+//    app.new SwitchCommand().execute(tokens, pw);;
+//    app.setThePlantation(f);
+//    app.saveFarm();
+//  }
+//
+//  @After
+//  public void tearDown() throws Exception {
+//  }
+//
+//  @Test
+//  public void plantThenWater() throws InterruptedException {
 //    String[] xy = {
 //        "0", "0"
 //    };
@@ -93,27 +93,27 @@ public class FarmViewerTest {
 //
 //    show();
 //    assertEquals(cropAt(0, 0).getCropStatus(), 4);
-  }
-
-  // helpers
-  void show() {
-    app.showFarm();
-  }
-
-  void plow(String[] tokens) {
-    app.new PlowCommand().execute(tokens, pw);
-  }
-
-  void plant(String[] tokens) {
-    app.new PlantCommand().execute(tokens, pw);
-  }
-
-  void water(String[] tokens) {
-    app.new WaterCommand().execute(tokens, pw);
-  }
-
-  ACrop cropAt(int x, int y) {
-    return app.getThePlantation()[x][y].getCrop();
-  }
-  // ---------------------------------------------------------
-}
+//  }
+//
+//  // helpers
+//  void show() {
+//    app.showFarm();
+//  }
+//
+//  void plow(String[] tokens) {
+//    app.new PlowCommand().execute(tokens, pw);
+//  }
+//
+//  void plant(String[] tokens) {
+//    app.new PlantCommand().execute(tokens, pw);
+//  }
+//
+//  void water(String[] tokens) {
+//    app.new WaterCommand().execute(tokens, pw);
+//  }
+//
+//  ACrop cropAt(int x, int y) {
+//    return app.getThePlantation()[x][y].getCrop();
+//  }
+//  // ---------------------------------------------------------
+//}

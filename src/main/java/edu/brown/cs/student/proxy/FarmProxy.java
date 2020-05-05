@@ -10,7 +10,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +30,8 @@ public final class FarmProxy {
   /**
    * This method will set up the database connection and will make sure to create
    * the tables if they do not exist within the database.
+   *
+   * @param path the path to the database.
    */
   public static void setUpDataBase(String path) {
     String urlToDB = "jdbc:sqlite:" + path;
@@ -67,8 +68,8 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-              "CREATE TABLE IF NOT EXISTS trading_center(trader text, crop_sell text, quant_sell text" +
-                      ", crop_buy text, quant_buy text);");
+          "CREATE TABLE IF NOT EXISTS trading_center(trader text, crop_sell text, quant_sell text"
+              + ", crop_buy text, quant_buy text);");
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -115,6 +116,7 @@ public final class FarmProxy {
   }
 
   /**
+   *
    * This method will insert the user information on the sign up when that person
    * has entered valid information.
    *
@@ -122,6 +124,9 @@ public final class FarmProxy {
    * @param hashedpassword Take in string that represents the hashedpassword.
    * @param salt           take in the salt as a string.
    * @param email          take in the email as a string.
+   * @param mapid          The id of the map the user belongs to.
+   * @param newUser        whether or not the user is a new user is not. Set it to
+   *                       "true".
    */
   public static void insertUserInfoIntoDatabase(String username, String hashedpassword, String salt,
       String email, int mapid, String newUser) {
@@ -330,18 +335,19 @@ public final class FarmProxy {
   /**
    * updateTradingCenter adds a new record into the trading center table.
    *
-   * @param seller    userName of user making the listing
-   * @param cropSell  id of the crop that will be traded
-   * @param sellQ     quantity of cropSell willing to be traded
-   * @param cropBuy   id of crop that is requested in return
-   * @param buyQ      quantity of cropBuy asked for
+   * @param seller   userName of user making the listing
+   * @param cropSell id of the crop that will be traded
+   * @param sellQ    quantity of cropSell willing to be traded
+   * @param cropBuy  id of crop that is requested in return
+   * @param buyQ     quantity of cropBuy asked for
    */
-  public static void updateTradingCenter(String seller, String cropSell, String sellQ, String cropBuy, String buyQ) {
+  public static void updateTradingCenter(String seller, String cropSell, String sellQ,
+      String cropBuy, String buyQ) {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list.
-      prep = conn.prepareStatement("INSERT INTO trading_center (trader, crop_sell, quant_sell, " +
-              "crop_buy, quant_buy) VALUES (?,?,?,?,?);");
+      prep = conn.prepareStatement("INSERT INTO trading_center (trader, crop_sell, quant_sell, "
+          + "crop_buy, quant_buy) VALUES (?,?,?,?,?);");
       prep.setString(1, seller);
       prep.setString(2, cropSell);
       prep.setString(3, sellQ);
@@ -438,7 +444,7 @@ public final class FarmProxy {
    * separated by commas for username that is in the string.
    *
    * @param username The user for which to get the pending list for.
-   * @return
+   * @return the friends list returned as a string separated by commas.
    */
   public static String getFriendsListPending(String username) {
     PreparedStatement prep;
@@ -485,7 +491,6 @@ public final class FarmProxy {
    * This method will initialize the user farm when they start the game.
    *
    * @param userName the user for who we are setting the farm to.
-   * @param farm     The farm object and in this case a TestFarm
    */
   public static void initializeFarm(String userName) {
     PreparedStatement prep;
@@ -633,41 +638,41 @@ public final class FarmProxy {
   }
 
   public static Map<String, Integer> getAllInventoryItems(String userName) {
-    PreparedStatement prep;
-    Map<String, Integer> ret = new HashMap<>();
-    String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
-    "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
-    "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
-    "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
-
-    try {
-      prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
-      prep.setString(1, userName);
-
-      ResultSet rs = prep.executeQuery();
-      while (rs.next()) {
-        for (int i = 0; i < cropNames.length; i++) {
-          String key = cropNames[i];
-          int value = rs.getInt(i + 2);
-          ret.put(key, value);
+      PreparedStatement prep;
+      Map<String, Integer> ret = new HashMap<>();
+      String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+      "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
+      "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
+      "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
+  
+      try {
+        prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
+        prep.setString(1, userName);
+  
+        ResultSet rs = prep.executeQuery();
+        while (rs.next()) {
+          for (int i = 0; i < cropNames.length; i++) {
+            String key = cropNames[i];
+            int value = rs.getInt(i + 2);
+            ret.put(key, value);
+          }
         }
+        rs.close();
+        prep.close();
+      } catch (SQLException e) {
+        System.out.println("ERROR");
+        return null;
       }
-      rs.close();
-      prep.close();
-    } catch (SQLException e) {
-      System.out.println("ERROR");
-      return null;
+  
+      return ret;
     }
-
-    return ret;
-  }
 
   /**
    * This method will update the inventory of the user.
    *
-   * @param userName  the username for whom to update inventory for
-   * @param cropName  a string that represents the fruit name
-   * @param number    the number to update the inventory of that fruit to.
+   * @param userName the username for whom to update inventory for
+   * @param cropName a string that represents the fruit name
+   * @param number   the number to update the inventory of that fruit to.
    */
   public static void updateInventory(String userName, String cropName, int number) {
     PreparedStatement prep;
@@ -689,7 +694,9 @@ public final class FarmProxy {
    * This method will insert the map into the data base with the counter for which
    * map this is.
    *
-   * @param mapdata the data of the farm represented as a string.
+   * @param id         the id of the map.
+   * @param mapdata    the data of the farm represented as a string.
+   * @param free_space The amount of free space that is in the map.
    */
   public static void insertMapIntoDataBase(int id, String mapdata, int free_space) {
     PreparedStatement prep;
@@ -863,8 +870,8 @@ public final class FarmProxy {
    * they can acess the home page and all the other functionlities of the game. If
    * they are still a new user they will be directed to the new user page.
    *
-   * @param username   the username for who to update the status for.
-   * @param indication the status we are updating it to. true or false.
+   * @param username the username for who to update the status for.
+   * @param status   the status we are updating it to. true or false.
    */
   public static void updateNewUserIndication(String username, String status) {
     PreparedStatement prep;

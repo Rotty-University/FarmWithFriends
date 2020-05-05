@@ -135,4 +135,36 @@ public class DataBaseTest {
     tearDown();
   }
 
+  @Test
+  public void testingUserLocationWithMap() throws Exception {
+    setUp();
+    FarmProxy.insertUserInfoIntoDatabase("test", "hash", "salt", "test@gmail.com", 1, "true");
+    assertNull(FarmProxy.getMapFromDataBase(1));
+    assertEquals(FarmProxy.getMapIDofUserFromDataBase("test"), 1);
+    FarmProxy.insertMapIntoDataBase(1, "THEMAP", 24);
+    int[] coords = FarmProxy.getRowAndColumnOfUserMapLocation("test");
+    assertEquals(coords[0], -1);
+    assertEquals(coords[1], -1);
+    FarmProxy.updateTheRowAndColumnofUserLocationInMap("test", 1, 1);
+    coords = FarmProxy.getRowAndColumnOfUserMapLocation("test");
+    assertEquals(coords[0], 1);
+    assertEquals(coords[1], 1);
+    tearDown();
+  }
+
+  @Test
+  public void testingLoadingAndSavingFarm() throws Exception {
+    setUp();
+    FarmProxy.insertUserInfoIntoDatabase("test", "hash", "salt", "test@gmail.com", 1, "true");
+    assertNull(FarmProxy.loadFarm("test"));
+    FarmProxy.initializeFarm("test");
+    FarmFile farm = FarmProxy.loadFarm("test");
+    assert (farm != null);
+    farm.setFarmName("TEST2");
+    FarmProxy.saveFarm("test", farm);
+    FarmFile newfarm = FarmProxy.loadFarm("test");
+    assertEquals(newfarm.getFarmName(), "TEST2");
+    tearDown();
+  }
+
 }
