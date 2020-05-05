@@ -38,7 +38,7 @@ public class FarmFile implements java.io.Serializable {
   }
 
   /**
-   * @param id the new owner's name
+   * @param name the new owner's name
    */
   public void setOwnerName(String name) {
     ownerName = name;
