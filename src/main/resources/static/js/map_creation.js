@@ -59,7 +59,9 @@
   				}
   				//sending a post request to the clickmaphandler to redirect to the home page. 
   				$.post("/clickOnMap" , postParameters, response =>{
-  					window.location.replace("http://localhost:4567/home");
+  					let locationURL = window.location.href;
+  					locationURL = locationURL.replace("new_user", "home")
+  					window.location.replace(locationURL);
   				});
   				
 
