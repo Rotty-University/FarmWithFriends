@@ -564,7 +564,7 @@ public final class Main {
       String tradeCenter = FarmProxy.getTradingCenter();
       StringBuilder htmlCode = new StringBuilder();
       htmlCode.append("<tr><th>Seller</th><th>Crop Selling</th>" +
-              "<th>Ammount</th><th>Crop Requesting</th><th>Ammount</th></tr>");
+              "<th>Amount</th><th>Crop Requesting</th><th>Ammount</th></tr>");
       String[] rows = tradeCenter.split(";");
       for (String r : rows) {
         htmlCode.append("<tr>");

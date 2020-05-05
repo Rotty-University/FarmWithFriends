@@ -258,7 +258,6 @@ class Shop extends React.Component {
     render() {
         return (
         <div id={"shopContainer"} >
-            <p>{this.props.id}</p>
             <h1>Shop and Trade</h1>
             <button className={"add_button"} onClick={ () => openForm('newTrade') }>List a Trade</button>
             <p>Trade List:</p>
