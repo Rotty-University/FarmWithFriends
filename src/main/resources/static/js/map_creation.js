@@ -1,73 +1,118 @@
-var total_x = 20; //Total width
+		var total_x = 20; //Total width
 		var total_y = 20; // Total height
 		var total_elements = total_x * total_y; //Total of elements in the matrix
 		var map = createArray(total_x, total_y);
 		var map_empty = [];
 		var basic_elements = [];
-		var tolerance = 12; // Number of consecutive blocks of the same type to make it right
+		var tolerance = 10; // Number of consecutive blocks of the same type to make it right
 		var allow_multiples_seeds = true; //If this is set up to true, once we cannot continue expanding a current seed, we are going to generate a new one.
 		var total_options = [];
 		let counter  =0;
 		let my_var = 0;
 		let dictionaryy = {};
-	
-		$(document).ready(function(){ //Document start
-			document.getElementById("map_table").style.display = "none"
-				
-				
-		});
-		function makeInitialMap(){
-			console.log("in function");
+		//this dictionary will be set from the the getting map from database so we can use it in the clickhandler. 
+		let map_information= {};
+		//will be used to count the number of total free spaces available through subtraction with total. 
+		let waterSpaceCount = {};
+		/**
+		This is the method that will take care of when the user clicks on the map to track where their map will be. This function will update the map
+		so that visually, the map location turns black and it will send a post request to the backend so that the map will be logically updated in the 
+		backend. 
+		*/
+		function mapClickHandler(){
+			document.getElementById("message_for_user_on_click").innerHTML = "";
+			console.log(event.pageX);
+			console.log(event.pageY);
+			let map_obj = $("#map_table");
+			console.log(map_obj.offset());
+			const col_val = event.pageX - map_obj.offset().left;
+  			const row_val = event.pageY - map_obj.offset().top;
+  			//Getting the indices of the row and column.
+  			let row_num = Math.floor(row_val/20);
+  			let col_num = Math.floor(col_val/20);
+  			console.log(row_num);
+  			console.log(col_num);
+  			if(map_information[(row_num+1)+','+(col_num+1)][2] === 'water_space' ){
+  				document.getElementById("message_for_user_on_click").append("Sorry! Can't have your farm here. It's water!. Please pick somewhere else.");
+  			}else if(map_information[(row_num+1)+','+(col_num+1)][2] === 'black_space'){
+				document.getElementById("message_for_user_on_click").append("Sorry! Can't have your farm here. it is already occupied.");
+  			}else{
+  				let farm_type = map_information[(row_num+1)+','+(col_num+1)][2];
+  				map_information[(row_num+1)+','+(col_num+1)][2] = 'black_space';
+  				changeElementType(row_num+1, col_num+1, "black_space");
+  				const postParameters = {
+  					dictionary_data: JSON.stringify(map_information),
+  					row: (row_num+1),
+  					col: (col_num+1),
+  					new_user: 'false',
+  					farmtype: farm_type
+  				}
+  				$.post("/clickOnMap" , postParameters, response =>{
+  					window.location.replace("http://localhost:4567/home");
+  				});
+  				
+
+  			}
+  			
+
+		}
+		/**
+		This function will be called when we need a new map built if the other map is filled up already. The backend will send a signal for when this map
+		should be created and this map will be stored in the database in the backend. 
+		**/
+		function makeMapWhenNoFreeSpace(){
 			document.getElementById("map_table").style.display = "none"
 			document.getElementById("map_table").innerHTML = "";
 			fillTable();
 			setBasicElements();
 			fullfillTerrain();
 			for(i=0;i<tolerance;i++) cleanUpMap();
-			console.log(counter);
 			const postParameters = {
-				dictionary_data: JSON.stringify(dictionaryy)
+				dictionary_data: JSON.stringify(dictionaryy),
+				free_space: (total_y*total_x)- Object.keys(waterSpaceCount).length,
+				water_space_data : JSON.stringify(waterSpaceCount)
 			};
 			console.log("we are here about to send over the data to make the map");
 			$.post("/mapMaker", postParameters, response => {
 				const object = JSON.parse(response);
 				const dictionaryyy = JSON.parse(object.data)
-				console.log(dictionaryyy["19,18"][0])
 				console.log(Object.keys(dictionaryyy).length);
 				for(let x = 1; x<total_x+1;x++){
 					for(let y = 1; y<total_y+1;y++){
-						console.log(dictionaryyy[x.toString()+","+y.toString()]);
 						changeElementType(dictionaryyy[x.toString()+","+y.toString()][0],dictionaryyy[x.toString()+","+y.toString()][1],dictionaryyy[x.toString()+","+y.toString()][2]);
 					}
 				}
 				document.getElementById("map_table").style.display = "block";
 			});
-			
+			map_information = dictionaryy;
+			dictionaryy = {};
+			waterSpaceCount = {};
 		};
-		function makeMap(){
-			if(my_var%2 === 0){
-				document.getElementById("map_table").innerHTML = "";
-				fillTable();
-				setBasicElements();
-				fullfillTerrain();
-				for(i=0;i<tolerance;i++) cleanUpMap();
-				my_var++;
-				console.log(counter);
-			}else{
-				console.log("In the else statement");
-				document.getElementById("map_table").innerHTML = "";
-				fillTable();
-				setBasicElements();
-				console.log(Object.keys(dictionaryy).length);
-				for(let x = 1; x<total_x+1;x++){
-					for(let y = 1; y<total_y+1;y++){
-						changeElementType(dictionaryy[x.toString()+","+y.toString()][0],dictionaryy[x.toString()+","+y.toString()][1],dictionaryy[x.toString()+","+y.toString()][2]);
-					}
-				}
-				my_var++;
-			}
-			document.getElementById("map_table").style.display = "block";
-		};
+		// function makeMap(){
+		// 	if(my_var%2 === 0){
+		// 		document.getElementById("map_table").innerHTML = "";
+		// 		fillTable();
+		// 		setBasicElements();
+		// 		fullfillTerrain();
+		// 		for(i=0;i<tolerance;i++) cleanUpMap();
+		// 		my_var++;
+		// 	}else{
+		// 		console.log("In the else statement");
+		// 		document.getElementById("map_table").innerHTML = "";
+		// 		fillTable();
+		// 		setBasicElements();
+		// 		console.log(Object.keys(dictionaryy).length);
+		// 		for(let x = 1; x<total_x+1;x++){
+		// 			for(let y = 1; y<total_y+1;y++){
+		// 				changeElementType(dictionaryy[x.toString()+","+y.toString()][0],dictionaryy[x.toString()+","+y.toString()][1],dictionaryy[x.toString()+","+y.toString()][2]);
+		// 			}
+		// 		}
+		// 		my_var++;
+		// 		dictionaryy = {};
+		// 		waterSpaceCount = {};
+		// 	}
+		// 	document.getElementById("map_table").style.display = "block";
+		// };
 		function makeMapFromDataBase(){
 			document.getElementById("map_table").innerHTML = "";
 			fillTable();
@@ -76,16 +121,23 @@ var total_x = 20; //Total width
 				dictionary_data: "placeholder"
 			};
 			$.post("/mapRetriever", postParameters, response => {
-				console.log("YESSIR");
+				console.log("In the mapRetriever");
 				const object = JSON.parse(response);
-				let dictionaryyy = JSON.parse(object.data)
-				console.log(dictionaryyy["1,1"]);
-				for(let x = 1; x<total_x+1;x++){
-					for(let y = 1; y<total_y+1;y++){
+				let map_dictionary_with_objectlocations = JSON.parse(object.data);
+				let mapNeededVariable = object.mapNeeded;
+				map_information = map_dictionary_with_objectlocations;
+				console.log(mapNeededVariable);
+				if(mapNeededVariable === "false"){
+					for(let x = 1; x<total_x+1;x++){
+						for(let y = 1; y<total_y+1;y++){
 						
-						changeElementType(dictionaryyy[x.toString()+","+y.toString()][0],dictionaryyy[x.toString()+","+y.toString()][1],dictionaryyy[x.toString()+","+y.toString()][2]);
+							changeElementType(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
+						}
 					}
+				}else{
+					makeMapWhenNoFreeSpace();
 				}
+
 				document.getElementById("map_table").style.display = "block";
 				});
 		};
@@ -185,10 +237,18 @@ var total_x = 20; //Total width
 						
 						//alert("Found item at: " + x + ' (x=' + ( x + 1 )+ ')- ' + y + ' (y = ' + (y+1) + ') and will switch for the one at: ' + random_x + '(x = ' + (random_x + 1 ) + ')-' + random_y + '( y = ' + (random_y + 1) + ')');
 						changeElementType(x+1,y+1,map[random_x][random_y]);
-						let new_x  = x+1
-						let new_y = y+1
-						dictionaryy[new_x+","+new_y] = [new_x,new_y,map[random_x][random_y]];
-						counter++;
+						let new_xx  = x+1
+						let new_yy = y+1
+						dictionaryy[new_xx+","+new_yy] = [new_xx,new_yy,map[random_x][random_y]];
+						//checking if this location was in dictionary as water space but has now changed. 
+						if(waterSpaceCount.hasOwnProperty(new_xx+","+new_yy) && map[random_x][random_y] != 'water_space'){
+							delete waterSpaceCount[new_xx+","+new_yy];
+							console.log("IN HERE");
+						}
+						//adding to the dictionary if it is of water space so we know much non-farmable space there is. 
+						if(map[random_x][random_y] === 'water_space'){
+							waterSpaceCount[new_xx+","+new_yy] = 1;
+						}
 					
 					}
 					
@@ -342,8 +402,9 @@ var total_x = 20; //Total width
 					//storing in array and dictionary so we can get a repeat. 
 					total_options.push([new_x,new_y,basic_elements[type].class])
 					dictionaryy[new_x+","+new_y] = [new_x,new_y,basic_elements[type].class];
-					console.log(total_options[0])
-					// counter++;
+					if(basic_elements[type].class === 'water_space'){
+						waterSpaceCount[new_x+","+new_y] = 1;
+					}
 					tries = max_tries + 1;
 					basic_elements[type].added.push(new_x+","+new_y);
 					added = true;
@@ -380,7 +441,10 @@ var total_x = 20; //Total width
 					changeElementType(x,y,basic_elements[type].class);
 					total_options.push([x,y,basic_elements[type].class]);
 					dictionaryy[x+","+y] = [x,y,basic_elements[type].class];
-					// counter++;
+					if(basic_elements[type].class === 'water_space'){
+						console.log('true');
+						waterSpaceCount[x+","+y] = 1;
+					}
 					added = true;
 					basic_elements[type].added.push(x+","+y);
 					// logM("Removing " + random_empty + " from the list of empty spaces");
