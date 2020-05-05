@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +64,11 @@ public final class FarmProxy {
       prep.close();
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text, free_space integer);");
+      prep.executeUpdate();
+      prep.close();
+      prep = conn.prepareStatement(
+              "CREATE TABLE IF NOT EXISTS trading_center(trader text, crop_sell text, quant_sell text" +
+                      ", crop_buy text, quant_buy text);");
       prep.executeUpdate();
       prep.close();
     } catch (SQLException e) {
@@ -319,6 +325,61 @@ public final class FarmProxy {
       return null;
     }
     return friends;
+  }
+
+  /**
+   * updateTradingCenter adds a new record into the trading center table.
+   *
+   * @param seller    userName of user making the listing
+   * @param cropSell  id of the crop that will be traded
+   * @param sellQ     quantity of cropSell willing to be traded
+   * @param cropBuy   id of crop that is requested in return
+   * @param buyQ      quantity of cropBuy asked for
+   */
+  public static void updateTradingCenter(String seller, String cropSell, String sellQ, String cropBuy, String buyQ) {
+    PreparedStatement prep;
+    try {
+      // update the string that represents the friend list.
+      prep = conn.prepareStatement("INSERT INTO trading_center (trader, crop_sell, quant_sell, " +
+              "crop_buy, quant_buy) VALUES (?,?,?,?,?);");
+      prep.setString(1, seller);
+      prep.setString(2, cropSell);
+      prep.setString(3, sellQ);
+      prep.setString(4, cropBuy);
+      prep.setString(5, buyQ);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * getTradingCenter returns all the records in the trading center.
+   *
+   * @return ArrayList of listings represented as, String[5]
+   */
+  public static String getTradingCenter() {
+    PreparedStatement prep;
+    StringBuilder listings = new StringBuilder();
+    ResultSet rs = null;
+    try {
+      prep = conn.prepareStatement("SELECT * FROM trading_center;");
+      rs = prep.executeQuery();
+      int rowIndex = 0;
+      while (rs.next()) {
+        String[] newListing = new String[5];
+        listings.append(rs.getString(1)).append(",");
+        listings.append(rs.getString(2)).append(",");
+        listings.append(rs.getString(3)).append(",");
+        listings.append(rs.getString(4)).append(",");
+        listings.append(rs.getString(5)).append(";");
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+    }
+    return listings.toString();
   }
 
   /**
