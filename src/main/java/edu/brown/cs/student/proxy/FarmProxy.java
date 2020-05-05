@@ -66,6 +66,11 @@ public final class FarmProxy {
           "CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text, free_space integer);");
       prep.executeUpdate();
       prep.close();
+      prep = conn.prepareStatement(
+              "CREATE TABLE IF NOT EXISTS trading_center(trader text, crop_sell text, quant_sell text" +
+                      ", crop_buy text, quant_buy text);");
+      prep.executeUpdate();
+      prep.close();
     } catch (SQLException e) {
       e.printStackTrace();
     }
