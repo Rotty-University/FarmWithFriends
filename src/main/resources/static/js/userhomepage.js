@@ -246,7 +246,7 @@ class Tile extends React.Component {
 
     initupdate() {
         if (!this.state.updating) {
-            setInterval(this.handleupdate, 10000);
+            setInterval(this.handleupdate, 1000);
             this.setState({updating: true})
         }
     }
