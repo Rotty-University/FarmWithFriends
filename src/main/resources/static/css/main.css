@@ -4,7 +4,7 @@ input[type="number"] {
 
 body {
 	background-color: #5da162;
-    /*background-image: url("images/farm.jpg");*/
+    background-image: url("images/farmbackground.png");
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 	height: 100%;
@@ -94,6 +94,13 @@ body {
     height: 100%;
 }
 
+.homeContainer {
+    /*background-color: #5da162;*/
+    background-image: url("images/nobarnbackground.png");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    height: 100%;
+}
 .toolbox {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
