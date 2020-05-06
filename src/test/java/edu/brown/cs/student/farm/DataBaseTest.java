@@ -55,10 +55,10 @@ public class DataBaseTest {
     FarmProxy.insertUserInfoIntoDatabase("test", "hash", "salt", "test@gmail.com", 1, "false");
     String friendList = FarmProxy.getFriendsList("test");
     assertEquals(friendList, "");
-    FarmProxy.UpdateFriendsList("test", "kobe");
+    FarmProxy.updateFriendsList("test", "kobe");
     String friendUpdate = FarmProxy.getFriendsList("test");
     assertEquals(friendUpdate, "kobe,");
-    FarmProxy.UpdateFriendsList("test", "bryant");
+    FarmProxy.updateFriendsList("test", "bryant");
     String updated = FarmProxy.getFriendsList("test");
     assertEquals(updated, "kobe,bryant,");
     tearDown();
@@ -70,13 +70,13 @@ public class DataBaseTest {
     FarmProxy.insertUserInfoIntoDatabase("test", "hash", "salt", "test@gmail.com", 1, "false");
     String friendListPending = FarmProxy.getFriendsListPending("test");
     assertEquals(friendListPending, "");
-    FarmProxy.UpdateFriendsPending("kobe", "test");
+    FarmProxy.updateFriendsPending("kobe", "test");
     String friendUpdatePending = FarmProxy.getFriendsListPending("test");
     assertEquals(friendUpdatePending, "kobe,");
-    FarmProxy.UpdateFriendsPending("bryant", "test");
+    FarmProxy.updateFriendsPending("bryant", "test");
     String updated = FarmProxy.getFriendsListPending("test");
     assertEquals(updated, "kobe,bryant,");
-    FarmProxy.UpdateFriendsPendingAfterAdding("", "test");
+    FarmProxy.updateFriendsPendingAfterAdding("", "test");
     assertEquals(FarmProxy.getFriendsListPending("test"), "");
     tearDown();
   }
