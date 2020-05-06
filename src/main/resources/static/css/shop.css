@@ -1,11 +1,16 @@
 .grid-container {
     display: grid;
     grid-template-columns: auto auto;
-    background-color: #935F5F;
+    background-color: #4c3c26;
+    /*background-color: #3c3e47;*/
     padding: 10px;
+    width: 95%;
+    margin-right: auto;
+    margin-left: auto;
 }
 .grid-item {
-    background-color: #BC9494;
+    background-color: #6e5635;
+    /*background-color: #888d99;*/
     border: 1px solid rgba(0, 0, 0, 0.8);
     padding: 20px;
     font-size: 20px;
@@ -13,7 +18,9 @@
 }
 
 .shopContainer {
-    background-color: #783c3c;
+    background-color: #4c3c26;
+    background-image: url("images/shopbackground.png");
+    background-size: 100% 100%;
     height: 100%;
     margin-top: 0px;
 }
@@ -52,7 +59,7 @@
 
 #toptoolbar {
     background-color: #3c3e47;
-    width: 20%;
+    width: 30%;
     margin-right: auto;
     margin-left: auto;
     margin-bottom: 20px;
