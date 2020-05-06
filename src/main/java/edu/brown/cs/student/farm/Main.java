@@ -597,7 +597,7 @@ public final class Main {
         }
         // add this current user who is trying to add to the pending list of the user
         // they are trying to add
-        FarmProxy.UpdateFriendsPending(userCookie, username);
+        FarmProxy.updateFriendsPending(userCookie, username);
         message = "Sending the request right now";
         System.out.println("adding them");
       }
@@ -731,9 +731,9 @@ public final class Main {
       String username = qm.value("text");
       String friendslistpending = FarmProxy.getFriendsListPending(userCookie);
       friendslistpending = friendslistpending.replace(username + ",", "");
-      FarmProxy.UpdateFriendsPendingAfterAdding(friendslistpending, userCookie);
-      FarmProxy.UpdateFriendsList(userCookie, username);
-      FarmProxy.UpdateFriendsList(username, userCookie);
+      FarmProxy.updateFriendsPendingAfterAdding(friendslistpending, userCookie);
+      FarmProxy.updateFriendsList(userCookie, username);
+      FarmProxy.updateFriendsList(username, userCookie);
       Map<String, String> variables = ImmutableMap.of("list", username);
       GSON.toJson(variables);
       return GSON.toJson(variables);
@@ -777,7 +777,6 @@ public final class Main {
       String needMap = "false";
       String mapdata = FarmProxy.getMapFromDataBase(id);
       if (mapdata == null) {
-        System.out.println("MAP DATA IS NULL");
         needMap = "true";
         mapdata = "{}";
       } else {
