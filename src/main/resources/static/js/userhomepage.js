@@ -355,14 +355,6 @@ class GameMap extends React.Component {
         document.getElementById("map_viewer").style.display = "block";
         });   
     }
-    changeElementTypee(x,y,cl){ 
-        selector = "#spacee_"+x+'-'+y;
-        var element = $(selector);
-        $.each(basic_elements, function(index,value){
-            element.removeClass(value.class);
-        });
-        element.removeClass('empty').addClass('selected').addClass(cl);
-    }
     render() {
         this.handleClick()
         return (
