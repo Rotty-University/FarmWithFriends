@@ -975,7 +975,7 @@ public final class FarmProxy {
     String[] data = tradeData.split(",");
     PreparedStatement prep;
     try {
-      prep = conn.prepareStatement("DELETE * FROM trading_center WHERE trader = ? AND crop_sell = ? AND " +
+      prep = conn.prepareStatement("DELETE FROM trading_center WHERE trader = ? AND crop_sell = ? AND " +
               "quant_sell = ? AND crop_buy = ? AND quant_buy = ?;");
       prep.setString(1, data[0]);
       prep.setString(2, data[1]);
