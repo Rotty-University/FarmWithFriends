@@ -956,7 +956,9 @@ public final class FarmProxy {
         for (int i = 0; i < cropNames.length; i++) {
           String key = cropNames[i];
           int value = rs.getInt(i + 2);
-          ret.put(key, value);
+          if (value > 0) {
+            ret.put(key, value);
+          }
         }
       }
       rs.close();
