@@ -391,6 +391,28 @@ public final class Main {
         GSON.toJson(variables);
         return GSON.toJson(variables);
       }
+      // Making sure that the email they are trying to make doesn't exist already.
+      if (email.equals("")) {
+        createMessage = "Please input an email.";
+        Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+            "badEmail");
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
+      }
+      if (password.equals("") && reEntered.equals("")) {
+        createMessage = "Please input a password.";
+        Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+            "badPassword");
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
+      }
+      if (Pattern.matches("\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+", email) == false) {
+        createMessage = "Please input a valid email";
+        Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+            "badEmail");
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
+      }
       // Random number generator to generate the salt that will be used to hash.
       SecureRandom random = new SecureRandom();
       byte[] hashedPassword = null;
