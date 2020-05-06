@@ -13,6 +13,17 @@
 /*	justify-content: center;
 	align-items: center;*/
 }
+
+.elementTab{
+	/*	border: 1px gray solid;
+    */	height:30px;
+	width:30px;
+	font-size:7px;
+	display: inline-block;
+	/*	justify-content: center;
+        align-items: center;*/
+}
+
 .selected{
 /*	border: 1px black solid !important;*/
 }
@@ -45,8 +56,8 @@
 #map_viewer{
 	position: absolute;
 	left: 53%;
-	top: 50%;
-	transform: translate(-53%, -50%);
+	top: 60%;
+	transform: translate(-53%, -60%);
 }
 
 #mapContainer{
@@ -141,7 +152,7 @@
 
 .maplegendtable th {
 	width: 100px;
-	height: 50px;
+	height: 20px;
 }
 
 .maplegendtablecreate {

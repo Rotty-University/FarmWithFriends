@@ -1,5 +1,5 @@
 function showMapp() {
-        var total_x = 20; //Total width
+        var total_x =20; //Total width
         var total_y = 20; // Total height
         var total_elements = total_x * total_y; //Total of elements in the matrix
         // var map = createArray(total_x, total_y);

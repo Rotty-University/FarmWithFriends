@@ -315,8 +315,8 @@ class GameMap extends React.Component {
         this.handleClick = this.handleClick.bind(this);
     }
         handleClick() {
-        var total_x = 20; //Total width
-        var total_y = 20; // Total height
+        var total_x = 25; //Total width
+        var total_y = 25; // Total height
         var total_elements = total_x * total_y; //Total of elements in the matrix
         // var map = createArray(total_x, total_y);
         var map_empty = [];
@@ -334,7 +334,7 @@ class GameMap extends React.Component {
             var extra = '';
             extra += '<div class="row">';
             for(let y = 0 ; y < total_y ; y++){
-                extra += '<div class="col element empty" x="' + (x+1) + '" y="' + (y+1) + '" id="spacee_' + (x+1) + '-' + (y+1) + '"></div>';
+                extra += '<div class="col elementTab empty" x="' + (x+1) + '" y="' + (y+1) + '" id="spacee_' + (x+1) + '-' + (y+1) + '"></div>';
                 map_empty.push((x+1)+","+(y+1));
             }
             extra += '</div>';
