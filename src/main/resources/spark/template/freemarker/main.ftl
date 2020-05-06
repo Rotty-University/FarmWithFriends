@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/html5bp.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/map_data.css">
+    <link rel="stylesheet" href="css/shop.css">
   </head>
   <body>
      ${content}

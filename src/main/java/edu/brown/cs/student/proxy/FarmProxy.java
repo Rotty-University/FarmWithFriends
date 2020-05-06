@@ -637,30 +637,6 @@ public final class FarmProxy {
     return ret;
   }
 
-  public static Map<String, Integer> getAllInventoryItems(String userName) {
-    PreparedStatement prep;
-    Map<String, Integer> ret = new HashMap<>();
-    try {
-      prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
-      prep.setString(1, userName);
-
-      ResultSet rs = prep.executeQuery();
-      while (rs.next()) {
-        String key = rs.getString(1);
-        int value = rs.getInt(2);
-
-        ret.put(key, value);
-      }
-      rs.close();
-      prep.close();
-    } catch (SQLException e) {
-      System.out.println("ERROR");
-      return null;
-    }
-
-    return ret;
-  }
-
   /**
    * This method will update the inventory of the user.
    *
@@ -963,4 +939,50 @@ public final class FarmProxy {
     return coord;
   }
 
+  public static Map<String, Integer> getAllInventoryItems(String userName) {
+    PreparedStatement prep;
+    Map<String, Integer> ret = new HashMap<>();
+    String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+            "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
+            "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
+            "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
+
+    try {
+      prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
+      prep.setString(1, userName);
+
+      ResultSet rs = prep.executeQuery();
+      while (rs.next()) {
+        for (int i = 0; i < cropNames.length; i++) {
+          String key = cropNames[i];
+          int value = rs.getInt(i + 2);
+          ret.put(key, value);
+        }
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR");
+      return null;
+    }
+
+    return ret;
+  }
+
+  public static void removeTradeListing(String tradeData) {
+    String[] data = tradeData.split(",");
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("DELETE * FROM trading_center WHERE trader = ? AND crop_sell = ? AND " +
+              "quant_sell = ? AND crop_buy = ? AND quant_buy = ?;");
+      prep.setString(1, data[0]);
+      prep.setString(2, data[1]);
+      prep.setString(3, data[2]);
+      prep.setString(4, data[3]);
+      prep.setString(5, data[4]);
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR");
+    }
+  }
 }

@@ -403,10 +403,128 @@ class GameMap extends React.Component {
 class Shop extends React.Component {
     render() {
         return (
-            <p>{this.props.id}</p>
+        <div id={"shopContainer"} >
+            <h1>Shop and Trade</h1>
+            <button className={"add_button"} onClick={ () => openTradeForm() }>List a Trade</button>
+            <p>Trade List:</p>
+            <div className={"form-popup"} id={"newTrade"}>
+                <h1>Post a Trade</h1>
+                <label htmlFor={"sell_id"}><b>Crop to Trade</b></label>
+                <select id={"sell_id"} required></select>
+                <label htmlFor="sell_quantity"><b>Quantity (between 1 and 5)</b>:</label>
+                <input type="number" id={"sell_quantity"} name="sell_quantity" min="1" max="5"></input>
+                <br></br>
+                <label htmlFor={"buy_id"}><b>Crop Requested</b></label>
+                <select id={"buy_id"} required></select>
+                <label htmlFor="buy_quantity"><b>Quantity (between 1 and 5)</b>:</label>
+                <input type="number" id={"buy_quantity"} name="buy_quantity" min="1" max="5"></input>
+                <button type={"button"} className={"btnn"} id={"post_trade_button"} onClick={ () => addTradeListing() }>Post Trade</button>
+                <button type={"button"} className={"btnn cancel"} onClick={ () => closeAddForm('newTrade') }>Close</button>
+            </div>
+            <div className="grid-container">
+                <div className="grid-item">
+                    <button onClick={() => openInventory() }>Show Inventory</button>
+                    <table id={"inventory"} width={300}>
+                    </table>
+                </div>
+                <div className="grid-item">
+                    <button onClick={() => openTradeList() }>Load Trades</button>
+                    <table id={"trade_list"} width={1000}>
+                    </table>
+                </div>
+            </div>
+        </div>
         )
     }
 }
+
+function makeTrade(trade_data) {
+    console.log("works :)")
+    const postParameters = {
+        //TODO: get the text inside the input box
+        data: trade_data
+    };
+    $.post("/acceptTrade", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        //showing a list of the friends when the button is clicked.
+        window.alert(object.message);
+        this.openTradeList()
+    });
+};
+
+function openTradeForm() {
+    document.getElementById('newTrade').style.display = "block";
+    const inventory = $("#sell_id");
+    const availableCrops = $("#buy_id");
+    inventory.empty();
+    availableCrops.empty();
+    const postParameters = {
+        //TODO: get the text inside the input box
+        text: "placeholder"
+    };
+    $.post("/retrieve_sell", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        //showing a list of the friends when the button is clicked.
+        inventory.append(object.list);
+        availableCrops.append(object.list);
+    });
+};
+
+function openTradeList(){
+    const suggestionList = $("#trade_list");
+    suggestionList.empty();
+    const postParameters = {
+        //TODO: get the text inside the input box
+        text: "placeholder"
+    };
+    $.post("/tradeLoader", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        //showing a list of the friends when the button is clicked.
+        suggestionList.append(object.list);
+    });
+};
+
+function openInventory(){
+    const suggestionList = $("#inventory");
+    suggestionList.empty();
+    const postParameters = {
+        //TODO: get the text inside the input box
+        text: "placeholder"
+    };
+    $.post("/inventoryLoader", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        //showing a list of the friends when the button is clicked.
+        suggestionList.append(object.list);
+    });
+};
+
+function addTradeListing() {
+    const submit = $("#post_trade_button");
+    console.log(submit.innerHTML);
+    const cropS = $("#sell_id");
+    const quantS = $("#sell_quantity");
+    const cropB = $("#buy_id");
+    const quantB = $("#buy_quantity");
+    const postParameters = {
+        //TODO: get the text inside the input box
+        cSell: cropS.val(),
+        qSell: quantS.val(),
+        cBuy: cropB.val(),
+        qBuy: quantB.val()
+    };
+    console.log(postParameters.text);
+    //send the post and show the message from the backend.
+    $.post("/posting_trade", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        window.alert(object.message);
+    });
+    document.getElementById("newTrade").style.display = "none";
+};
 
 class Friends extends React.Component {
 

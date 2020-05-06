@@ -8,7 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -135,6 +137,11 @@ public final class Main {
     Spark.get("/logout", new LogOutHandler(), freeMarker);
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
+    Spark.post("/posting_trade", new TradePostHandler());
+    Spark.post("/retrieve_sell", new GetInventoryHandler());
+    Spark.post("/tradeLoader", new TradeLoaderHandler());
+    Spark.post("/inventoryLoader", new DisplayInventoryHandler());
+    Spark.post("/acceptTrade", new MakeTradeHandler());
     Spark.post("/friendPendingLoader", new FriendPendingLoaderHandler());
     Spark.post("/friendAccepted", new FriendAcceptedHandler());
     Spark.post("/mapMaker", new MapMaker());
@@ -571,6 +578,27 @@ public final class Main {
     }
   }
 
+  private static class TradePostHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      Map<String, String> variables;
+      String cropS = qm.value("cSell");
+      String quantS = qm.value("qSell");
+      String cropB = qm.value("cBuy");
+      String quantB = qm.value("qBuy");
+      if (FarmProxy.getOneInventoryItem(userCookie, cropS) >= Integer.parseInt(quantS)) {
+
+        FarmProxy.updateTradingCenter(userCookie, cropS, quantS, cropB, quantB);
+        variables = ImmutableMap.of("message", "Trade Posted");
+      } else {
+        variables = ImmutableMap.of("message", "Not enough " + cropS + " to make this trade");
+      }
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
   /**
    * This class will handle the request for displaying the friend's list of a user
    * when they want to see it.
@@ -585,6 +613,67 @@ public final class Main {
     }
   }
 
+  private static class TradeLoaderHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String tradeCenter = FarmProxy.getTradingCenter();
+      StringBuilder htmlCode = new StringBuilder();
+      htmlCode.append("<tr><th>Seller</th><th>Crop Selling</th>" +
+              "<th>Amount</th><th>Crop Requesting</th><th>Ammount</th><th></th></tr>");
+      String[] rows = tradeCenter.split(";");
+      for (String r : rows) {
+        htmlCode.append("<tr>");
+        String[] col = r.split(",");
+        for (String c : col) {
+          htmlCode.append("<td>").append(c).append("</td>");
+        }
+        htmlCode.append("<td>").append("<button onClick=makeTrade(\"" + r+ "\")>Accept</button>").append("</td>");
+        htmlCode.append("</tr>");
+      }
+      System.out.println(tradeCenter);
+      Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  private static class GetInventoryHandler implements Route {
+
+    @Override
+    public Object handle(Request request, Response response) {
+      QueryParamsMap qm = request.queryMap();
+      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(userCookie);
+      StringBuilder htmlCode = new StringBuilder();
+      for (String r : userInventory.keySet()) {
+        htmlCode.append("<option value=\"" + r + "\">" + r + "</option>");
+      }
+      Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  private static class DisplayInventoryHandler implements Route {
+
+    @Override
+    public Object handle(Request request, Response response) {
+      QueryParamsMap qm = request.queryMap();
+      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(userCookie);
+      StringBuilder htmlCode = new StringBuilder();
+      htmlCode.append("<tr><th>Crop</th><th>Amount</th></tr>");
+      for (String r : userInventory.keySet()) {
+        htmlCode.append("<tr>");
+        htmlCode.append("<td>").append(r).append("</td>");
+        htmlCode.append("<td>").append(userInventory.get(r)).append("</td>");
+        htmlCode.append("<\tr>");
+      }
+      Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+  
   /**
    * This class will handle the request for displaying the pending requests that
    * they can accept of a user when they want to see it.
@@ -713,6 +802,37 @@ public final class Main {
       String row = String.valueOf(coords[0]);
       String col = String.valueOf(coords[1]);
       Map<String, String> variables = ImmutableMap.of("data", mapdata, "row", row, "col", col);
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle the executing a trade between two players
+   *
+   */
+  private static class MakeTradeHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String tradeData = qm.value("data");
+      String[] data = tradeData.split(",");
+      String message;
+      int cropGiveQ = FarmProxy.getOneInventoryItem(data[3], userCookie);
+      int cropGetQ = FarmProxy.getOneInventoryItem(data[1], userCookie);
+      int sellQ = Integer.parseInt(data[2]);
+      int buyQ = Integer.parseInt(data[4]);
+      if (cropGiveQ > Integer.parseInt(data[4])) {
+        FarmProxy.updateInventory(userCookie, data[1], cropGetQ + sellQ);
+        FarmProxy.updateInventory(userCookie, data[3], cropGiveQ - buyQ);
+        FarmProxy.updateInventory(data[0], data[1], FarmProxy.getOneInventoryItem(data[1], userCookie) - sellQ);
+        FarmProxy.updateInventory(data[0], data[3], FarmProxy.getOneInventoryItem(data[3], userCookie) + buyQ);
+        FarmProxy.removeTradeListing(tradeData);
+        message = "Trade Successful!";
+      } else {
+        message = "Not enough " + data[3] + " to make this trade";
+      }
+      Map<String, String> variables = ImmutableMap.of("message", message);
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
