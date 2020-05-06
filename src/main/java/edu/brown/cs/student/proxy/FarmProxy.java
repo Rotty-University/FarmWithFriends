@@ -501,7 +501,7 @@ public final class FarmProxy {
       try {
         oos = new ObjectOutputStream(bos);
 
-        FarmLand[][] thePlantation = new FarmLand[15][20];
+        FarmLand[][] thePlantation = new FarmLand[12][20];
 
         for (int i = 0; i < thePlantation.length; i++) {
           for (int j = 0; j < thePlantation[0].length; j++) {
@@ -943,9 +943,9 @@ public final class FarmProxy {
     PreparedStatement prep;
     Map<String, Integer> ret = new HashMap<>();
     String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
-    "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
-    "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
-    "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
+            "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
+            "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
+            "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
 
     try {
       prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
@@ -985,5 +985,4 @@ public final class FarmProxy {
       System.out.println("ERROR");
     }
   }
-
 }

@@ -21,18 +21,28 @@ public class FarmingHandlers {
 
   public FarmingHandlers(FarmViewer a) {
     app = a;
+    System.out.println(app.getFarmName());
     pw = new PrintWriter(System.out);
   }
 
   /**
    * Takes request from GUI and perform actions on the farm, then return the new
    * state of the farm
-   * 
+   *
    * @author zjk97
    * @author hlucco
    *
    */
   public class FarmingHandler implements Route {
+    /**
+     * This method will set the app instance that the post requests will be working
+     * with.
+     *
+     * @param a the app instance of the current user.
+     */
+    public void setApp(FarmViewer a) {
+      app = a;
+    }
 
     @Override
     public String handle(Request req, Response res) throws Exception {
@@ -44,7 +54,6 @@ public class FarmingHandlers {
       String[] commands = {
           row, col
       };
-
       // do stuff in backend
       switch (action) {
       case 0:

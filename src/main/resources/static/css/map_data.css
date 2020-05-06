@@ -13,6 +13,17 @@
 /*	justify-content: center;
 	align-items: center;*/
 }
+
+.elementTab{
+	/*	border: 1px gray solid;
+    */	height:30px;
+	width:30px;
+	font-size:7px;
+	display: inline-block;
+	/*	justify-content: center;
+        align-items: center;*/
+}
+
 .selected{
 /*	border: 1px black solid !important;*/
 }
@@ -34,25 +45,154 @@
 	color:black;
 }
 .white_space{
-	background-color: white;
-	color: white;
+	background-color: red;
+	color: red;
 }
 .black_space{
 	background-color: black;
 	color:black;
 }
 
-#map_table{
-	position: absolute;
-	/*This is what is causing it to be like this.*/
-	right: 400px;
-	bottom: 100px;
-	text-align: center;
-}
 #map_viewer{
 	position: absolute;
-	/*This is what is causing it to be like this.*/
-	right: 600px;
-	bottom: 200px;
+	left: 53%;
+	top: 60%;
+	transform: translate(-53%, -60%);
+}
+
+#mapContainer{
+	background-color: #93785f;
+	height: 100%;
+	margin-top: 0;
+}
+
+#mapContainer p {
+	margin: 0px;
+}
+
+#map_table {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.maplegend {
+	border-bottom-left-radius: 15px;
+	border-bottom-right-radius: 15px;
+	background-color: #3c3e47;
+	padding: 10px;
+	position: absolute;
+	left: 50%;
+	top: 0%;
+	transform: translate(-50%, -0%);
+}
+
+#redsquare {
+	height: 40px;
+	width: 40px;
+	background-color: red;
+	color: white;
+	border-radius: 5px;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+#blacksquare {
+	height: 40px;
+	width: 40px;
+	background-color: black;
+ 	color: white;
+	border-radius: 5px;
+	margin-right: auto;
+	margin-left: auto;
+ }
+
+#bluesquare {
+	height: 40px;
+	width: 40px;
+	background-color: blue;
+	color: white;
+	margin-right: auto;
+	border-radius: 5px;
+	margin-left: auto;
+}
+#yellowsquare {
+	height: 40px;
+	width: 40px;
+	background-color: yellow;
+	color: white;
+	margin-right: auto;
+	border-radius: 5px;
+	margin-left: auto;
+}
+#lightgreensquare {
+	height: 40px;
+	width: 40px;
+	background-color: lightgreen;
+	color: white;
+	margin-right: auto;
+	margin-left: auto;
+	border-radius: 5px;
+
+}
+#darkgreensquare {
+	height: 40px;
+	width: 40px;
+	background-color: #0b7445;
+	color: white;
+	margin-right: auto;
+	margin-left: auto;
+	border-radius: 5px;
+}
+
+.maplegendtable {
 	text-align: center;
+}
+
+.maplegendtable th {
+	width: 100px;
+	height: 20px;
+}
+
+.maplegendtablecreate {
+	text-align: center;
+}
+
+.maplegendtablecreate th {
+	width: 100px;
+	height: 50px;
+	background-color: pink;
+}
+
+.maplegendcreate {
+	border-top-left-radius: 15px;
+	border-top-right-radius: 15px;
+	background-color: #3c3e47;
+	padding: 10px;
+	position: absolute;
+	left: 50%;
+	bottom: 0%;
+	transform: translate(-50%, -0%);
+}
+
+.newusercontainer {
+	width: 50%;
+	background-color: #3c3e47;
+	margin-right: auto;
+	margin-left: auto;
+	border-radius: 15px;
+	padding-bottom: 10px;
+}
+
+.newusercontainer button {
+	border-radius: 5px;
+	border: none;
+	background-color: white;
+	padding:10px;
+	color: #3c3e47;
+}
+
+.newusercontainer button:hover {
+	background-color: #cccccc;
 }
