@@ -3,18 +3,18 @@
 		<p><a href="/login"><img src="css/images/iconLeave.svg" height=40 width=40/></a></p>
 	</div>
 	<h1> CREATE YOUR ACCOUNT HERE</h1>
-	<form method="POST" action="/new_user" class="inputForm">
+	<div class="inputForm">
 		<label for="email">Enter Your Email</label>
 		<p><input type="email" name="email" id="email" required></p>
-		<label for="text">Enter Your Desired Username:</label>
-	  	<p><input type="text" name="username" id="text" required></p>
+		<label for="username">Enter Your Desired Username:</label>
+	  	<p><input type="text" name="username" id="username" required></p>
 		<label for="pass">Enter Password:</label>
 		<p><input type="password" name="password" id="pass" required></p>
-		<label for="pass_re">Re-Enter Password:</label>
-		<p><input type="password" name="re_password" id="pass_re" required></p>
-	  	<div class="submitbutton"><input class="submitbutton" type="submit"></div>
-	</form>
-	<p>${create_message}</p>
+		<label for="re_password">Re-Enter Password:</label>
+		<p><input type="password" name="re_password" id="re_password" required></p>
+	  	<div class="submitbutton"><button class="submitbutton" onClick="createAccountHandler()">Submit</button></div>
+	</div>
+	<p id="message_for_account"></p>
 
 </#assign>
 <#include "main.ftl">
