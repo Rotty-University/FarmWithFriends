@@ -384,18 +384,6 @@ class Shop extends React.Component {
             <h1>Shop and Trade</h1>
             <button className={"add_button"} onClick={ () => openTradeForm() }>List a Trade</button>
             <p>Trade List:</p>
-            <div className="row">
-                <div className="column-left">
-                    <button onClick={() => openInventory() }>Show Inventory</button>
-                    <table id={"inventory"} width={300}>
-                    </table>
-                </div>
-                <div className="column-right">
-                    <button onClick={() => openTradeList() }>Load Trades</button>
-                    <table id={"trade_list"} width={1000}>
-                    </table>
-                </div>
-            </div>
             <div className={"form-popup"} id={"newTrade"}>
                 <h1>Post a Trade</h1>
                 <label htmlFor={"sell_id"}><b>Crop to Trade</b></label>
@@ -410,13 +398,36 @@ class Shop extends React.Component {
                 <button type={"button"} className={"btnn"} id={"post_trade_button"} onClick={ () => addTradeListing() }>Post Trade</button>
                 <button type={"button"} className={"btnn cancel"} onClick={ () => closeAddForm('newTrade') }>Close</button>
             </div>
+            <div className="grid-container">
+                <div className="grid-item">
+                    <button onClick={() => openInventory() }>Show Inventory</button>
+                    <table id={"inventory"} width={300}>
+                    </table>
+                </div>
+                <div className="grid-item">
+                    <button onClick={() => openTradeList() }>Load Trades</button>
+                    <table id={"trade_list"} width={1000}>
+                    </table>
+                </div>
+            </div>
         </div>
         )
     }
 }
 
 function makeTrade(trade_data) {
-    console.log(trade_data)
+    console.log("works :)")
+    const postParameters = {
+        //TODO: get the text inside the input box
+        data: trade_data
+    };
+    $.post("/acceptTrade", postParameters, response => {
+        // Do something with the response here
+        const object = JSON.parse(response);
+        //showing a list of the friends when the button is clicked.
+        window.alert(object.message);
+        this.openTradeList()
+    });
 };
 
 function openTradeForm() {
@@ -487,6 +498,7 @@ function addTradeListing() {
     $.post("/posting_trade", postParameters, response => {
         // Do something with the response here
         const object = JSON.parse(response);
+        window.alert(object.message);
     });
     document.getElementById("newTrade").style.display = "none";
 };
