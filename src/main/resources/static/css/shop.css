@@ -1,13 +1,104 @@
 .grid-container {
     display: grid;
-    grid-template-columns: auto auto auto;
-    background-color: #0F0FFF;
+    grid-template-columns: auto auto;
+    background-color: #935F5F;
     padding: 10px;
 }
 .grid-item {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: #BC9494;
     border: 1px solid rgba(0, 0, 0, 0.8);
     padding: 20px;
     font-size: 20px;
     text-align: center;
 }
+
+.shopContainer {
+    background-color: #783c3c;
+    height: 100%;
+    margin-top: 0px;
+}
+
+.shopContainer h1 {
+    margin-top: 0px;
+
+}
+
+.shopContainer button {
+    border-radius: 5px;
+    border: none;
+    background-color: white;
+    padding:10px;
+    margin: 10px;
+    color: #3c3e47;
+}
+
+.shopContainer button:hover {
+    background-color: #cccccc;
+}
+
+#trade_list {
+    /*background-color: red;*/
+    /*width: 100%;*/
+    margin-right: auto;
+    margin-left: auto;
+}
+
+#inventory {
+    /*background-color: green;*/
+    margin-right: auto;
+    margin-left: auto;
+    /*width: 100%;*/
+}
+
+#toptoolbar {
+    background-color: #3c3e47;
+    width: 20%;
+    margin-right: auto;
+    margin-left: auto;
+    margin-bottom: 20px;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+}
+
+.shop_form {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 500px;
+    transform: translate(-50%, -50%);
+    padding: 0px;
+    border: none;
+    background-color: #888d99;
+    z-index: 1;
+    border-radius: 15px;
+}
+
+.shop_form button {
+    margin: 0px;
+    width: 200px;
+    background-color: #4CAF50;
+    color: white;
+}
+
+.shop_form button:hover {
+    margin: 0px;
+    width: 200px;
+    background-color: #3e7c3e;
+    color: white;
+}
+
+.shop_form input[type=label] {
+    text-align: left;
+}
+
+#shopcancel {
+    background-color: red;
+    color: white;
+}
+
+#shopcancel:hover {
+    background-color: #a80000;
+
+}
+

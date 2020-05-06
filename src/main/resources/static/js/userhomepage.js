@@ -395,32 +395,32 @@ class GameMap extends React.Component {
 class Shop extends React.Component {
     render() {
         return (
-        <div id={"shopContainer"} >
-            <h1>Shop and Trade</h1>
-            <button className={"add_button"} onClick={ () => openTradeForm() }>List a Trade</button>
-            <p>Trade List:</p>
-            <div className={"form-popup"} id={"newTrade"}>
-                <h1>Post a Trade</h1>
-                <label htmlFor={"sell_id"}><b>Crop to Trade</b></label>
-                <select id={"sell_id"} required></select>
-                <label htmlFor="sell_quantity"><b>Quantity (between 1 and 5)</b>:</label>
-                <input type="number" id={"sell_quantity"} name="sell_quantity" min="1" max="5"></input>
-                <br></br>
-                <label htmlFor={"buy_id"}><b>Crop Requested</b></label>
-                <select id={"buy_id"} required></select>
-                <label htmlFor="buy_quantity"><b>Quantity (between 1 and 5)</b>:</label>
-                <input type="number" id={"buy_quantity"} name="buy_quantity" min="1" max="5"></input>
-                <button type={"button"} className={"btnn"} id={"post_trade_button"} onClick={ () => addTradeListing() }>Post Trade</button>
-                <button type={"button"} className={"btnn cancel"} onClick={ () => closeAddForm('newTrade') }>Close</button>
+        <div id={"shopContainer"} className={"shopContainer"}>
+            <div id={"toptoolbar"}>
+                <h1>Marketplace</h1>
+                <button className={"add_button"} onClick={ () => openTradeForm() }>New Trade</button>
+                {/*<p>Trade List:</p>*/}
+                <div className={"shop_form"} id={"newTrade"}>
+                    <h1>New Trade</h1>
+                    <label htmlFor={"sell_id"}><b>Crop to Trade</b></label>
+                    <label htmlFor="sell_quantity "><b>Quantity (between 1 and 5)</b>:</label>
+                    <p><input type="number" id={"sell_quantity"} name="sell_quantity" min="1" max="5"></input><select id={"sell_id"} required></select></p>
+                    <br></br>
+                    <label htmlFor={"buy_id"}><b>Crop Requested</b></label>
+                    <label htmlFor="buy_quantity "><b>Quantity (between 1 and 5)</b>:</label>
+                    <p><input type="number" id={"buy_quantity"} name="buy_quantity" min="1" max="5"></input><select id={"buy_id"} required></select></p>
+                    <p><button type={"button"} className={"btnn"} id={"post_trade_button"} onClick={ () => addTradeListing() }>Post Trade</button></p>
+                    <p><button type={"button"} id={"shopcancel"} onClick={ () => closeAddForm('newTrade') }>Close</button></p>
+                </div>
             </div>
             <div className="grid-container">
                 <div className="grid-item">
-                    <button onClick={() => openInventory() }>Show Inventory</button>
+                    <button onClick={() => openInventory() }>Refresh Inventory</button>
                     <table id={"inventory"} width={300}>
                     </table>
                 </div>
                 <div className="grid-item">
-                    <button onClick={() => openTradeList() }>Load Trades</button>
+                    <button onClick={() => openTradeList() }>Refresh Trades</button>
                     <table id={"trade_list"} width={1000}>
                     </table>
                 </div>
@@ -528,8 +528,8 @@ class Friends extends React.Component {
                     <h1 id={"title_of_friends_list"}>Friends List</h1>
                     <ul id={"list_of_friends"}>
                     </ul>
-                    <p className={"color_of_text"}>These are your pending requests below</p>
-                    <p className={"color_of_text"}>Click on a name to accept the user</p>
+                    <p className={"color_of_text"}>Pending Requests:</p>
+                    {/*<p className={"color_of_text"}>Click on a name to accept the user</p>*/}
                     <ul id={"list_of_friends_pending"}>
                     </ul>
                     <button className={"friend_button"} onClick={ () => openForm('myForm') }>Add Friends</button>

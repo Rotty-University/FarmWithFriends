@@ -13,6 +13,18 @@ body {
 	color: white;
 }
 
+.submitbutton button {
+    border-radius: 5px;
+    border: none;
+    background-color: white;
+    padding:10px;
+    color: #3c3e47;
+}
+
+.submitbutton button:hover {
+    background-color: #cccc;
+}
+
 .nav-bar {
     color: white;
     position: absolute;
@@ -217,6 +229,11 @@ td {
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+#list_of_friends {
+    list-style-type:none;
+    text-align: center;
+    padding: 0px;
 }
 
 .farmContainer {
