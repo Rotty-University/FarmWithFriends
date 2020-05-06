@@ -76,7 +76,7 @@ public final class Main {
 
 //// uncomment here to use commandline only
 //    // *************************************
-//    // *** DO NOT DELETE, I WILL KILL YOU***
+//    // *** DO NOT DELETE***
 //    // *************************************
 //    // set database for commandline use
 //    FarmProxy.setUpDataBase();
@@ -90,10 +90,7 @@ public final class Main {
 //// -------------------------
 
     FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
-    // Stars the GUI server
-    if (options.has("gui")) {
-      runSparkServer((int) options.valueOf("port"));
-    }
+    runSparkServer((int) options.valueOf("port"));
 
     repl.run();
   }
@@ -110,8 +107,17 @@ public final class Main {
     return new FreeMarkerEngine(config);
   }
 
+  static int getHerokuAssignedPort() {
+    ProcessBuilder processBuilder = new ProcessBuilder();
+    if (processBuilder.environment().get("PORT") != null) {
+      return Integer.parseInt(processBuilder.environment().get("PORT"));
+    }
+    return 4567; // return default port if heroku-port isn't set (i.e. on localhost)
+  }
+
   private void runSparkServer(int port) {
-    Spark.port(port);
+    Spark.port(getHerokuAssignedPort());
+//    Spark.port(port);
     Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
 
@@ -190,10 +196,9 @@ public final class Main {
   private static class LoginPageHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "message",
-          message);
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "message", message);
       message = "";
-      // checking to make sure the user isn't already logged on.Will take to their
+      // checking to make sure the user isn't already logged on. Will take to their
       // homepage if they are.
       if (req.cookies().containsKey(userCookie)) {
         message = "You are already logged in";
@@ -219,10 +224,12 @@ public final class Main {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
+      // if the user still hasn't picked a spot on the map, then they will be sent
+      // back to the new user page.
       if (FarmProxy.getStatusOfUser(userCookie).equals("true")) {
         res.redirect("/new_user");
       }
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator");
 
       // create new farm for user if it doesn't exist
       FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
@@ -247,8 +254,8 @@ public final class Main {
   private static class CreateAccountPageHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator",
-          "create_message", createMessage);
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "create_message",
+          createMessage);
       createMessage = "";
       return new ModelAndView(variables, "create_account.ftl");
     }
@@ -272,6 +279,7 @@ public final class Main {
         res.redirect("/login");
         return new ModelAndView(null, "user_home.ftl");
       }
+      // getting all the user information below.
       String[] userInfo = FarmProxy.getUserInfoFromDataBaseForLogIn(username);
       String hashedPasswordFromDataBase = userInfo[1];
       String saltedString = userInfo[2];
@@ -301,6 +309,7 @@ public final class Main {
         message = "The password is incorrect. Please try again";
         res.redirect("/login");
       }
+      // valid login credentials.
       userCookie = username;
       res.cookie(username, username);
       // keeping track of the logged in user.
@@ -362,7 +371,6 @@ public final class Main {
       SecureRandom random = new SecureRandom();
       byte[] hashedPassword = null;
       byte[] salt = new byte[16];
-      StringBuilder uniqueid = new StringBuilder();
       random.nextBytes(salt);
       MessageDigest md;
       try {
@@ -372,17 +380,19 @@ public final class Main {
       } catch (NoSuchAlgorithmException e) {
         e.printStackTrace();
       }
-//      // THIS IS WHERE WE WILL TAKE CARE OF MAKING WHAT MAP WILL SHOW UP.
+      // This is where we are seeing if there is a map in the database and getting the
+      // most recent one
+      // to check if it is has free space the user can click on.
       String[] mapInfo = FarmProxy.getDataFromMostRecentMap();
       // only read if this is not null
       if (mapInfo != null) {
-        System.out.println("In the if statment in making new user so getting data not null");
         int mapid = Integer.parseInt(mapInfo[0]);
         int freespace = Integer.parseInt(mapInfo[2]);
         // if there is no free space meaning that each user already holds a place here,
         // then make a new map by incrementing the map counter.
         if (freespace == 0) {
-          System.out.println("no free space so will increment the currentMap Id");
+          // since there is no free space we increment the map counter and this is the map
+          // that will belong to the user.
           currentMapID = mapid + 1;
           // else just make the currentMap the one from the database. the free space will
           // be adjusted later.
@@ -398,17 +408,17 @@ public final class Main {
       }
 
       // insert this user information into the database.
-      // change the false back to true eventually.
+      // change the true back to false eventually after they pick a spot on map.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
           Arrays.toString(salt), email, currentMapID, "true");
       userCookie = username;
 
       res.cookie(username, username);
+      // keeping track of user.
       req.session(true);
       req.session().attribute(username, username);
 
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
-          username);
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "name", username);
 
       // make new farm for this user if it doesn't exist
       FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
@@ -441,12 +451,12 @@ public final class Main {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
+      // checking to make sure that the user can't go back to the map page if they
+      // already picked a spot there.
       if (FarmProxy.getStatusOfUser(userCookie).equals("false")) {
         res.redirect("/home");
       }
-      // HAVE TO DO THE CHECK WHERE THE USER ISN'T NEW USER ANYMORE.
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "name",
-          userCookie);
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "name", userCookie);
       return new ModelAndView(variables, "new_user.ftl");
     }
   }
@@ -463,18 +473,17 @@ public final class Main {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
-      System.out.println("before" + req.session().attributes().size());
+      System.out.println("before size is " + req.session().attributes().size());
       if (req.session().attributes().contains(userCookie)) {
-        System.out.println("dfgdfgdgd");
+        System.out.println("About to logout for user");
         res.removeCookie(userCookie);
         req.session().removeAttribute(userCookie);
         userCookie = null;
-        System.out.println(req.session().attributes().size());
+        System.out.println("After logging out it is " + req.session().attributes().size());
       }
       System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";
-      Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator", "message",
-          message);
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "message", message);
       return new ModelAndView(variables, "home.ftl");
     }
   }
@@ -488,21 +497,21 @@ public final class Main {
     @Override
     public String handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
+      // getting the text value.
       String username = qm.value("text");
       String message = "";
       Map<String, String> variables;
+      // making sure the user can't add themselves.
       if (username.equals(userCookie)) {
         message = "You can't add yourself. Try again.";
         variables = ImmutableMap.of("message", message);
         GSON.toJson(variables);
         return GSON.toJson(variables);
       }
-      // Making sure that the user name they are trying to make doesn't exist already.
+      // Making sure that the user name they are trying add exists.
       if (FarmProxy.getUserNameFromDataBase(username) == null) {
-        System.out.println("doesnt exist");
         message = "The user doesn't exist. Try adding someone else.";
       } else {
-        System.out.println(userCookie);
         String friendslist = FarmProxy.getFriendsList(userCookie);
         String[] friends = friendslist.split(",");
         // check to make sure the user isn't already in the friends list.
@@ -516,7 +525,8 @@ public final class Main {
         }
         String friendslistpending = FarmProxy.getFriendsListPending(username);
         String[] friendspending = friendslistpending.split(",");
-        // check to make sure the user isn't already in the friends list.
+        // check to make sure the user isn't already in the pending friends list of the
+        // other user.
         for (String friend : friendspending) {
           if (userCookie.equals(friend)) {
             message = "You already sent a friend request to this person.";
@@ -556,7 +566,6 @@ public final class Main {
   private static class FriendLoaderHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      QueryParamsMap qm = req.queryMap();
       String friendslist = FarmProxy.getFriendsList(userCookie);
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
       GSON.toJson(variables);
@@ -572,7 +581,6 @@ public final class Main {
   private static class FriendPendingLoaderHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      QueryParamsMap qm = req.queryMap();
       String friendslist = FarmProxy.getFriendsListPending(userCookie);
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
       GSON.toJson(variables);
@@ -582,7 +590,7 @@ public final class Main {
 
   /**
    * This class will handle the request for accepting a friend when it is clicked
-   * on from the pending requests and updating the friend's lis of eahc user as
+   * on from the pending requests and updating the friend's list of each user as
    * well the pending friends list of the current user.
    */
   private static class FriendAcceptedHandler implements Route {
@@ -665,6 +673,7 @@ public final class Main {
       String mapData = qm.value("dictionary_data");
       String row = qm.value("row");
       String col = qm.value("col");
+      // keeping track of this users location in the map.
       FarmProxy.updateTheRowAndColumnofUserLocationInMap(userCookie, Integer.parseInt(row),
           Integer.parseInt(col));
       // Updating the map so it knows the space that is already occupied and the user
