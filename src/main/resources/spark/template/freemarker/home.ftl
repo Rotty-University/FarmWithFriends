@@ -2,7 +2,7 @@
 	<div class="nav-bar">
 		<p><a href="/create_account"><img src="css/images/iconNew.svg" height=40 width=40/></a></p>
 	</div>
-	<h1> Welcome to the FARMING SIMULATOR </h1>
+	<h1> Welcome to FARMULATOR </h1>
 	<h2>Please Login:</h2>
 	<form method="POST" action="/home" class="inputForm">
 		<label for="text">Username:</label>

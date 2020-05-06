@@ -8,9 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -133,7 +131,7 @@ public final class Main {
     Spark.get("/home", new HomePageAlreadyLoggedInHandler(), freeMarker);
     Spark.get("/create_account", new CreateAccountPageHandler(), freeMarker);
     Spark.get("/new_user", new NewUserPageAlreadyLoggedInHandler(), freeMarker);
-    Spark.post("/new_user", new NewUserPageHandler(), freeMarker);
+    Spark.post("/new_user_form", new NewUserPageHandler());
     Spark.get("/logout", new LogOutHandler(), freeMarker);
     Spark.post("/adding_friend", new AddingFriendsHandler());
     Spark.post("/friendLoader", new FriendLoaderHandler());
@@ -273,8 +271,7 @@ public final class Main {
   private static class CreateAccountPageHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "create_message",
-          createMessage);
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator");
       createMessage = "";
       return new ModelAndView(variables, "create_account.ftl");
     }
@@ -348,14 +345,14 @@ public final class Main {
 
   /**
    * This is the handler for interpreting the form for creating a new user. The
-   * post request will be from the creation of a new user page.It will redirect to
-   * the create account page if the data for the creation of the user is invalid.
-   * It will load the new user's profile page on acceptance.
+   * post request will be from the creation of a new user page.It will send an
+   * error message if there is something that is invalid. It will load the new
+   * user's profile page on acceptance.
    *
    */
-  private static class NewUserPageHandler implements TemplateViewRoute {
+  private static class NewUserPageHandler implements Route {
     @Override
-    public ModelAndView handle(Request req, Response res) {
+    public String handle(Request req, Response res) {
       QueryParamsMap data = req.queryMap();
       String email = data.value("email");
       String username = data.value("username");
@@ -365,26 +362,34 @@ public final class Main {
       // making sure the string is of the right format.
       if (!Pattern.matches("[A-Za-z][A-Za-z0-9]{5,16}", username)) {
         createMessage = "The username must start with a letter and be at least 6 characters and at most 16. Try Again";
-        res.redirect("/create_account");
-        return new ModelAndView(null, "new_user.ftl");
+        Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+            "badUser");
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
       }
       // making sure the two passwords equal each other.
       if (!password.equals(reEntered)) {
         createMessage = "The passwords didn't match. Try Again";
-        res.redirect("/create_account");
-        return new ModelAndView(null, "new_user.ftl");
+        Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+            "badPassword");
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
       }
       // Making sure that the user name they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(username) != null) {
         createMessage = "The username already exists. Please try a different username.";
-        res.redirect("/create_account");
-        return new ModelAndView(null, "new_user.ftl");
+        Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+            "badUser");
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
       }
       // Making sure that the email they are trying to make doesn't exist already.
       if (FarmProxy.getUserNameFromDataBase(email) != null) {
         createMessage = "The email already exists. Please try a different email.";
-        res.redirect("/create_account");
-        return new ModelAndView(null, "new_user.ftl");
+        Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+            "badEmail");
+        GSON.toJson(variables);
+        return GSON.toJson(variables);
       }
       // Random number generator to generate the salt that will be used to hash.
       SecureRandom random = new SecureRandom();
@@ -437,8 +442,6 @@ public final class Main {
       req.session(true);
       req.session().attribute(username, username);
 
-      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "name", username);
-
       // make new farm for this user if it doesn't exist
       FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
       if (nextFarmFile == null) {
@@ -451,7 +454,11 @@ public final class Main {
       // init farm and start game
       initFarmViewerAndHandler();
 
-      return new ModelAndView(variables, "new_user.ftl");
+      createMessage = "";
+      Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
+          "true");
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
     }
 
   }
@@ -619,8 +626,8 @@ public final class Main {
       QueryParamsMap qm = req.queryMap();
       String tradeCenter = FarmProxy.getTradingCenter();
       StringBuilder htmlCode = new StringBuilder();
-      htmlCode.append("<tr><th>Seller</th><th>Crop Selling</th>" +
-              "<th>Amount</th><th>Crop Requesting</th><th>Ammount</th><th></th></tr>");
+      htmlCode.append("<tr><th>Seller</th><th>Crop Selling</th>"
+          + "<th>Amount</th><th>Crop Requesting</th><th>Ammount</th><th></th></tr>");
       String[] rows = tradeCenter.split(";");
       for (String r : rows) {
         htmlCode.append("<tr>");
@@ -628,7 +635,8 @@ public final class Main {
         for (String c : col) {
           htmlCode.append("<td>").append(c).append("</td>");
         }
-        htmlCode.append("<td>").append("<button onClick=makeTrade(\"" + r+ "\")>Accept</button>").append("</td>");
+        htmlCode.append("<td>").append("<button onClick=makeTrade(\"" + r + "\")>Accept</button>")
+            .append("</td>");
         htmlCode.append("</tr>");
       }
       System.out.println(tradeCenter);
@@ -673,7 +681,7 @@ public final class Main {
       return GSON.toJson(variables);
     }
   }
-  
+
   /**
    * This class will handle the request for displaying the pending requests that
    * they can accept of a user when they want to see it.
@@ -825,8 +833,10 @@ public final class Main {
       if (cropGiveQ > Integer.parseInt(data[4])) {
         FarmProxy.updateInventory(userCookie, data[1], cropGetQ + sellQ);
         FarmProxy.updateInventory(userCookie, data[3], cropGiveQ - buyQ);
-        FarmProxy.updateInventory(data[0], data[1], FarmProxy.getOneInventoryItem(data[1], userCookie) - sellQ);
-        FarmProxy.updateInventory(data[0], data[3], FarmProxy.getOneInventoryItem(data[3], userCookie) + buyQ);
+        FarmProxy.updateInventory(data[0], data[1],
+            FarmProxy.getOneInventoryItem(data[1], userCookie) - sellQ);
+        FarmProxy.updateInventory(data[0], data[3],
+            FarmProxy.getOneInventoryItem(data[3], userCookie) + buyQ);
         FarmProxy.removeTradeListing(tradeData);
         message = "Trade Successful!";
       } else {

@@ -25,6 +25,7 @@
      <!-- Load React components & helper functions. -->
      <script src="js/AddingFriends.js"></script>
      <script src="js/map_creation.js"></script>
+     <script src="js/CreateAccount.js"></script>
      <script src="js/ShowingMap.js"></script>
      <script src="js/userhomepage.js" type="text/babel"></script>
   </body>
