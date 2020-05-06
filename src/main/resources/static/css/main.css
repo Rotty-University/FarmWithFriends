@@ -3,7 +3,7 @@ input[type="number"] {
 }
 
 body {
-	background-color: black;
+	background-color: #5da162;
     /*background-image: url("images/farm.jpg");*/
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
@@ -221,21 +221,11 @@ td {
     padding: 0;
 }
 
-.column-left {
-    float: left;
-    padding: 10px;
-    width: 25%;
+.homeContainer {
+    background-color: #4CAF50;
+    margin-right: auto;
+    margin-left: auto;
+    width: 70%;
 }
 
-.column-right {
-    float: left;
-    padding: 10px;
-    width: 75%;
-}
 
-/* Clear floats after the columns */
-.row:after {
-    content: "";
-    display: table;
-    clear: both;
-}

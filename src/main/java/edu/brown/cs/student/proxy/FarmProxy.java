@@ -501,7 +501,7 @@ public final class FarmProxy {
       try {
         oos = new ObjectOutputStream(bos);
 
-        FarmLand[][] thePlantation = new FarmLand[1][4];
+        FarmLand[][] thePlantation = new FarmLand[15][20];
 
         for (int i = 0; i < thePlantation.length; i++) {
           for (int j = 0; j < thePlantation[0].length; j++) {
@@ -636,36 +636,6 @@ public final class FarmProxy {
 
     return ret;
   }
-
-  public static Map<String, Integer> getAllInventoryItems(String userName) {
-      PreparedStatement prep;
-      Map<String, Integer> ret = new HashMap<>();
-      String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
-      "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
-      "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
-      "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
-  
-      try {
-        prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
-        prep.setString(1, userName);
-  
-        ResultSet rs = prep.executeQuery();
-        while (rs.next()) {
-          for (int i = 0; i < cropNames.length; i++) {
-            String key = cropNames[i];
-            int value = rs.getInt(i + 2);
-            ret.put(key, value);
-          }
-        }
-        rs.close();
-        prep.close();
-      } catch (SQLException e) {
-        System.out.println("ERROR");
-        return null;
-      }
-  
-      return ret;
-    }
 
   /**
    * This method will update the inventory of the user.
@@ -967,6 +937,36 @@ public final class FarmProxy {
       return coord;
     }
     return coord;
+  }
+
+  public static Map<String, Integer> getAllInventoryItems(String userName) {
+    PreparedStatement prep;
+    Map<String, Integer> ret = new HashMap<>();
+    String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+    "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
+    "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
+    "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
+
+    try {
+      prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
+      prep.setString(1, userName);
+
+      ResultSet rs = prep.executeQuery();
+      while (rs.next()) {
+        for (int i = 0; i < cropNames.length; i++) {
+          String key = cropNames[i];
+          int value = rs.getInt(i + 2);
+          ret.put(key, value);
+        }
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR");
+      return null;
+    }
+
+    return ret;
   }
 
 }
