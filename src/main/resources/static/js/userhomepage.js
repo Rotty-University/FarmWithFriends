@@ -330,10 +330,10 @@ class GameMap extends React.Component {
         //will be used to count the number of total free spaces available through subtraction with total. 
         let waterSpaceCount = {};
         document.getElementById("map_viewer").innerHTML = "";
-        for(let x = 0 ; x < total_x ; x++){
+        for(let x = 0 ; x < 20 ; x++){
             var extra = '';
             extra += '<div class="row">';
-            for(let y = 0 ; y < total_y ; y++){
+            for(let y = 0 ; y < 20 ; y++){
                 extra += '<div class="col elementTab empty" x="' + (x+1) + '" y="' + (y+1) + '" id="spacee_' + (x+1) + '-' + (y+1) + '"></div>';
                 map_empty.push((x+1)+","+(y+1));
             }
@@ -347,8 +347,8 @@ class GameMap extends React.Component {
         let col = object.col;
         map_information = map_dictionary_with_objectlocations;
         map_dictionary_with_objectlocations[row+","+col][2] = "white_space";
-            for(let x = 1; x<total_x+1;x++){
-                for(let y = 1; y<total_y+1;y++){
+            for(let x = 1; x<20+1;x++){
+                for(let y = 1; y<20+1;y++){
                     changeElementTypee(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
                 }
             }
