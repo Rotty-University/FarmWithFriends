@@ -110,14 +110,14 @@ class Home extends React.Component {
 
     render() {
         this.closeTheDiv()
-        let table = this.generateFarmArray(15, 20, this.state.prevselectedtool);
+        let table = this.generateFarmArray(12, 20, this.state.prevselectedtool);
         return (
             <div className={"homeContainer"} onClick={this.resetTool}>
                 <div className={"farmContainer"}>
                     {table}
                 </div>
                 <div className="toolbox">
-                    <img className={"toolbarSelected"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>
+                    {/*<img className={"toolbarSelected"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>*/}
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
@@ -366,12 +366,35 @@ class GameMap extends React.Component {
     render() {
         this.handleClick()
         return (
-
-            <div>
-            <button onClick={ () => showMapp() } >Click to Show the Map your on</button>
-            <p>Your farm location is the white space</p>
+            <div id={"mapContainer"}>
+                {/*<button onClick={ () => showMapp() } >Click to Show the Map your on</button>*/}
+                <div className="maplegend">
+                    {/*<img className={"toolbarSelected"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>*/}
+                    {/*<img className={"toolbaritem"} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>*/}
+                    {/*<img className={"toolbaritem"} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>*/}
+                    {/*<img className={"toolbaritem"} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>*/}
+                    {/*<img className={"toolbaritem"} id={"harvest"} src={"css/images/iconSickle.svg"} height={40} width={40}/>*/}
+                    <table className={"maplegendtable"}>
+                        <tr>
+                            <th><div id={"redsquare"}></div></th>
+                            <th><div id={"blacksquare"}></div></th>
+                            <th><div id={"bluesquare"}></div></th>
+                            <th><div id={"yellowsquare"}></div></th>
+                            <th><div id={"lightgreensquare"}></div></th>
+                            <th><div id={"darkgreensquare"}></div></th>
+                        </tr>
+                        <tr>
+                            <th>You</th>
+                            <th>Occupied</th>
+                            <th>Water</th>
+                            <th>Dessert</th>
+                            <th>Grass</th>
+                            <th>Forest</th>
+                        </tr>
+                    </table>
+                </div>
+                <p>Your farm location is the red space</p>
             </div>
-            
         );
 
     }

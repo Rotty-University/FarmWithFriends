@@ -88,11 +88,9 @@ body {
     background-color: #3c3e47;
     padding: 10px;
     position: absolute;
-    bottom: 0px;
-    width: 20%;
-    right:25%;
-    left:50%;
-    margin-left:-150px;
+    left: 50%;
+    bottom: 0%;
+    transform: translate(-50%, -0%);
 }
 
 .toolbaritem {
@@ -221,11 +219,11 @@ td {
     padding: 0;
 }
 
-.homeContainer {
-    background-color: #4CAF50;
-    margin-right: auto;
-    margin-left: auto;
-    width: 70%;
+.farmContainer {
+    position: absolute;
+    left: 50%;
+    top: 25%;
+    transform: translate(-50%, -25%);
 }
 
 

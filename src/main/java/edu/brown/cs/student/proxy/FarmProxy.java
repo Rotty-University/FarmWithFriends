@@ -501,7 +501,7 @@ public final class FarmProxy {
       try {
         oos = new ObjectOutputStream(bos);
 
-        FarmLand[][] thePlantation = new FarmLand[15][20];
+        FarmLand[][] thePlantation = new FarmLand[12][20];
 
         for (int i = 0; i < thePlantation.length; i++) {
           for (int j = 0; j < thePlantation[0].length; j++) {
