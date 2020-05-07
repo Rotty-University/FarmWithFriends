@@ -196,10 +196,7 @@ class Tile extends React.Component {
         // send as parameter
         $.post("/farmland", dict, response => {
             // get result
-            const result = JSON.parse(response);
-            let row = (String)(this.props.row);
-            let col = (String)(this.props.column);
-            const thisTileInfo = result[row + "#" + col];
+            const thisTileInfo = JSON.parse(response);
 
 //            alert("row: " + row +
 //                " col: " + col +
@@ -207,10 +204,10 @@ class Tile extends React.Component {
 //                " isWatered " + (String)(thisTileInfo[1]) +
 //                " cropID: " + (String)(thisTileInfo[2]) +
 //                " crop status: " + (String)(thisTileInfo[3]));
-            const cropStatus = thisTileInfo[3];
             const isPlowed = thisTileInfo[0];
             const isWatered = thisTileInfo[1];
             const cropID = thisTileInfo[2];
+            const cropStatus = thisTileInfo[3];
             // update board
 
             //general path
@@ -219,7 +216,6 @@ class Tile extends React.Component {
             if (cropStatus != -9) {
             	// show a crop (for now, until we figure out overlay)
             	newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
-            	console.log(newPath);
             } else {
             	// no crop, just show land
             	newPath += "landImages/";
@@ -246,7 +242,7 @@ class Tile extends React.Component {
 
     initupdate() {
         if (!this.state.updating) {
-            setInterval(this.handleupdate, 5000);
+            setInterval(this.handleupdate, 1000);
             this.setState({updating: true})
         }
     }
@@ -259,14 +255,11 @@ class Tile extends React.Component {
         // send as parameter
         $.post("/farmland", dict, response => {
             // get result
-            const result = JSON.parse(response);
-            let row = (String)(this.props.row);
-            let col = (String)(this.props.column);
-            const thisTileInfo = result[row + "#" + col];
-            const cropStatus = thisTileInfo[3];
+            const thisTileInfo = JSON.parse(response);
             const isPlowed = thisTileInfo[0];
             const isWatered = thisTileInfo[1];
             const cropID = thisTileInfo[2];
+            const cropStatus = thisTileInfo[3];
             // update board
 
             //general path
@@ -275,7 +268,6 @@ class Tile extends React.Component {
             if (cropStatus != -9) {
                 // show a crop (for now, until we figure out overlay)
                 newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
-                console.log(newPath);
             } else {
                 // no crop, just show land
                 newPath += "landImages/";

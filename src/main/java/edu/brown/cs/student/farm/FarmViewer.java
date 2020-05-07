@@ -187,7 +187,7 @@ public class FarmViewer {
       l.setCrop(null);
       l.setIsPlowed(true);
 
-      showFarm();
+//      showFarm();
 
       // save after every command
       saveFarm();
@@ -228,7 +228,7 @@ public class FarmViewer {
 
       l.setCrop(new SingleHarvestCrop(thePlantation[x][y], 0));
 
-      showFarm();
+//      showFarm();
 
       // save after every command
       saveFarm();
@@ -259,7 +259,7 @@ public class FarmViewer {
       // water the land
       l.water(now, Duration.ofSeconds(10));
 
-      showFarm();
+//      showFarm();
 
       // save after every command
       saveFarm();
@@ -318,7 +318,7 @@ public class FarmViewer {
         pw.println("Crop cannot be harvested yet, you should work harder");
       }
 
-      showFarm();
+//      showFarm();
 
       // save after every command
       saveFarm();
