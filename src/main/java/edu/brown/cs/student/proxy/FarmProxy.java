@@ -49,18 +49,27 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
       prep.executeUpdate();
-//      // , PRIMARY KEY(username)
-
-      prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_info(username text, password text,salt text,email text);");
+      prep = conn
+          .prepareStatement("CREATE TABLE IF NOT EXISTS user_info(username text, password text,"
+              + "salt text,email text);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer, friends text, friendspending text, mapid integer, isNewUser text, row int, col int);");
+          "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer,"
+              + " friends text, friendspending text, mapid integer, isNewUser text"
+              + ", row int, col int);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, corn integer, wheat integer, cotton integer, rice integer, sugar integer,apples integer, pears integer, oranges integer, tangerines integer, bananas integer, strawberries integer, kiwis integer, watermelons integer, avocados integer, lettuce integer, potatoes integer, cucumbers integer, carrots integer, greenbeans integer, cherries integer, grapes integer, lemons integer, papayas integer, peaches integer, pineapples integer, pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, broccoli int, lavendar int, rosemary int, demo_crop int, demo_crop2 int);");
+          "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, "
+              + "corn integer, wheat integer, cotton integer, rice integer, sugar integer,"
+              + "apples integer, pears integer, oranges integer, tangerines integer, "
+              + "bananas integer, strawberries integer, kiwis integer, watermelons integer,"
+              + " avocados integer, lettuce integer, potatoes integer, cucumbers integer, "
+              + "carrots integer, greenbeans integer, cherries integer, grapes integer, "
+              + "lemons integer, papayas integer, peaches integer, pineapples integer, "
+              + "pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, "
+              + "broccoli int, lavendar int, rosemary int, demo_crop int, demo_crop2 int);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
@@ -78,7 +87,7 @@ public final class FarmProxy {
   }
 
   /**
-   * This method will return the database connection
+   * This method will return the database connection.
    *
    * @return the connection for the database.
    */
@@ -96,6 +105,13 @@ public final class FarmProxy {
     conn = connection;
   }
 
+  /**
+   * This method will get the username from the database and see if this username
+   * exists. It will be used for login and account creation.
+   *
+   * @param username The passed in username as a string.
+   * @return The same username if it exists null if it doesnt.
+   */
   public static String getUserNameFromDataBase(String username) {
     String nameToReturn = null;
     PreparedStatement prep = null;
@@ -140,8 +156,8 @@ public final class FarmProxy {
       prep.addBatch();
       prep.executeBatch();
       prep.close();
-      prep = conn.prepareStatement(
-          "INSERT INTO user_data(username, friends, friendspending, mapid, isNewUser, row, col) VALUES (?, ?,?,?,?,?,?);");
+      prep = conn.prepareStatement("INSERT INTO user_data(username, friends, friendspending, "
+          + "mapid, isNewUser, row, col) VALUES (?, ?,?,?,?,?,?);");
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
@@ -153,7 +169,8 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement(
-          "INSERT INTO user_inventory VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?,?,?);");
+          "INSERT INTO user_inventory VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,"
+              + "?, ?,?,?,?,?,?,?,?,?,?,?,?);");
       prep.setString(1, username);
       prep.setInt(2, 0);
       prep.setInt(3, 0);
@@ -266,7 +283,7 @@ public final class FarmProxy {
    * @param username This will be the username of the current player.
    * @param toAdd    This will be the username to add.
    */
-  public static void UpdateFriendsList(String username, String toAdd) {
+  public static void updateFriendsList(String username, String toAdd) {
     PreparedStatement prep;
     String friends = null;
     ResultSet rs = null;
@@ -397,7 +414,7 @@ public final class FarmProxy {
    *                               will be added to their list
    * @param userlistbeingupdated   the user whos list is being updated.
    */
-  public static void UpdateFriendsPending(String usernameToAddToPending,
+  public static void updateFriendsPending(String usernameToAddToPending,
       String userlistbeingupdated) {
     PreparedStatement prep;
     String friends = null;
@@ -472,7 +489,7 @@ public final class FarmProxy {
    * @param replacement the list of the current pending friendlist as a string.
    * @param user        the user for whom to replace the pending list of.
    */
-  public static void UpdateFriendsPendingAfterAdding(String replacement, String user) {
+  public static void updateFriendsPendingAfterAdding(String replacement, String user) {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list pending.
@@ -615,6 +632,13 @@ public final class FarmProxy {
 
   }
 
+  /**
+   * This method will retrieve one inventory item from the users inventory.
+   *
+   * @param userName the username for who to get the crop of.
+   * @param cropName the name of the crop.
+   * @return it will return the number of the crop.
+   */
   public static int getOneInventoryItem(String userName, String cropName) {
     PreparedStatement prep;
     int ret = 0;
@@ -664,18 +688,18 @@ public final class FarmProxy {
    * This method will insert the map into the data base with the counter for which
    * map this is.
    *
-   * @param id         the id of the map.
-   * @param mapdata    the data of the farm represented as a string.
-   * @param free_space The amount of free space that is in the map.
+   * @param id        the id of the map.
+   * @param mapdata   the data of the farm represented as a string.
+   * @param freeSpace The amount of free space that is in the map.
    */
-  public static void insertMapIntoDataBase(int id, String mapdata, int free_space) {
+  public static void insertMapIntoDataBase(int id, String mapdata, int freeSpace) {
     PreparedStatement prep;
 
     try {
       prep = conn.prepareStatement("INSERT INTO user_maps VALUES (?,?,?);");
       prep.setInt(1, id);
       prep.setString(2, mapdata);
-      prep.setInt(3, free_space);
+      prep.setInt(3, freeSpace);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -687,7 +711,7 @@ public final class FarmProxy {
 
   /**
    * This method will retrieve the map from the database so that it can be loaded
-   * into
+   * into.
    *
    * @param id the id that represents the map id we will use to retrieve the map
    *           data.
@@ -939,13 +963,23 @@ public final class FarmProxy {
     return coord;
   }
 
+  /**
+   * This method will get all the inventory items of a plater and store them in
+   * map with the key being the string and the value being the interger.
+   *
+   * @param userName the user for who we are updating it for.
+   * @return It will return a map that represents the inventory.
+   */
   public static Map<String, Integer> getAllInventoryItems(String userName) {
     PreparedStatement prep;
     Map<String, Integer> ret = new HashMap<>();
-    String[] cropNames = {"tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
-            "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce", "potatoes",
-            "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas", "peaches", "pineapples",
-            "pomegranates", "cabbages", "kale", "peanuts", "pumpkins", "broccoli", "lavendar", "rosemary"};
+    String[] cropNames = {
+        "tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+        "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
+        "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
+        "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
+        "broccoli", "lavendar", "rosemary"
+    };
 
     try {
       prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
@@ -971,12 +1005,19 @@ public final class FarmProxy {
     return ret;
   }
 
+  /**
+   * This method will remove a trade from the list.
+   *
+   * @param tradeData It will take in the trade data that is represented as a
+   *                  string.
+   */
   public static void removeTradeListing(String tradeData) {
     String[] data = tradeData.split(",");
     PreparedStatement prep;
     try {
-      prep = conn.prepareStatement("DELETE * FROM trading_center WHERE trader = ? AND crop_sell = ? AND " +
-              "quant_sell = ? AND crop_buy = ? AND quant_buy = ?;");
+      prep = conn
+          .prepareStatement("DELETE * FROM trading_center WHERE trader = ? AND crop_sell = ? AND "
+              + "quant_sell = ? AND crop_buy = ? AND quant_buy = ?;");
       prep.setString(1, data[0]);
       prep.setString(2, data[1]);
       prep.setString(3, data[2]);
@@ -987,4 +1028,5 @@ public final class FarmProxy {
       System.out.println("ERROR");
     }
   }
+
 }
