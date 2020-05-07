@@ -48,6 +48,8 @@ public class FarmingHandlers {
       String row = qm.value("row");
       String col = qm.value("col");
       int action = Integer.parseInt(qm.value("action"));
+      int r = Integer.parseInt(row);
+      int c = Integer.parseInt(col);
 
       String[] commands = {
           row, col
@@ -56,7 +58,7 @@ public class FarmingHandlers {
       switch (action) {
       case 0:
         // update status
-        app.updateFarm();
+        app.updateOneTile(r, c);
 
         break;
 
@@ -96,8 +98,6 @@ public class FarmingHandlers {
 
       FarmLand[][] newFarm = app.getThePlantation();
       Instant now = Instant.now();
-      int r = Integer.parseInt(row);
-      int c = Integer.parseInt(col);
 
       FarmLand land = newFarm[r][c];
       int[] arr = new int[5];
