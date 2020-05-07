@@ -449,6 +449,7 @@ class GameMap extends React.Component {
                             <th><div id={"yellowsquare"}></div></th>
                             <th><div id={"lightgreensquare"}></div></th>
                             <th><div id={"darkgreensquare"}></div></th>
+                            <th><div id={"purplesquare"}></div></th>
                         </tr>
                         <tr>
                             <th>You</th>
@@ -457,6 +458,7 @@ class GameMap extends React.Component {
                             <th>Dessert</th>
                             <th>Grass</th>
                             <th>Forest</th>
+                            <th>Friend</th>
                         </tr>
                     </table>
                     <p>Click On the Friend's Location to See Who it Is</p>
