@@ -283,8 +283,9 @@
 				}	
 		}
 		
-		function setBasicElements(){ // Sets the basic elements. In the example are 4 of them
+		function setBasicElements(){ // Sets the basic elements. We have four of them here. 
 			var pre_text = 'Element: ';
+			//Adds them to the list of the known elements known to the map. 
 			//Forest
 			var v = new Object();
 			v.class = 'forest_space';
@@ -349,7 +350,6 @@
 		}
 		
 		function extendSeedClass(type){ //This function will take one random seed and try to extend it. If not, it will call the setRandomSeedClass function
-			// logM("Trying to extend seed class");
 			var max_tries = 8; // The max tries is actually the number of spaces around the main seed to search for
 			var total_added = basic_elements[type].added.length;
 			var random_element = basic_elements[type].added[getRandom(0,total_added)];

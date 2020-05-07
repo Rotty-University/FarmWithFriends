@@ -52,6 +52,10 @@
 	background-color: black;
 	color:black;
 }
+.friend_space{
+	background-color: purple;
+	color:black;
+}
 
 #map_viewer{
 	position: absolute;
@@ -77,6 +81,7 @@
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
+	cursor :pointer;
 }
 
 .maplegend {
@@ -197,4 +202,11 @@
 
 .newusercontainer button:hover {
 	background-color: #cccccc;
+}
+#message_for_clicking_on_map{
+	position: absolute;
+	left: 10%;
+	top: 60%;
+	transform: translate(-10%, -60%);
+	background: black;
 }
