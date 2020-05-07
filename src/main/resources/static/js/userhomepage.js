@@ -459,8 +459,9 @@ class GameMap extends React.Component {
                             <th>Forest</th>
                         </tr>
                     </table>
+                    <p>Click On the Friend's Location to See Who it Is</p>
                 </div>
-                <p>Your farm location is the red space</p>
+                
             </div>
         );
 
