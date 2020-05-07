@@ -1029,4 +1029,35 @@ public final class FarmProxy {
     }
   }
 
+  /**
+   * This method will get the username based on the row and column and map id.
+   * This will be the friends username.
+   *
+   * @param row the row value.
+   * @param col the column value.
+   * @param id  the mapid value.
+   * @return the username of the friend.
+   */
+  public static String getUserNameFromRowAndColumnOfUserMap(int row, int col, int id) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    String user = null;
+    try {
+      prep = conn.prepareStatement(
+          "SELECT username FROM user_data WHERE row = ? AND col = ? AND mapid = ?;");
+      prep.setInt(1, row);
+      prep.setInt(2, col);
+      prep.setInt(3, id);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        user = rs.getString(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      return user;
+    }
+    return user;
+  }
+
 }

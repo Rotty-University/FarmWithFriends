@@ -9,6 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -146,6 +147,7 @@ public final class Main {
     Spark.post("/mapRetriever", new MapRetriever());
     Spark.post("clickOnMap", new ClickOnMapHandler());
     Spark.get("/mapRetrieverForMapsComponent", new MapRetrieverForReact());
+    Spark.post("showingWhatFriendWasClicked", new ClickingFriendOnMapHandler());
 
     // all farmingHandler routes are made in initFarmViewerAndHandler
   }
@@ -830,7 +832,21 @@ public final class Main {
       int[] coords = FarmProxy.getRowAndColumnOfUserMapLocation(userCookie);
       String row = String.valueOf(coords[0]);
       String col = String.valueOf(coords[1]);
-      Map<String, String> variables = ImmutableMap.of("data", mapdata, "row", row, "col", col);
+      String friends = FarmProxy.getFriendsList(userCookie);
+      String[] splitFriends = friends.split(",");
+      Map<String, String> mapOfFriends = new HashMap<>();
+      for (String userFriend : splitFriends) {
+        if (userFriend.length() > 1) {
+          if (FarmProxy.getMapIDofUserFromDataBase(userFriend) == FarmProxy
+              .getMapIDofUserFromDataBase(userCookie)) {
+            int[] coordinates = FarmProxy.getRowAndColumnOfUserMapLocation(userFriend);
+            mapOfFriends.put(String.valueOf(coordinates[0]) + "," + String.valueOf(coordinates[1]),
+                "friend_space");
+          }
+        }
+      }
+      Map<String, String> variables = ImmutableMap.of("data", mapdata, "row", row, "col", col,
+          "friends", GSON.toJson(mapOfFriends));
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
@@ -864,6 +880,25 @@ public final class Main {
         message = "Not enough " + data[3] + " to make this trade";
       }
       Map<String, String> variables = ImmutableMap.of("message", message);
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
+  }
+
+  /**
+   * This class will handle when the map is clicked on in the map react component
+   * so we can see which map location belongs to which friend.
+   *
+   */
+  private static class ClickingFriendOnMapHandler implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String row = qm.value("row");
+      String col = qm.value("col");
+      String friendName = FarmProxy.getUserNameFromRowAndColumnOfUserMap(Integer.parseInt(row),
+          Integer.parseInt(col), FarmProxy.getMapIDofUserFromDataBase(userCookie));
+      Map<String, String> variables = ImmutableMap.of("name", friendName);
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
