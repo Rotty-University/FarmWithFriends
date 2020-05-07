@@ -91,28 +91,23 @@ public class FarmViewer {
     }
   }
 
-  // ONLY update the status of the tiles
-  // used for GUI only
-  public void updateFarm() {
+  // update ONE specific tile
+  public void updateOneTile(int row, int col) {
     if (thePlantation == null) {
-      System.out.println("Can't do that: no farm selected");
+      System.out.println("Can't update this tile: no farm selected");
 
       return;
     }
 
     Instant now = Instant.now();
+    FarmLand l = thePlantation[row][col];
 
-    for (FarmLand[] l : thePlantation) {
-      for (FarmLand j : l) {
-        // update land first
-        j.updateWaterStatus(now);
+    l.updateWaterStatus(now);
 
-        if (j.isOccupied()) {
-          // there is a crop on this land
-          // update crop if necessary
-          j.getCrop().updateStatus(now);
-        }
-      }
+    if (l.isOccupied()) {
+      // there is a crop on this land
+      // update crop if necessary
+      l.getCrop().updateStatus(now);
     }
   }
 
