@@ -978,7 +978,7 @@ public final class FarmProxy {
         "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
         "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
         "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
-        "broccoli", "lavendar", "rosemary"
+        "broccoli", "lavendar", "rosemary", "demo_crop", "demo_crop2"
     };
 
     try {
