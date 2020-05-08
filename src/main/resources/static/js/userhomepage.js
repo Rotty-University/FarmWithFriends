@@ -105,6 +105,7 @@ class Home extends React.Component {
     }
     closeTheDiv(){
         document.getElementById("map_viewer").innerHTML = "";
+        document.getElementById("message_for_clicking_on_map").innerHTML = "";
     }
 
 
@@ -196,10 +197,7 @@ class Tile extends React.Component {
         // send as parameter
         $.post("/farmland", dict, response => {
             // get result
-            const result = JSON.parse(response);
-            let row = (String)(this.props.row);
-            let col = (String)(this.props.column);
-            const thisTileInfo = result[row + "#" + col];
+            const thisTileInfo = JSON.parse(response);
 
 //            alert("row: " + row +
 //                " col: " + col +
@@ -207,10 +205,10 @@ class Tile extends React.Component {
 //                " isWatered " + (String)(thisTileInfo[1]) +
 //                " cropID: " + (String)(thisTileInfo[2]) +
 //                " crop status: " + (String)(thisTileInfo[3]));
-            const cropStatus = thisTileInfo[3];
             const isPlowed = thisTileInfo[0];
             const isWatered = thisTileInfo[1];
             const cropID = thisTileInfo[2];
+            const cropStatus = thisTileInfo[3];
             // update board
 
             //general path
@@ -219,7 +217,6 @@ class Tile extends React.Component {
             if (cropStatus != -9) {
             	// show a crop (for now, until we figure out overlay)
             	newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
-            	console.log(newPath);
             } else {
             	// no crop, just show land
             	newPath += "landImages/";
@@ -246,7 +243,7 @@ class Tile extends React.Component {
 
     initupdate() {
         if (!this.state.updating) {
-            setInterval(this.handleupdate, 5000);
+            setInterval(this.handleupdate, 1000);
             this.setState({updating: true})
         }
     }
@@ -259,14 +256,11 @@ class Tile extends React.Component {
         // send as parameter
         $.post("/farmland", dict, response => {
             // get result
-            const result = JSON.parse(response);
-            let row = (String)(this.props.row);
-            let col = (String)(this.props.column);
-            const thisTileInfo = result[row + "#" + col];
-            const cropStatus = thisTileInfo[3];
+            const thisTileInfo = JSON.parse(response);
             const isPlowed = thisTileInfo[0];
             const isWatered = thisTileInfo[1];
             const cropID = thisTileInfo[2];
+            const cropStatus = thisTileInfo[3];
             // update board
 
             //general path
@@ -275,7 +269,6 @@ class Tile extends React.Component {
             if (cropStatus != -9) {
                 // show a crop (for now, until we figure out overlay)
                 newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
-                console.log(newPath);
             } else {
                 // no crop, just show land
                 newPath += "landImages/";
@@ -309,6 +302,45 @@ class Tile extends React.Component {
     }
 }
 
+function clickingForFriends(){
+    let map_viewer = $("#map_viewer");
+     document.getElementById("message_for_clicking_on_map").innerHTML = "";
+        console.log(event.pageX);
+        console.log(event.pageY);
+        //storing the map object
+        console.log(map_viewer.offset());
+        //calculating the row and column values.
+        const col_val = event.pageX - map_viewer.offset().left;
+        const row_val = event.pageY - map_viewer.offset().top;
+        //Getting the indices of the row and column.
+        let row_num = Math.floor(row_val/30);
+        let col_num = Math.floor(col_val/30);
+        //if it isnt friend space don't do anything. 
+        console.log(map_information);
+        if(map_information[(row_num+1)+','+(col_num+1)][2] != 'friend_space' ){
+            console.log("here")
+            document.getElementById("message_for_clicking_on_map").innerHTML = "";
+        }
+        //the space is valid and we can output which friend they clicked on. 
+        else{
+            //sending  a post request with the row and column to get the username based off this row and column and same map.
+            const postParameters = {
+                row: (row_num+1),
+                col: (col_num+1),
+            }
+            //sending a post request to the showingWhatFriendwasclicked
+            $.post("/showingWhatFriendWasClicked" , postParameters, response =>{
+                //the response has the name in it. 
+                let object  = JSON.parse(response);
+                let name = object.name;
+                document.getElementById("message_for_clicking_on_map").innerHTML = "This is " + name +"' s map location";
+            });
+        }
+};
+function setMapVar(mapinfo){
+    map_information = mapinfo;
+}
+
 class GameMap extends React.Component {
         constructor(props) {
         super(props);
@@ -326,7 +358,7 @@ class GameMap extends React.Component {
         var total_options = [];
         let dictionaryy = {};
         //this dictionary will be set from the the getting map from database so we can use it in the clickhandler. 
-        let map_information= {};
+        // let map_information= {};
         //will be used to count the number of total free spaces available through subtraction with total. 
         let waterSpaceCount = {};
         document.getElementById("map_viewer").innerHTML = "";
@@ -345,16 +377,59 @@ class GameMap extends React.Component {
         let map_dictionary_with_objectlocations = JSON.parse(object.data);
         let row = object.row;
         let col = object.col;
-        map_information = map_dictionary_with_objectlocations;
+        let friends_map = JSON.parse(object.friends)
+        console.log(friends_map);
+        // map_information = map_dictionary_with_objectlocations;
         map_dictionary_with_objectlocations[row+","+col][2] = "white_space";
             for(let x = 1; x<20+1;x++){
                 for(let y = 1; y<20+1;y++){
-                    changeElementTypee(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
+                    if(friends_map[x.toString()+","+y.toString()] != undefined || friends_map[x.toString()+","+y.toString()] != null){
+                        map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2] = "friend_space";
+                        changeElementTypee(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],"friend_space");
+                    }else{
+                        changeElementTypee(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
+
+                    }
                 }
             }
         document.getElementById("map_viewer").style.display = "block";
+        // map_information = map_dictionary_with_objectlocations;
+        setMapVar(map_dictionary_with_objectlocations);
         });   
+        
+        // map_viewer.addEventListener("click", function(event) {
+        //     document.getElementById("message_for_clicking_on_map").innerHTML = "";
+        //     console.log(event.pageX);
+        //     console.log(event.pageY);
+        //     //storing the map object
+        //     console.log(map_viewer.offset());
+        //     //calculating the row and column values.
+        //     const col_val = event.pageX - map_viewer.offset().left;
+        //     const row_val = event.pageY - map_viewer.offset().top;
+        //     //Getting the indices of the row and column.
+        //     let row_num = Math.floor(row_val/25);
+        //     let col_num = Math.floor(col_val/25);
+        //     //if it isnt friend space don't do anything. 
+        //     if(map_information[(row_num+1)+','+(col_num+1)][2] != 'friend_space' ){
+        //         document.getElementById("message_for_clicking_on_map").innerHTML = "";
+        //     }
+        //     //the space is valid and we can output which friend they clicked on. 
+        //     else{
+        //         //sending  a post with this map to update it in the database.
+        //         const postParameters = {
+        //             row: (row_num+1),
+        //             col: (col_num+1),
+        //         }
+        //         //sending a post request to the clickmaphandler to redirect to the home page. 
+        //         $.post("/showingWhatFriendWasClicked" , postParameters, response =>{
+        //             let object  = JSON.parse(response);
+        //             let name = object.name;
+        //             document.getElementById("message_for_clicking_on_map").innerHTML = name;
+        //         });
+        //     }
+        //    });
     }
+
     render() {
         this.handleClick()
         return (
@@ -374,6 +449,7 @@ class GameMap extends React.Component {
                             <th><div id={"yellowsquare"}></div></th>
                             <th><div id={"lightgreensquare"}></div></th>
                             <th><div id={"darkgreensquare"}></div></th>
+                            <th><div id={"purplesquare"}></div></th>
                         </tr>
                         <tr>
                             <th>You</th>
@@ -382,10 +458,12 @@ class GameMap extends React.Component {
                             <th>Dessert</th>
                             <th>Grass</th>
                             <th>Forest</th>
+                            <th>Friend</th>
                         </tr>
                     </table>
+                    <p>Click On the Friend's Location to See Who it Is</p>
                 </div>
-                <p>Your farm location is the red space</p>
+                
             </div>
         );
 

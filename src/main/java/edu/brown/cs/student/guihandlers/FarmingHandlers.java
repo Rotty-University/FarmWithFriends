@@ -2,8 +2,6 @@ package edu.brown.cs.student.guihandlers;
 
 import java.io.PrintWriter;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.google.gson.Gson;
 
@@ -50,6 +48,8 @@ public class FarmingHandlers {
       String row = qm.value("row");
       String col = qm.value("col");
       int action = Integer.parseInt(qm.value("action"));
+      int r = Integer.parseInt(row);
+      int c = Integer.parseInt(col);
 
       String[] commands = {
           row, col
@@ -58,7 +58,7 @@ public class FarmingHandlers {
       switch (action) {
       case 0:
         // update status
-        app.updateFarm();
+        app.updateOneTile(r, c);
 
         break;
 
@@ -87,9 +87,9 @@ public class FarmingHandlers {
         break;
       }
 
-      // get updated farm
-      // return Map<"row#col", int[]>
-      // array for each entry:
+      // get updated farm tile
+      // return int[]
+      // array with info for this tile:
       // 0: isPlowed (0 false, 1 true)
       // 1: isWatered
       // 2: cropID (-9 if no crop)
@@ -97,29 +97,19 @@ public class FarmingHandlers {
       // TODO 4: time left until next stage
 
       FarmLand[][] newFarm = app.getThePlantation();
-      Map<String, int[]> hm = new HashMap<>();
       Instant now = Instant.now();
 
-      for (int i = 0; i < newFarm.length; i++) {
-        for (int j = 0; j < newFarm[0].length; j++) {
-          FarmLand land = newFarm[i][j];
-          // for each land, create an array
-          String key = i + "#" + j;
-          int[] arr = new int[5];
+      FarmLand land = newFarm[r][c];
+      int[] arr = new int[5];
 
-          arr[0] = land.isPlowed() ? 1 : 0;
-          arr[1] = land.isWatered(now) ? 1 : 0;
-          arr[2] = land.isOccupied() ? land.getCrop().getID() : -9;
-          arr[3] = land.isOccupied() ? land.getCrop().getCropStatus() : -9;
-          // TODO: update this once we have a plan
-          arr[4] = 0;
+      arr[0] = land.isPlowed() ? 1 : 0;
+      arr[1] = land.isWatered(now) ? 1 : 0;
+      arr[2] = land.isOccupied() ? land.getCrop().getID() : -9;
+      arr[3] = land.isOccupied() ? land.getCrop().getCropStatus() : -9;
+      // TODO: update this once we have a plan
+      arr[4] = 0;
 
-          // add this array to the return list
-          hm.put(key, arr);
-        }
-      }
-
-      return GSON.toJson(hm);
+      return GSON.toJson(arr);
     }
 
   }

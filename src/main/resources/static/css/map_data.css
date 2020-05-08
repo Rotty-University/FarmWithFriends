@@ -52,6 +52,10 @@
 	background-color: black;
 	color:black;
 }
+.friend_space{
+	background-color: purple;
+	color:black;
+}
 
 #map_viewer{
 	position: absolute;
@@ -77,6 +81,7 @@
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
+	cursor :pointer;
 }
 
 .maplegend {
@@ -147,7 +152,15 @@
 	margin-left: auto;
 	border-radius: 5px;
 }
-
+#purplesquare {
+	height: 40px;
+	width: 40px;
+	background-color: purple;
+	color: white;
+	margin-right: auto;
+	margin-left: auto;
+	border-radius: 5px;
+}
 .maplegendtable {
 	text-align: center;
 }
@@ -197,4 +210,11 @@
 
 .newusercontainer button:hover {
 	background-color: #cccccc;
+}
+#message_for_clicking_on_map{
+	position: absolute;
+	left: 10%;
+	top: 60%;
+	transform: translate(-10%, -60%);
+	background: black;
 }
