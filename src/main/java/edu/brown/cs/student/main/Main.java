@@ -1,4 +1,4 @@
-package edu.brown.cs.student.farm;
+package edu.brown.cs.student.main;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +16,9 @@ import java.util.regex.Pattern;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
+import edu.brown.cs.student.farm.FarmFile;
+import edu.brown.cs.student.farm.FarmViewer;
+import edu.brown.cs.student.farm.FarmViewer.SwitchCommand;
 import edu.brown.cs.student.guihandlers.FarmingHandlers;
 import edu.brown.cs.student.guihandlers.FarmingHandlers.FarmingHandler;
 import edu.brown.cs.student.proxy.FarmProxy;
@@ -523,15 +526,11 @@ public final class Main {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
-      System.out.println("before size is " + req.session().attributes().size());
       if (req.session().attributes().contains(userCookie)) {
-        System.out.println("About to logout for user");
         res.removeCookie(userCookie);
         req.session().removeAttribute(userCookie);
         userCookie = null;
-        System.out.println("After logging out it is " + req.session().attributes().size());
       }
-      System.out.println(req.cookies().size());
       message = "You have been logged out. Thank you.";
       Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "message", message);
       return new ModelAndView(variables, "home.ftl");
@@ -684,7 +683,8 @@ public final class Main {
       for (String r : FarmProxy.getAllCropNames()) {
         htmlCode2.append("<option value=\"" + r + "\">" + r + "</option>");
       }
-      Map<String, String> variables = ImmutableMap.of("list1", htmlCode.toString(), "list2", htmlCode2.toString());
+      Map<String, String> variables = ImmutableMap.of("list1", htmlCode.toString(), "list2",
+          htmlCode2.toString());
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
