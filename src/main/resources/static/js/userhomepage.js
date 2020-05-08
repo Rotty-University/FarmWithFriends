@@ -302,6 +302,51 @@ class Tile extends React.Component {
     }
 }
 
+class FriendHomeViewer extends React.Component {
+
+    constructor() {
+        super()
+        this.state = {
+            prevselectedtool: "select",
+        }
+        this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
+        this.generateFarmArray = this.generateFarmArray.bind(this)
+        this.closeTheDiv = this.closeTheDiv.bind(this)
+    }
+
+    generateFarmArray(rows, columns, activetool) {
+        return <Table id={"farmTable"} rows={rows} columns={columns} active={activetool}/>;
+    }
+
+    updatePrevSelectedTool(e) {
+        let newTool = e.target.id;
+        let current = document.getElementById(this.state.prevselectedtool);
+        if (current != null) {
+            current.className = "toolbaritem";
+        }
+        let selected = document.getElementById(newTool);
+        selected.className = "toolbarSelected";
+        this.setState({prevselectedtool: newTool});
+    }
+    closeTheDiv(){
+        document.getElementById("map_viewer").innerHTML = "";
+        document.getElementById("message_for_clicking_on_map").innerHTML = "";
+    }
+
+
+    render() {
+        // this.closeTheDiv()
+        let table = this.generateFarmArray(12, 20, this.state.prevselectedtool);
+        return (
+            <div className={"homeContainer"} onClick={this.resetTool}>
+                <div className={"farmContainer"}>
+                    {table}
+                </div>
+            </div>
+        )
+    }
+}
+
 function clickingForFriends(){
     let map_viewer = $("#map_viewer");
      document.getElementById("message_for_clicking_on_map").innerHTML = "";
@@ -343,6 +388,12 @@ function clickingForFriends(){
                 document.getElementById("message_for_clicking_on_map").innerHTML = name +"'s farm";
                 document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
                 document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
+                // document.getElementById("message_for_clicking_on_map").onclick = function () {
+                    //load and show friends farm here
+                    // let viewer = React.createElement(FriendHomeViewer);
+                    // console.log("here")
+                    // ReactDOM.render(viewer, document.getElementById('map_message_container'))
+                // };
             });
         }
 };
@@ -412,13 +463,7 @@ class GameMap extends React.Component {
         this.handleClick()
         return (
             <div id={"mapContainer"}>
-                {/*<button onClick={ () => showMapp() } >Click to Show the Map your on</button>*/}
                 <div className="maplegend">
-                    {/*<img className={"toolbarSelected"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>*/}
-                    {/*<img className={"toolbaritem"} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>*/}
-                    {/*<img className={"toolbaritem"} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>*/}
-                    {/*<img className={"toolbaritem"} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>*/}
-                    {/*<img className={"toolbaritem"} id={"harvest"} src={"css/images/iconSickle.svg"} height={40} width={40}/>*/}
                     <table className={"maplegendtable"}>
                         <tr>
                             <th><div id={"redsquare"}></div></th>
