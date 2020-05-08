@@ -26,7 +26,6 @@
 			document.getElementById("message_for_user_on_click").innerHTML = "";
 			//storing the map object
 			let map_obj = $("#map_table");
-			console.log(map_obj.offset());
 			//calculating the row and column values.
 			const col_val = event.pageX - map_obj.offset().left;
   			const row_val = event.pageY - map_obj.offset().top;
@@ -78,7 +77,7 @@
 			fillTable();
 			setBasicElements();
 			fullfillTerrain();
-			for(i=0;i<tolerance;i++) cleanUpMap();
+			for(i=0;i<tolerance;i++) groupingElements();
 			const postParameters = {
 				dictionary_data: JSON.stringify(dictionaryy),
 				free_space: (total_y*total_x)- Object.keys(waterSpaceCount).length,
@@ -88,7 +87,6 @@
 			$.post("/mapMaker", postParameters, response => {
 				const object = JSON.parse(response);
 				const dictionaryyy = JSON.parse(object.data)
-				console.log(Object.keys(dictionaryyy).length);
 				for(let x = 1; x<total_x+1;x++){
 					for(let y = 1; y<total_y+1;y++){
 						changeElementType(dictionaryyy[x.toString()+","+y.toString()][0],dictionaryyy[x.toString()+","+y.toString()][1],dictionaryyy[x.toString()+","+y.toString()][2]);
@@ -100,6 +98,9 @@
 			dictionaryy = {};
 			waterSpaceCount = {};
 		};
+		/**
+		This function will make the map from the data base and if there isnt any more free space, it will receive a signal from the backend saying that a new map will need to be generated. 
+		*/
 		function makeMapFromDataBase(){
 			document.getElementById("map_table").innerHTML = "";
 			fillTable();
@@ -134,7 +135,10 @@
 		function closeMap(){
 			document.getElementById("map_table").style.display = "none";
 		}
-		function cleanUpMap(){
+		/**
+		This method will group the elements togeher with the increasing tolerance by finding the ones near it and setting it to that. 
+		*/
+		function groupingElements(){
 			for(x=0;x<total_x;x++){
 				for(y=0;y<total_y;y++){
 					var found = false; // We are going to set this as true if we found a coincidence.
@@ -142,21 +146,18 @@
 						var new_x = x - 1;
 						if(map[new_x][y] == map[x][y]){
 							found = true;
-						}else{
 						}
 					}
 					if(x < (total_x)-1){
 						var new_x = x + 1;
 						if(map[new_x][y] == map[x][y]){
 							found = true;
-						}else{
 						}
 					}
 					if(y > 0){
 						var new_y = y - 1;
 						if(map[x][new_y] == map[x][y]){
 							found = true;
-						}else{
 						}
 					}
 					
@@ -164,14 +165,13 @@
 						var new_y = y + 1;
 						if(map[x][new_y] == map[x][y]){
 							found = true;
-						}else{
 						}
 					}
 					
 					if(found == false){ // This means it is all alone
 						
 						var options = [];
-						
+						//setting the options for around the four directions of the current element. 
 						// TOP
 						v = new Object();
 						v.x = -1;
@@ -195,7 +195,7 @@
 						v.x = 0;
 						v.y = -1;
 						options.push(v);
-						
+						//chnaging the element type to the element that is all alone. 
 						random_option = getRandom(0,4);
 						random_option_selected = options[random_option];
 						random_x = x + random_option_selected.x;
@@ -220,7 +220,6 @@
 						//checking if this location was in dictionary as water space but has now changed. 
 						if(waterSpaceCount.hasOwnProperty(new_xx+","+new_yy) && map[random_x][random_y] != 'water_space'){
 							delete waterSpaceCount[new_xx+","+new_yy];
-							console.log("IN HERE");
 						}
 						//adding to the dictionary if it is of water space so we know much non-farmable space there is. 
 						if(map[random_x][random_y] === 'water_space'){
@@ -231,7 +230,9 @@
 				}
 			}
 		}
-		
+		/**
+		This method will fill the whole map up starting with random seeding and extending that seed until it hits a limit. 
+		*/
 		function fullfillTerrain(){
 			full = false;
 			while( full == false ){
@@ -244,6 +245,9 @@
 			for(i = 0 ; i < basic_elements.length ; i++){
 			}
 		}
+		/**
+		This method will fill the whole table with individual components for each row and column. 
+		*/
 		function fillTable(){ // Creates the basic table with the array
 				for(x = 0 ; x < total_x ; x++){
 					var extra = '';
@@ -294,7 +298,7 @@
 			$("#map_table").append(extra);
 		}
 		
-		
+		//This method will get a random number from 0 to the total number of elements we have. 
 		function getRandom(min,max){
 			return Math.floor((Math.random() * max) + min)
 		}
@@ -322,7 +326,7 @@
 				setRandomSeedClass(type);
 			}
 		}
-		
+		//This method will extend the seed and continue adding the same types of elements. 
 		function extendSeedClass(type){ //This function will take one random seed and try to extend it. If not, it will call the setRandomSeedClass function
 			var max_tries = 8; // The max tries is actually the number of spaces around the main seed to search for
 			var total_added = basic_elements[type].added.length;
@@ -358,7 +362,7 @@
 				setRandomSeedClass(type);
 			}
 		}
-		
+		//This method will set a random initial seed for the map.
 		function setRandomSeedClass(type){ // We took one type of basic element and one class and we set it up
 			var added = false;
 			while(added == false){
@@ -371,7 +375,6 @@
 				y = parseInt(y)
 				selector = "#space_"+x+'-'+y;
 				var element = $(selector);
-				
 				if(element.hasClass('empty')){
 					changeElementType(x,y,basic_elements[type].class);
 					total_options.push([x,y,basic_elements[type].class]);
@@ -387,7 +390,9 @@
 				}
 			}
 		}
-		
+		/**
+		This method will change what kind of map terrain element we are looking at. 
+		*/
 		function changeElementType(x,y,cl){ // This will change a value given in X and Y to a certain class. This should be only a visual change.
 				selector = "#space_"+x+'-'+y;
 				var element = $(selector);
