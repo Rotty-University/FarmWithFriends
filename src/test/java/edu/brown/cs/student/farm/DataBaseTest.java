@@ -167,4 +167,21 @@ public class DataBaseTest {
     tearDown();
   }
 
+  @Test
+  public void testingTradingCenter() throws Exception {
+    setUp();
+//    assertEquals(FarmProxy.getTradingCenter(), "");
+//    FarmProxy.updateTradingCenter("farmer joe", "corn", "2", "tomato", "4");
+//    assertEquals(FarmProxy.getTradingCenter(), "farmer joe,corn,2,tomato,4;");
+//    FarmProxy.removeTradeListing("farmer joe,corn,2,tomato,4");
+//    assertEquals(FarmProxy.getTradingCenter(), "");
+//    FarmProxy.updateTradingCenter("farmer joe", "corn", "2", "tomato", "4");
+//    FarmProxy.updateTradingCenter("farmer bob", "milt", "1", "wheat", "1");
+//    assertEquals(FarmProxy.getTradingCenter(), "farmer joe,corn,2,tomato,4;farmer bob,milt,1,wheat,1;");
+//    FarmProxy.removeTradeListing("farmer bob,milt,1,wheat,1");
+//    FarmProxy.removeTradeListing("farmer joe,corn,2,tomato,4");
+//    assertEquals(FarmProxy.getTradingCenter(), "");
+    tearDown();
+  }
+
 }

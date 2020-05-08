@@ -973,13 +973,7 @@ public final class FarmProxy {
   public static Map<String, Integer> getAllInventoryItems(String userName) {
     PreparedStatement prep;
     Map<String, Integer> ret = new HashMap<>();
-    String[] cropNames = {
-        "tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
-        "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
-        "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
-        "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
-        "broccoli", "lavendar", "rosemary"
-    };
+    String[] cropNames = getAllCropNames();
 
     try {
       prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
@@ -1013,16 +1007,15 @@ public final class FarmProxy {
    */
   public static void removeTradeListing(String tradeData) {
     String[] data = tradeData.split(",");
+    assert(data[0].equals("farmer joe"));
     PreparedStatement prep;
     try {
-      prep = conn
-          .prepareStatement("DELETE * FROM trading_center WHERE trader = ? AND crop_sell = ? AND "
-              + "quant_sell = ? AND crop_buy = ? AND quant_buy = ?;");
+      prep = conn.prepareStatement("DELETE FROM trading_center WHERE trader = ?;");
       prep.setString(1, data[0]);
-      prep.setString(2, data[1]);
-      prep.setString(3, data[2]);
-      prep.setString(4, data[3]);
-      prep.setString(5, data[4]);
+//      prep.setString(2, data[1]);
+//      prep.setString(3, data[2]);
+//      prep.setString(4, data[3]);
+//      prep.setString(5, data[4]);
       prep.close();
     } catch (SQLException e) {
       System.out.println("ERROR");
@@ -1058,6 +1051,20 @@ public final class FarmProxy {
       return user;
     }
     return user;
+  }
+
+  /*
+  returns the names of all the crops
+   */
+  public static String[] getAllCropNames() {
+    String[] crops = {
+            "tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+            "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
+            "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
+            "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
+            "broccoli", "lavendar", "rosemary", "demo_crop", "demo_crop2"
+    };
+    return crops;
   }
 
 }
