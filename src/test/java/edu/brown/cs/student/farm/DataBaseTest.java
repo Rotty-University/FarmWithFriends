@@ -13,6 +13,9 @@ public class DataBaseTest {
   @Before
   public void setUp() throws Exception {
     FarmProxy.setUpDataBase("data/testdb.sqlite3");
+    FarmProxy.setConnection(FarmProxy.getConnection());
+    FarmProxy.dropTables();
+    FarmProxy.setUpDataBase("data/testdb.sqlite3");
   }
 
   @After

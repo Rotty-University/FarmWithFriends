@@ -39,16 +39,6 @@ public final class FarmProxy {
       conn = DriverManager.getConnection(urlToDB);
       PreparedStatement prep;
 ////      // simulator databases
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
-//      prep.executeUpdate();
-//
-//      prep.close();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
-//      prep.executeUpdate();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
-//      prep.executeUpdate();
-//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
-//      prep.executeUpdate();
       prep = conn
           .prepareStatement("CREATE TABLE IF NOT EXISTS user_info(username text, password text,"
               + "salt text,email text);");
@@ -84,6 +74,24 @@ public final class FarmProxy {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
+
+  public static void dropTables() {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
   }
 
   /**
