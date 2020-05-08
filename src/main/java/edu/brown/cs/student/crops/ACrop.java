@@ -61,7 +61,7 @@ public abstract class ACrop implements java.io.Serializable {
 
     // SET PARENT CLASS VARIABLES -------------------------
 
-    // bind this crop to its land, like a slave basically
+    // bind this crop to its land
     farmLand = l;
 
     // 0: seeded or 2: mature (for multiharvest crops)
