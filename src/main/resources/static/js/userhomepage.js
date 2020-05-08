@@ -317,8 +317,13 @@ function clickingForFriends(){
         let col_num = Math.floor(col_val/30);
         //if it isnt friend space don't do anything. 
         console.log(map_information);
-        if(map_information[(row_num+1)+','+(col_num+1)][2] != 'friend_space' ){
-            console.log("here")
+        if(map_information[(row_num+1)+','+(col_num+1)][2] === 'white_space' ){
+            document.getElementById("message_for_clicking_on_map").innerHTML = "";
+            document.getElementById("message_for_clicking_on_map").innerHTML = "Your own farm";
+            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
+            document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
+        }
+        else if(map_information[(row_num+1)+','+(col_num+1)][2] != 'friend_space' ){
             document.getElementById("message_for_clicking_on_map").innerHTML = "";
             document.getElementById("message_for_clicking_on_map").style.paddingLeft = "0px";
             document.getElementById("message_for_clicking_on_map").style.paddingRight = "0px";
@@ -335,7 +340,7 @@ function clickingForFriends(){
                 //the response has the name in it. 
                 let object  = JSON.parse(response);
                 let name = object.name;
-                document.getElementById("message_for_clicking_on_map").innerHTML = name +"' s farm";
+                document.getElementById("message_for_clicking_on_map").innerHTML = name +"'s farm";
                 document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
                 document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
             });
@@ -401,37 +406,6 @@ class GameMap extends React.Component {
         setMapVar(map_dictionary_with_objectlocations);
         });   
         
-        // map_viewer.addEventListener("click", function(event) {
-        //     document.getElementById("message_for_clicking_on_map").innerHTML = "";
-        //     console.log(event.pageX);
-        //     console.log(event.pageY);
-        //     //storing the map object
-        //     console.log(map_viewer.offset());
-        //     //calculating the row and column values.
-        //     const col_val = event.pageX - map_viewer.offset().left;
-        //     const row_val = event.pageY - map_viewer.offset().top;
-        //     //Getting the indices of the row and column.
-        //     let row_num = Math.floor(row_val/25);
-        //     let col_num = Math.floor(col_val/25);
-        //     //if it isnt friend space don't do anything. 
-        //     if(map_information[(row_num+1)+','+(col_num+1)][2] != 'friend_space' ){
-        //         document.getElementById("message_for_clicking_on_map").innerHTML = "";
-        //     }
-        //     //the space is valid and we can output which friend they clicked on. 
-        //     else{
-        //         //sending  a post with this map to update it in the database.
-        //         const postParameters = {
-        //             row: (row_num+1),
-        //             col: (col_num+1),
-        //         }
-        //         //sending a post request to the clickmaphandler to redirect to the home page. 
-        //         $.post("/showingWhatFriendWasClicked" , postParameters, response =>{
-        //             let object  = JSON.parse(response);
-        //             let name = object.name;
-        //             document.getElementById("message_for_clicking_on_map").innerHTML = name;
-        //         });
-        //     }
-        //    });
     }
 
     render() {

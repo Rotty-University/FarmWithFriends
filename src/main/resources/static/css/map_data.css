@@ -58,6 +58,7 @@
 }
 
 #map_viewer{
+	cursor :pointer;
 	position: absolute;
 	left: 53%;
 	top: 60%;

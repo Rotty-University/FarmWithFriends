@@ -2,6 +2,7 @@
 		var total_y = 20; // Total height
 		var total_elements = total_x * total_y; //Total of elements in the matrix
 		var map = createArray(total_x, total_y);
+		console.log(map);
 		var map_empty = [];
 		var basic_elements = [];
 		var tolerance = 10; // Number of consecutive blocks of the same type to make it right
@@ -23,8 +24,6 @@
 		function mapClickHandler(){
 			//this is message for the user
 			document.getElementById("message_for_user_on_click").innerHTML = "";
-			console.log(event.pageX);
-			console.log(event.pageY);
 			//storing the map object
 			let map_obj = $("#map_table");
 			console.log(map_obj.offset());
@@ -101,31 +100,6 @@
 			dictionaryy = {};
 			waterSpaceCount = {};
 		};
-		// function makeMap(){
-		// 	if(my_var%2 === 0){
-		// 		document.getElementById("map_table").innerHTML = "";
-		// 		fillTable();
-		// 		setBasicElements();
-		// 		fullfillTerrain();
-		// 		for(i=0;i<tolerance;i++) cleanUpMap();
-		// 		my_var++;
-		// 	}else{
-		// 		console.log("In the else statement");
-		// 		document.getElementById("map_table").innerHTML = "";
-		// 		fillTable();
-		// 		setBasicElements();
-		// 		console.log(Object.keys(dictionaryy).length);
-		// 		for(let x = 1; x<total_x+1;x++){
-		// 			for(let y = 1; y<total_y+1;y++){
-		// 				changeElementType(dictionaryy[x.toString()+","+y.toString()][0],dictionaryy[x.toString()+","+y.toString()][1],dictionaryy[x.toString()+","+y.toString()][2]);
-		// 			}
-		// 		}
-		// 		my_var++;
-		// 		dictionaryy = {};
-		// 		waterSpaceCount = {};
-		// 	}
-		// 	document.getElementById("map_table").style.display = "block";
-		// };
 		function makeMapFromDataBase(){
 			document.getElementById("map_table").innerHTML = "";
 			fillTable();
@@ -335,9 +309,9 @@
 			
 			//Now that we have the seed, we have to determine if there is already much of this type in the map. If the answer is yes, then we dont add anymore of this kind of seed.
 			var total_elements_added = basic_elements[type].added.length;
-			var porcent_added = total_elements_added * 100 / total_elements;
+			var percent_added = total_elements_added * 100 / total_elements;
 			
-			if(parseFloat(porcent_added) > (parseFloat(basic_elements[type].max) + parseFloat(10)  )  ){
+			if(parseFloat(percent_added) > (parseFloat(basic_elements[type].max) + parseFloat(10)  )  ){
 				return;
 			}
 			
