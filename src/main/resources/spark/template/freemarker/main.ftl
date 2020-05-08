@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/map_data.css">
     <link rel="stylesheet" href="css/shop.css">
+    <link rel="shortcut icon" href="css/images/favicon.ico">
   </head>
   <body>
      ${content}
