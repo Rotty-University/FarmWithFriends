@@ -69,7 +69,7 @@ public final class FarmProxy {
               + "carrots integer, greenbeans integer, cherries integer, grapes integer, "
               + "lemons integer, papayas integer, peaches integer, pineapples integer, "
               + "pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, "
-              + "broccoli int, lavendar int, rosemary int, demo_crop int, demo_crop2 int);");
+              + "broccoli int, lavendar integer, rosemary integer, demo_crop integer, demo_crop2 integer);");
       prep.executeUpdate();
       prep.close();
       prep = conn.prepareStatement(
@@ -641,14 +641,16 @@ public final class FarmProxy {
    */
   public static int getOneInventoryItem(String userName, String cropName) {
     PreparedStatement prep;
+    ResultSet rs = null;
     int ret = 0;
     try {
-      prep = conn.prepareStatement("SELECT ? FROM user_inventory WHERE username=?;");
-      prep.setString(1, cropName);
-      prep.setString(2, userName);
+      prep = conn
+          .prepareStatement("SELECT " + cropName + " FROM user_inventory WHERE username= ?;");
+      prep.setString(1, userName);
 
-      ResultSet rs = prep.executeQuery();
+      rs = prep.executeQuery();
       while (rs.next()) {
+        System.out.println(rs.getInt(1));
         ret = rs.getInt(1);
       }
       rs.close();
