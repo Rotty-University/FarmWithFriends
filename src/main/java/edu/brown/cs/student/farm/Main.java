@@ -867,17 +867,17 @@ public final class Main {
       String tradeData = qm.value("data");
       String[] data = tradeData.split(",");
       String message;
-      int cropGiveQ = FarmProxy.getOneInventoryItem(data[3], userCookie);
-      int cropGetQ = FarmProxy.getOneInventoryItem(data[1], userCookie);
+      int cropGiveQ = FarmProxy.getOneInventoryItem(userCookie, data[3]);
+      int cropGetQ = FarmProxy.getOneInventoryItem(userCookie, data[1]);
       int sellQ = Integer.parseInt(data[2]);
       int buyQ = Integer.parseInt(data[4]);
       if (cropGiveQ > Integer.parseInt(data[4])) {
         FarmProxy.updateInventory(userCookie, data[1], cropGetQ + sellQ);
         FarmProxy.updateInventory(userCookie, data[3], cropGiveQ - buyQ);
         FarmProxy.updateInventory(data[0], data[1],
-            FarmProxy.getOneInventoryItem(data[1], userCookie) - sellQ);
+            FarmProxy.getOneInventoryItem(userCookie, data[1]) - sellQ);
         FarmProxy.updateInventory(data[0], data[3],
-            FarmProxy.getOneInventoryItem(data[3], userCookie) + buyQ);
+            FarmProxy.getOneInventoryItem(userCookie, data[3]) + buyQ);
         FarmProxy.removeTradeListing(tradeData);
         message = "Trade Successful!";
       } else {
