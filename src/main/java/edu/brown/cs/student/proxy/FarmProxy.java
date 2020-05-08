@@ -38,17 +38,17 @@ public final class FarmProxy {
     try {
       conn = DriverManager.getConnection(urlToDB);
       PreparedStatement prep;
-//      // simulator databases
-      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
-      prep.executeUpdate();
-
-      prep.close();
-      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
-      prep.executeUpdate();
-      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
-      prep.executeUpdate();
-      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
-      prep.executeUpdate();
+////      // simulator databases
+//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_info;");
+//      prep.executeUpdate();
+//
+//      prep.close();
+//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
+//      prep.executeUpdate();
+//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
+//      prep.executeUpdate();
+//      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
+//      prep.executeUpdate();
       prep = conn
           .prepareStatement("CREATE TABLE IF NOT EXISTS user_info(username text, password text,"
               + "salt text,email text);");
@@ -1009,7 +1009,7 @@ public final class FarmProxy {
    */
   public static void removeTradeListing(String tradeData) {
     String[] data = tradeData.split(",");
-    assert(data[0].equals("farmer joe"));
+    assert (data[0].equals("farmer joe"));
     PreparedStatement prep;
     try {
       prep = conn.prepareStatement("DELETE FROM trading_center WHERE trader = ?;");
@@ -1056,15 +1056,15 @@ public final class FarmProxy {
   }
 
   /*
-  returns the names of all the crops
+   * returns the names of all the crops
    */
   public static String[] getAllCropNames() {
     String[] crops = {
-            "tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
-            "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
-            "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
-            "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
-            "broccoli", "lavendar", "rosemary", "demo_crop", "demo_crop2"
+        "tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+        "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
+        "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
+        "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
+        "broccoli", "lavendar", "rosemary", "demo_crop", "demo_crop2"
     };
     return crops;
   }
