@@ -320,6 +320,8 @@ function clickingForFriends(){
         if(map_information[(row_num+1)+','+(col_num+1)][2] != 'friend_space' ){
             console.log("here")
             document.getElementById("message_for_clicking_on_map").innerHTML = "";
+            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "0px";
+            document.getElementById("message_for_clicking_on_map").style.paddingRight = "0px";
         }
         //the space is valid and we can output which friend they clicked on. 
         else{
@@ -333,7 +335,9 @@ function clickingForFriends(){
                 //the response has the name in it. 
                 let object  = JSON.parse(response);
                 let name = object.name;
-                document.getElementById("message_for_clicking_on_map").innerHTML = "This is " + name +"' s map location";
+                document.getElementById("message_for_clicking_on_map").innerHTML = name +"' s farm";
+                document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
+                document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
             });
         }
 };

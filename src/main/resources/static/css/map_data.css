@@ -212,9 +212,16 @@
 	background-color: #cccccc;
 }
 #message_for_clicking_on_map{
+	color: white;
+	text-align: center;
+}
+
+#map_message_container {
+	background-color: #3c3e47;
 	position: absolute;
-	left: 10%;
-	top: 60%;
-	transform: translate(-10%, -60%);
-	background: black;
+	left: 52%;
+	bottom: 0%;
+	border-top-right-radius: 10px;
+	border-top-left-radius: 10px;
+	transform: translate(-52%, 0%);
 }
