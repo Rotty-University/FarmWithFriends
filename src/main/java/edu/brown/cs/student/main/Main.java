@@ -1,4 +1,4 @@
-package edu.brown.cs.student.farm;
+package edu.brown.cs.student.main;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +16,9 @@ import java.util.regex.Pattern;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
+import edu.brown.cs.student.farm.FarmFile;
+import edu.brown.cs.student.farm.FarmViewer;
+import edu.brown.cs.student.farm.FarmViewer.SwitchCommand;
 import edu.brown.cs.student.guihandlers.FarmingHandlers;
 import edu.brown.cs.student.guihandlers.FarmingHandlers.FarmingHandler;
 import edu.brown.cs.student.proxy.FarmProxy;
