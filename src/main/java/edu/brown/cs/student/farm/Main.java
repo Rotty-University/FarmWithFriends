@@ -680,7 +680,11 @@ public final class Main {
       for (String r : userInventory.keySet()) {
         htmlCode.append("<option value=\"" + r + "\">" + r + "</option>");
       }
-      Map<String, String> variables = ImmutableMap.of("list", htmlCode.toString());
+      StringBuilder htmlCode2 = new StringBuilder();
+      for (String r : FarmProxy.getAllCropNames()) {
+        htmlCode2.append("<option value=\"" + r + "\">" + r + "</option>");
+      }
+      Map<String, String> variables = ImmutableMap.of("list1", htmlCode.toString(), "list2", htmlCode2.toString());
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }

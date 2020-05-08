@@ -537,8 +537,8 @@ function openTradeForm() {
         // Do something with the response here
         const object = JSON.parse(response);
         //showing a list of the friends when the button is clicked.
-        inventory.append(object.list);
-        availableCrops.append(object.list);
+        inventory.append(object.list1);
+        availableCrops.append(object.list2);
     });
 };
 

@@ -973,13 +973,7 @@ public final class FarmProxy {
   public static Map<String, Integer> getAllInventoryItems(String userName) {
     PreparedStatement prep;
     Map<String, Integer> ret = new HashMap<>();
-    String[] cropNames = {
-        "tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
-        "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
-        "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
-        "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
-        "broccoli", "lavendar", "rosemary", "demo_crop", "demo_crop2"
-    };
+    String[] cropNames = getAllCropNames();
 
     try {
       prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
@@ -1057,6 +1051,20 @@ public final class FarmProxy {
       return user;
     }
     return user;
+  }
+
+  /*
+  returns the names of all the crops
+   */
+  public static String[] getAllCropNames() {
+    String[] crops = {
+            "tomatoes", "corn", "wheat", "cotton", "rice", "sugar", "apples", "pears", "oranges",
+            "tangerines", "bananas", "strawberries", "kiwis", "watermelons", "avocados", "lettuce",
+            "potatoes", "cucumbers", "carrots", "greenbeans", "cherries", "grapes", "lemons", "papayas",
+            "peaches", "pineapples", "pomegranates", "cabbages", "kale", "peanuts", "pumpkins",
+            "broccoli", "lavendar", "rosemary", "demo_crop", "demo_crop2"
+    };
+    return crops;
   }
 
 }
