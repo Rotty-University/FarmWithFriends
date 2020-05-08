@@ -872,8 +872,10 @@ public final class Main {
       int sellQ = Integer.parseInt(data[2]);
       int buyQ = Integer.parseInt(data[4]);
       if (cropGiveQ > Integer.parseInt(data[4])) {
-        FarmProxy.updateInventory(userCookie, data[1], cropGetQ + sellQ);
-        FarmProxy.updateInventory(userCookie, data[3], cropGiveQ - buyQ);
+        FarmProxy.updateInventory(userCookie, data[1],
+                FarmProxy.getOneInventoryItem(userCookie, data[1]) + sellQ);
+        FarmProxy.updateInventory(userCookie, data[3],
+                FarmProxy.getOneInventoryItem(userCookie, data[3]) - buyQ);
         FarmProxy.updateInventory(data[0], data[1],
             FarmProxy.getOneInventoryItem(userCookie, data[1]) - sellQ);
         FarmProxy.updateInventory(data[0], data[3],
