@@ -658,8 +658,10 @@ public final class Main {
         for (String c : col) {
           htmlCode.append("<td>").append(c).append("</td>");
         }
-        htmlCode.append("<td>").append("<button onClick=makeTrade(\"" + r + "\")>Accept</button>")
-            .append("</td>");
+        if (!r.equals("")) {
+          htmlCode.append("<td>").append("<button onClick=makeTrade(\"" + r + "\")>Accept</button>")
+                  .append("</td>");
+        }
         htmlCode.append("</tr>");
       }
       System.out.println(tradeCenter);
