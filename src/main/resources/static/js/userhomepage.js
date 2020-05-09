@@ -178,21 +178,26 @@ class Tile extends React.Component {
         this.handleClick = this.handleClick.bind(this);
         this.initupdate = this.initupdate.bind(this);
         this.handleupdate = this.handleupdate.bind(this);
+        
+        // set up action map for handleClick()
+        this.actionMap = new Map();
+        this.actionMap.set("select", 0);
+        this.actionMap.set("plough", 1);
+        this.actionMap.set("plant", 2);
+        this.actionMap.set("water", 3);
+        this.actionMap.set("harvest", 4);
+        this.actionMap.set("delete", 5);
     }
 
     //TODO this gonna be a big boi method
     handleClick() {
-        let toolsMap = new Map();
-        toolsMap.set("select", 0);
-        toolsMap.set("plough", 1);
-        toolsMap.set("plant", 2);
-        toolsMap.set("water", 3);
-        toolsMap.set("harvest", 4);
-        toolsMap.set("delete", 5);
 
-        const dict = {row : this.props.row,
+        const dict = {
+        	row : this.props.row,
             col : this.props.column,
-            action : toolsMap.get(this.props.activetool)};
+            action : this.actionMap.get(this.props.activetool),
+            crop : "SingleHarvestCrop"
+        };
 
         // send as parameter
         $.post("/farmland", dict, response => {

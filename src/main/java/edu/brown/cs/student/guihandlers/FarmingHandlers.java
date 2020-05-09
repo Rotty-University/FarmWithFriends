@@ -48,11 +48,13 @@ public class FarmingHandlers {
       String row = qm.value("row");
       String col = qm.value("col");
       int action = Integer.parseInt(qm.value("action"));
+      String cropName = qm.value("crop");
+
       int r = Integer.parseInt(row);
       int c = Integer.parseInt(col);
 
       String[] commands = {
-          row, col
+          row, col, cropName
       };
       // do stuff in backend
       switch (action) {

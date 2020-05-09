@@ -658,7 +658,6 @@ public final class FarmProxy {
 
       rs = prep.executeQuery();
       while (rs.next()) {
-        System.out.println(rs.getInt(1));
         ret = rs.getInt(1);
       }
       rs.close();
@@ -1019,8 +1018,8 @@ public final class FarmProxy {
     String[] data = tradeData.split(",");
     PreparedStatement prep;
     try {
-      prep = conn.prepareStatement("DELETE FROM trading_center WHERE trader = ? AND" +
-              " crop_sell = ? AND quant_sell = ? AND crop_buy = ? AND quant_buy = ?;");
+      prep = conn.prepareStatement("DELETE FROM trading_center WHERE trader = ? AND"
+          + " crop_sell = ? AND quant_sell = ? AND crop_buy = ? AND quant_buy = ?;");
       prep.setString(1, data[0]);
       prep.setString(2, data[1]);
       prep.setString(3, data[2]);
