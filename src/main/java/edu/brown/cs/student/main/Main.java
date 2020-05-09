@@ -18,7 +18,6 @@ import com.google.gson.Gson;
 
 import edu.brown.cs.student.farm.FarmFile;
 import edu.brown.cs.student.farm.FarmViewer;
-import edu.brown.cs.student.farm.FarmViewer.SwitchCommand;
 import edu.brown.cs.student.guihandlers.FarmingHandlers;
 import edu.brown.cs.student.guihandlers.FarmingHandlers.FarmingHandler;
 import edu.brown.cs.student.proxy.FarmProxy;
@@ -650,7 +649,7 @@ public final class Main {
       String tradeCenter = FarmProxy.getTradingCenter();
       StringBuilder htmlCode = new StringBuilder();
       htmlCode.append("<tr><th>Seller</th><th>Crop Selling</th>"
-          + "<th>Amount</th><th>Crop Requesting</th><th>Ammount</th><th></th></tr>");
+          + "<th>Amount</th><th>Crop Requesting</th><th>Amount</th><th></th></tr>");
       String[] rows = tradeCenter.split(";");
       for (String r : rows) {
         htmlCode.append("<tr>");
@@ -660,7 +659,7 @@ public final class Main {
         }
         if (!r.equals("")) {
           htmlCode.append("<td>").append("<button onClick=makeTrade(\"" + r + "\")>Accept</button>")
-                  .append("</td>");
+              .append("</td>");
         }
         htmlCode.append("</tr>");
       }
@@ -875,9 +874,9 @@ public final class Main {
       int buyQ = Integer.parseInt(data[4]);
       if (cropGiveQ > Integer.parseInt(data[4])) {
         FarmProxy.updateInventory(userCookie, data[1],
-                FarmProxy.getOneInventoryItem(userCookie, data[1]) + sellQ);
+            FarmProxy.getOneInventoryItem(userCookie, data[1]) + sellQ);
         FarmProxy.updateInventory(userCookie, data[3],
-                FarmProxy.getOneInventoryItem(userCookie, data[3]) - buyQ);
+            FarmProxy.getOneInventoryItem(userCookie, data[3]) - buyQ);
         FarmProxy.updateInventory(data[0], data[1],
             FarmProxy.getOneInventoryItem(userCookie, data[1]) - sellQ);
         FarmProxy.updateInventory(data[0], data[3],
