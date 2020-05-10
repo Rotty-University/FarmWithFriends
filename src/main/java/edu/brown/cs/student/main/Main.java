@@ -19,7 +19,6 @@ import com.google.gson.Gson;
 import edu.brown.cs.student.farm.FarmFile;
 import edu.brown.cs.student.farm.FarmViewer;
 import edu.brown.cs.student.guihandlers.FarmingHandlers;
-import edu.brown.cs.student.guihandlers.FarmingHandlers.FarmingHandler;
 import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.REPL;
 import freemarker.template.Configuration;
@@ -52,7 +51,6 @@ public final class Main {
   static String userCookie = null;
   static int currentMapID = 1;
   static int freeSpaceInMap;
-  static FarmingHandler farmHandler;
 
   /**
    * The initial method called when execution begins.
@@ -166,8 +164,8 @@ public final class Main {
 
       // init farming handlers
       farmingHandlers = new FarmingHandlers(app);
-      farmHandler = farmingHandlers.new FarmingHandler();
-      Spark.post("/farmland", farmHandler);
+      Spark.post("/farmActions", farmingHandlers.new ActionHandler());
+      Spark.post("farmUpdate", farmingHandlers.new UpdateHandler());
       return;
     }
 
@@ -177,10 +175,7 @@ public final class Main {
         userCookie
     };
     app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
-    farmHandler.setApp(app);
-    // init farming handlers
-//    farmingHandlers = new FarmingHandlers(app);
-//    Spark.post("/farmland", farmingHandlers.new FarmingHandler());
+    farmingHandlers.setApp(app);
   }
 
   /**

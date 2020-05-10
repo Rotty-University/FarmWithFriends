@@ -2,6 +2,8 @@ package edu.brown.cs.student.guihandlers;
 
 import java.io.PrintWriter;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gson.Gson;
 
@@ -24,6 +26,16 @@ public class FarmingHandlers {
   }
 
   /**
+   * This method will set the app instance that the post requests will be working
+   * with.
+   *
+   * @param a the app instance of the current user.
+   */
+  public void setApp(FarmViewer a) {
+    app = a;
+  }
+
+  /**
    * Takes request from GUI and perform actions on the farm, then return the new
    * state of the farm
    *
@@ -31,16 +43,7 @@ public class FarmingHandlers {
    * @author hlucco
    *
    */
-  public class FarmingHandler implements Route {
-    /**
-     * This method will set the app instance that the post requests will be working
-     * with.
-     *
-     * @param a the app instance of the current user.
-     */
-    public void setApp(FarmViewer a) {
-      app = a;
-    }
+  public class ActionHandler implements Route {
 
     @Override
     public String handle(Request req, Response res) throws Exception {
@@ -58,12 +61,6 @@ public class FarmingHandlers {
       };
       // do stuff in backend
       switch (action) {
-      case 0:
-        // update status
-        app.updateOneTile(r, c);
-
-        break;
-
       case 1:
         // plow
         app.new PlowCommand().execute(commands, pw);
@@ -89,19 +86,19 @@ public class FarmingHandlers {
         break;
       }
 
-      // get updated farm tile
-      // return int[]
-      // array with info for this tile:
+      // get updated farm
+      // return Map<"row#col", int[]>
+      // array for each entry:
       // 0: isPlowed (0 false, 1 true)
       // 1: isWatered
       // 2: cropID (-9 if no crop)
       // 3: cropStatus (-9 if no crop)
       // TODO 4: time left until next stage
 
-      FarmLand[][] newFarm = app.getThePlantation();
       Instant now = Instant.now();
 
-      FarmLand land = newFarm[r][c];
+      // return info of the specific tile
+      FarmLand land = app.getThePlantation()[r][c];
       int[] arr = new int[5];
 
       arr[0] = land.isPlowed() ? 1 : 0;
@@ -112,8 +109,51 @@ public class FarmingHandlers {
       arr[4] = 0;
 
       return GSON.toJson(arr);
-    }
 
-  }
+    } // end of handle()
 
-} // end of class
+  } // end of ActionHandler class
+
+  /**
+   * called for updating the entire farm and display for frontend
+   *
+   * @author zjk97
+   *
+   */
+  public class UpdateHandler implements Route {
+
+    @Override
+    public String handle(Request request, Response response) throws Exception {
+      // update backend
+      app.updateFarm();
+
+      // send new status back to frontend
+      FarmLand[][] newFarm = app.getThePlantation();
+      Map<String, int[]> hm = new HashMap<>();
+      Instant now = Instant.now();
+
+      // return info of entire farm
+      for (int i = 0; i < newFarm.length; i++) {
+        for (int j = 0; j < newFarm[0].length; j++) {
+          FarmLand land = newFarm[i][j];
+          // for each land, create an array
+          String key = i + "#" + j;
+          int[] arr = new int[5];
+
+          arr[0] = land.isPlowed() ? 1 : 0;
+          arr[1] = land.isWatered(now) ? 1 : 0;
+          arr[2] = land.isOccupied() ? land.getCrop().getID() : -9;
+          arr[3] = land.isOccupied() ? land.getCrop().getCropStatus() : -9;
+          // TODO: update this once we have a plan
+          arr[4] = 0;
+
+          // add this array to the return list
+          hm.put(key, arr);
+        }
+      }
+
+      return GSON.toJson(hm);
+    } // end of handle()
+  } // end of UpdateHandler class
+
+} // end of outer class

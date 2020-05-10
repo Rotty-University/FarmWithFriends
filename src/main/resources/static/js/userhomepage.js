@@ -133,6 +133,93 @@ class Home extends React.Component {
 class Table extends React.Component {
     constructor(props){
         super(props);
+        
+        // bind functions
+        this.updateTiles = this.updateTiles.bind(this);
+        
+        // set up array of default sprite paths
+        this.spritePaths = [];
+        for (var i = 0; i < this.props.rows; i++) {
+        	let thisRow = [];
+        	for (var j = 0; j < this.props.columns; j++) {
+        		thisRow.push("css/images/landImages/unplowed.png");
+        	}
+        	this.spritePaths.push(thisRow);
+        }
+        
+        // set up state corresponding to each child tile component
+        this.state = {
+        		spritePaths: this.spritePaths
+        };
+        
+        // set up action map for handleClick()
+        this.actionMap = new Map();
+        this.actionMap.set("select", 0);
+        this.actionMap.set("plough", 1);
+        this.actionMap.set("plant", 2);
+        this.actionMap.set("water", 3);
+        this.actionMap.set("harvest", 4);
+        this.actionMap.set("delete", 5);
+        
+        // set up timer to constantly update
+        setInterval(this.updateTiles, 500);
+    }
+    
+    updateTiles() {    	
+            // send as parameter
+            $.post("/farmUpdate", response => {
+                // get result
+                const result = JSON.parse(response);
+                
+                // update board
+                let newSpritePaths = [];
+                for (var i = 0; i < this.props.rows; i++) {                    
+                    // update this tile's sprite path
+                	let thisRow = [];
+                	for (var j = 0; j < this.props.columns; j++) {
+                    	// get this tile's info
+                        let row = (String)(i);
+                        let col = (String)(j);
+                        const thisTileInfo = result[row + "#" + col];
+                        
+                        const isPlowed = thisTileInfo[0];
+                        const isWatered = thisTileInfo[1];
+                        const cropID = thisTileInfo[2];
+                        const cropStatus = thisTileInfo[3];
+                        
+                		//general path
+                        let newPath = "css/images/";
+
+                        if (cropStatus != -9) {
+                            // show a crop (for now, until we figure out overlay)
+                            newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
+                        } else {
+                            // no crop, just show land
+                            newPath += "landImages/";
+
+                            if (isPlowed == 0) {
+                                // not plowed
+                                newPath += "unplowed";
+                            } else if (isWatered == 0) {
+                                // plowed but NOT watered
+                                newPath += "plowed";
+                            } else {
+                                // plowed AND watered
+                                newPath += "watered";
+                            }
+                        }
+
+                        // add file format
+                        newPath += ".png";
+                		thisRow.push(newPath);
+                	}
+                	
+                	newSpritePaths.push(thisRow);
+                }
+
+                this.setState({spritePaths: newSpritePaths});
+                console.log("tell Jake he's a fucking genius")
+            });
     }
 
     render(){
@@ -143,12 +230,11 @@ class Table extends React.Component {
             for (var idx = 0; idx < this.props.columns; idx++){
                 let cellID = `cell${i}-${idx}`
                 cell.push(<td key={cellID} id={cellID}><Tile
-                    type={"ploughed"}
-                    spritepath={"css/images/testgrass.png"}
+                    spritepath={this.state.spritePaths[i][idx]}
                     row={i}
                     column={idx}
-                    watered={false}
                     activetool={this.props.active}
+                	actionMap = {this.actionMap}
                 /></td>)
             }
             rows.push(<tr key={i} id={rowID}>{cell}</tr>)
@@ -171,36 +257,25 @@ class Tile extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            spritepath: "css/images/landImages/unplowed.png",
-            updating: false,
-        }
-        this.handleClick = this.handleClick.bind(this);
-        this.initupdate = this.initupdate.bind(this);
-        this.handleupdate = this.handleupdate.bind(this);
         
-        // set up action map for handleClick()
-        this.actionMap = new Map();
-        this.actionMap.set("select", 0);
-        this.actionMap.set("plough", 1);
-        this.actionMap.set("plant", 2);
-        this.actionMap.set("water", 3);
-        this.actionMap.set("harvest", 4);
-        this.actionMap.set("delete", 5);
+        this.state = {
+            spritepath: props.spritepath
+        }
+        
+        this.handleClick = this.handleClick.bind(this);
     }
 
-    //TODO this gonna be a big boi method
     handleClick() {
 
         const dict = {
         	row : this.props.row,
             col : this.props.column,
-            action : this.actionMap.get(this.props.activetool),
+            action : this.props.actionMap.get(this.props.activetool),
             crop : "SingleHarvestCrop"
         };
 
         // send as parameter
-        $.post("/farmland", dict, response => {
+        $.post("/farmActions", dict, response => {
             // get result
             const thisTileInfo = JSON.parse(response);
 
@@ -245,62 +320,14 @@ class Tile extends React.Component {
             this.setState({spritepath: newPath})
         });
     }
-
-    initupdate() {
-        if (!this.state.updating) {
-            setInterval(this.handleupdate, 5000);
-            this.setState({updating: true})
-        }
-    }
-
-    handleupdate() {
-        const dict = {row : this.props.row,
-            col : this.props.column,
-            action : 0};
-
-        // send as parameter
-        $.post("/farmland", dict, response => {
-            // get result
-            const thisTileInfo = JSON.parse(response);
-            const isPlowed = thisTileInfo[0];
-            const isWatered = thisTileInfo[1];
-            const cropID = thisTileInfo[2];
-            const cropStatus = thisTileInfo[3];
-            // update board
-
-            //general path
-            let newPath = "css/images/";
-
-            if (cropStatus != -9) {
-                // show a crop (for now, until we figure out overlay)
-                newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
-            } else {
-                // no crop, just show land
-                newPath += "landImages/";
-
-                if (isPlowed == 0) {
-                    // not plowed
-                    newPath += "unplowed";
-                } else if (isWatered == 0) {
-                    // plowed but NOT watered
-                    newPath += "plowed";
-                } else {
-                    // plowed AND watered
-                    newPath += "watered";
-                }
-            }
-
-            // add file format
-            newPath += ".png";
-
-            //This is updating the visual appearance of the tile:
-            this.setState({spritepath: newPath})
-        });
+    
+    componentDidUpdate(prevProps) {
+    	if (this.props.spritepath !== prevProps.spritepath) {
+    	  this.setState({spritepath: this.props.spritepath});
+    	}
     }
 
     render() {
-        this.initupdate()
-    	// needs to re render all farm tiles
         return (
             <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
         );

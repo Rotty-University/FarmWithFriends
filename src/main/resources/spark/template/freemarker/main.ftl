@@ -20,8 +20,8 @@
      <script src="js/jquery-2.1.1.js"></script>
      ${scripts!}
      <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-     <script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
-     <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+     <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
      <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
      <!-- Load React components & helper functions. -->
      <script src="js/AddingFriends.js"></script>
