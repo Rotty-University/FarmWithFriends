@@ -218,7 +218,6 @@ class Table extends React.Component {
                 }
 
                 this.setState({spritePaths: newSpritePaths});
-                console.log("tell Jake he's a fucking genius")
             });
     }
 

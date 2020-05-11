@@ -351,7 +351,65 @@ public class FarmViewer {
       }
     }
 
-  }
+  } // end of inspect command class
+
+  public class StealCommand implements Command {
+
+    @Override
+    public void execute(String[] tokens, PrintWriter pw) {
+
+      if (thePlantation == null) {
+        System.out.println("Can't do that: no farm selected");
+
+        return;
+      }
+
+      if (viewerName.equals(ownerName)) {
+        pw.println("Can't do that: you ARE the owner");
+
+        return;
+      }
+
+      int x = Integer.parseInt(tokens[0]);
+      int y = Integer.parseInt(tokens[1]);
+      FarmLand l = thePlantation[x][y];
+      ACrop c = l.getCrop();
+      Instant now = Instant.now();
+
+      if (!l.isOccupied()) {
+        pw.println("Nothing to steal here");
+        return;
+      }
+
+      c.updateStatus(now);
+
+      if (c.getCropStatus() == 4) {
+        // can steal
+        String cropName = c.getName();
+        int yield = c.getYield();
+
+        // update inventory
+        int oldVal = FarmProxy.getOneInventoryItem(viewerName, cropName);
+        int total = oldVal + yield;
+        FarmProxy.updateInventory(viewerName, cropName, total);
+
+        // update crop/land status
+        l.setCrop(l.getCrop().respawn());
+
+        pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
+      } else if (c.getCropStatus() == 5) {
+        // crop withered
+        pw.println("You have left your plant neglected for too long, plow and star over");
+      } else {
+        // cannot harvest yet
+        pw.println("Crop cannot be harvested yet, you should work harder");
+      }
+
+      // save after every command
+      saveFarm();
+    }
+
+  } // end of steal command class
 
   // mutators ------------------------------------------------------------
   public FarmLand[][] getThePlantation() {
