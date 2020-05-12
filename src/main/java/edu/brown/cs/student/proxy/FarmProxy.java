@@ -10,9 +10,19 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import edu.brown.cs.student.farm.Crop;
 import edu.brown.cs.student.farm.FarmFile;
 import edu.brown.cs.student.farm.FarmLand;
 
@@ -23,6 +33,8 @@ import edu.brown.cs.student.farm.FarmLand;
  */
 public final class FarmProxy {
   private static Connection conn;
+  private static LoadingCache<String, Object[]> cropInfoCache;
+  private static final int CACHE_SIZE = 3;
 
   private FarmProxy() {
   }
@@ -74,6 +86,8 @@ public final class FarmProxy {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+
+    setCaches();
   }
 
   public static void dropTables() {
@@ -1077,5 +1091,165 @@ public final class FarmProxy {
     };
     return crops;
   }
+
+  // ----------------------------------------------------------------------------
+
+  // crop related queries
+  private static void setCaches() {
+    cropInfoCache = CacheBuilder.newBuilder().maximumSize(CACHE_SIZE)
+        .build(new CacheLoader<String, Object[]>() {
+          @Override
+          public Object[] load(String key) throws Exception {
+            return getCropHelper(key);
+          }
+        });
+  }
+
+  public static Crop getCrop(String cropName, FarmLand land, int cropStatus) {
+    Crop crop = new Crop(cropName);
+
+    Object[] cropInfo;
+    try {
+      cropInfo = cropInfoCache.get(cropName);
+
+      // record instant this crop is planted
+      Instant now = Instant.now();
+
+      // bind this crop to its land
+      crop.setFarmLand(land);
+
+      // 0: seeded or 2: mature (for multiharvest crops)
+      crop.setCropStatus(cropStatus);
+
+      System.out.println((int) cropInfo[0]);
+      // init this crop's ID
+      crop.setID((int) cropInfo[0]);
+
+      // init this crop's terrain set
+      crop.setDesiredTerrains((Set<String>) cropInfo[1]);
+
+      // init this crop's lifeCycleTimes
+      crop.setLifeCycleTimes((Duration[]) cropInfo[2]);
+
+      // default wither duration for each stage except harvest
+      crop.setWitherDuration((Duration) cropInfo[3]);
+
+      // init min yield
+      crop.setMinYield((int) cropInfo[4]);
+
+      // init max yield
+      crop.setMaxYield((int) cropInfo[5]);
+
+      // init yield
+      crop.setYield(
+          (int) (Math.random() * ((int) cropInfo[5] - (int) cropInfo[4] + 1)) + (int) cropInfo[4]);
+
+      // init max harvest times
+      crop.setMaxHarvestTimes((int) cropInfo[6]);
+
+      // default currentHarvestTimes to max
+      crop.setCurrentHarvestTimes((int) cropInfo[6]);
+
+      // init probabilities this crop gets infested
+      crop.setSproutInfestChance((int) cropInfo[7]);
+      crop.setMatureInfestChance((int) cropInfo[8]);
+
+      // determine whether this crop will be infested
+      crop.setIsSproutInfested((int) (Math.random() * 100) + 1 <= (int) cropInfo[7] ? true : false);
+      crop.setIsMatureInfested((int) (Math.random() * 100) + 1 <= (int) cropInfo[8] ? true : false);
+
+      // init life cycle time for first stage (0 or 2)
+      crop.setDurationUntilNextStage(((Duration[]) cropInfo[2])[cropStatus]);
+
+      // init auto wither time from current stage
+      crop.setWitheredInstant(now.plus((Duration) cropInfo[3]));
+
+      // init time next stage based on water status
+      if (land.isWatered(now)) {
+        // watered, start timer
+        crop.startGrowing(now);
+      } else {
+        // not watered, start growing AS SOON AS it's watered
+        crop.stopGrowing();
+      }
+
+      // ----------------------------------------------------
+
+      return crop;
+    } catch (ExecutionException e) {
+      System.out.println("Failed to load crop info from cache");
+      return null;
+    }
+  }
+
+  private static Object[] getCropHelper(String cropName) {
+    PreparedStatement prep;
+
+    // index:
+    // 0: int id
+    // 1: Set<String> desired terrains
+    // 2: Duration[] lifeCycleTimes
+    // 3: Duration witherDuration
+    // 4: int minYield
+    // 5: int maxYield
+    // 6: int maxHarvestTimes
+    // 7: int sproutInfestRate
+    // 8: int matureInfestRate
+    Object[] cropInfo = new Object[9];
+
+    try {
+      prep = conn.prepareStatement("SELECT * FROM crop_data WHERE name=?;");
+      prep.setString(1, cropName);
+      ResultSet rs = prep.executeQuery();
+      if (rs.next()) {
+        // id
+        cropInfo[0] = rs.getInt(2);
+
+        // desired terrains (separated by #)
+        HashSet<String> terrainSet = new HashSet<String>();
+        for (String s : rs.getString(3).split("#")) {
+          terrainSet.add(s);
+        }
+        cropInfo[1] = terrainSet;
+
+        // lifeCycleTimes
+        Duration[] lifeCycleTimes = new Duration[5];
+        String[] times = rs.getString(4).split("#");
+        for (int i = 0; i < 5; i++) {
+          // TODO: change crop growth time scale here if necessary
+          lifeCycleTimes[i] = Duration.ofSeconds(Long.parseLong(times[i]));
+        }
+        cropInfo[2] = lifeCycleTimes;
+
+        // witherDuration
+        cropInfo[3] = Duration.ofSeconds(rs.getInt(5));
+
+        // minYield
+        cropInfo[4] = rs.getInt(6);
+
+        // maxYield
+        cropInfo[5] = rs.getInt(7);
+
+        // maxHarvestTimes
+        cropInfo[6] = rs.getInt(8);
+
+        // sproutInfestRate
+        cropInfo[7] = rs.getInt(9);
+
+        // matureInfestRate
+        cropInfo[8] = rs.getInt(10);
+      }
+      prep.close();
+      rs.close();
+
+      return cropInfo;
+    } catch (SQLException e) {
+      System.out.println("Database error encountered while trying to query crop data");
+      return null;
+    }
+
+  }
+
+  // ----------------------------------------------------------------------------
 
 }

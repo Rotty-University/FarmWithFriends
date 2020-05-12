@@ -11,7 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.brown.cs.student.crops.ACrop;
 import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.REPL;
 
@@ -60,7 +59,7 @@ public class FarmViewerTest {
   @Test
   public void plantThenWater() throws InterruptedException {
     String[] xy = {
-        "0", "0"
+        "0", "0", "demo_crop"
     };
     String[] empty = {};
 
@@ -112,7 +111,7 @@ public class FarmViewerTest {
     app.new WaterCommand().execute(tokens, pw);
   }
 
-  ACrop cropAt(int x, int y) {
+  Crop cropAt(int x, int y) {
     return app.getThePlantation()[x][y].getCrop();
   }
   // ---------------------------------------------------------

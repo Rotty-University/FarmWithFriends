@@ -1,12 +1,12 @@
-package edu.brown.cs.student.crops;
+package edu.brown.cs.student.farm;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 
-import edu.brown.cs.student.farm.FarmLand;
+import edu.brown.cs.student.proxy.FarmProxy;
 
-public abstract class ACrop implements java.io.Serializable {
+public class Crop implements java.io.Serializable {
   private FarmLand farmLand;
   private String name;
   private int id;
@@ -22,76 +22,17 @@ public abstract class ACrop implements java.io.Serializable {
   private int yield;
   private int maxHarvestTimes;
   private int currentHarvestTimes;
-  private double sproutInfestChance;
-  private double matureInfestChance;
+  private int sproutInfestChance;
+  private int matureInfestChance;
   private boolean isSproutInfested;
   private boolean isMatureInfested;
 
-  public ACrop(FarmLand l, int currentStatus) {
-    // record instant this crop is grown
-    Instant now = Instant.now();
-
-    // SET CHILD CLASS VARIABLES---------------------------
-
+  public Crop(String cropName) {
     // initialize this crop's name
-    initName();
+    name = cropName;
 
-    // init this crop's ID
-    initID();
-
-    // init this crop's terrain set
-    initDesiredTerrain();
-
-    // init this crop's lifeCycleTimes
-    initLifeCycleTimes();
-
-    // default wither duration for each stage except harvest
-    initWitherDuration();
-
-    // init min and max yield
-    initMinMaxYield();
-
-    // init max harvest times
-    initMaxHarvestTimes();
-
-    // init probabilities this crop gets infected
-    initInfestChances();
-
-    // ----------------------------------------------------
-
-    // SET PARENT CLASS VARIABLES -------------------------
-
-    // bind this crop to its land
-    farmLand = l;
-
-    // 0: seeded or 2: mature (for multiharvest crops)
-    cropStatus = currentStatus;
-
-    // default currentHarvestTimes to max
-    currentHarvestTimes = maxHarvestTimes;
-
-    // first duration
-    durationUntilNextStage = lifeCycleTimes[cropStatus];
-
-    // auto wither time from seeded stage
-    witheredInstant = now.plus(witherDuration);
-
-    // time next stage
-    if (farmLand.isWatered(now)) {
-      // watered, start timer
-      startGrowing(now);
-    } else {
-      // not watered, start growing AS SOON AS it's watered
-      stopGrowing();
-    }
-
-    // randomly generate yield
-    yield = (int) (Math.random() * (maxYield - minYield + 1)) + minYield;
-
-    // determine whether this crop will be infested
-    isSproutInfested = Double.compare(Math.random(), sproutInfestChance) <= 0 ? true : false;
-    isMatureInfested = Double.compare(Math.random(), matureInfestChance) <= 0 ? true : false;
-    // ----------------------------------------------------
+    // ------------------------------------------------------------------
+    // everything else is initialized in FarmProxy (queried from database)
   }
 
   // Controllers ----------------------------------------------
@@ -214,7 +155,23 @@ public abstract class ACrop implements java.io.Serializable {
     return isChanged;
   }
 
-  // --------------------------------------------------------------
+  /**
+   * return a new this crop with one less currentHarvestTimes if possible,
+   * otherwise return null (crop is gone for good)
+   */
+  public Crop respawn() {
+    if (currentHarvestTimes > 1) {
+      // TODO: change this to using FarmProxy
+      Crop newCrop = FarmProxy.getCrop(name, farmLand, 2);
+      newCrop.setCurrentHarvestTimes(currentHarvestTimes - 1);
+
+      return newCrop;
+    } else {
+      return null;
+    }
+  }
+
+  // -------------------------------------------------------------------
 
   // getters
   public String getName() {
@@ -271,7 +228,7 @@ public abstract class ACrop implements java.io.Serializable {
 
   // -------------------------------------------------------------------
 
-  // concrete setters
+  // setters
   public void setFarmLand(FarmLand l) {
     farmLand = l;
   }
@@ -312,49 +269,42 @@ public abstract class ACrop implements java.io.Serializable {
     maxYield = i;
   }
 
+  public void setYield(int i) {
+    yield = i;
+  }
+
   public void setMaxHarvestTimes(int m) {
     maxHarvestTimes = m;
   }
 
-  public void setSproutInfestChance(double d) {
+  public void setSproutInfestChance(int d) {
     sproutInfestChance = d;
   }
 
-  public void setMatureInfestChance(double d) {
+  public void setMatureInfestChance(int d) {
     matureInfestChance = d;
+  }
+
+  public void setIsSproutInfested(boolean b) {
+    isSproutInfested = b;
+  }
+
+  public void setIsMatureInfested(boolean b) {
+    isMatureInfested = b;
   }
 
   public void setWitherDuration(Duration d) {
     witherDuration = d;
   }
 
+  public void setWitheredInstant(Instant i) {
+    witheredInstant = i;
+  }
+
   public void setCurrentHarvestTimes(int c) {
     currentHarvestTimes = c;
   }
 
-  // -------------------------------------------------------------------
-
-  // abstract initializers
-  protected abstract void initName();
-
-  protected abstract void initID();
-
-  protected abstract void initDesiredTerrain();
-
-  protected abstract void initLifeCycleTimes();
-
-  protected abstract void initWitherDuration();
-
-  protected abstract void initMinMaxYield();
-
-  protected abstract void initMaxHarvestTimes();
-
-  protected abstract void initInfestChances();
-
-  // -------------------------------------------------------------------
-
-  // abstract helper methods
-  public abstract ACrop respawn();
   // -------------------------------------------------------------------
 
 } // end of class

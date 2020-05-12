@@ -1,12 +1,10 @@
 package edu.brown.cs.student.farm;
 
 import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
-import edu.brown.cs.student.crops.ACrop;
 import edu.brown.cs.student.proxy.FarmProxy;
 import edu.brown.cs.student.repl.Command;
 import edu.brown.cs.student.repl.REPL;
@@ -70,7 +68,7 @@ public class FarmViewer {
 
         if (j.isOccupied()) {
           // there is a crop on this land
-          ACrop c = j.getCrop();
+          Crop c = j.getCrop();
 
           // update crop if necessary
           c.updateStatus(now);
@@ -229,10 +227,12 @@ public class FarmViewer {
       }
 
       try {
-        Class<?> clazz = Class.forName("edu.brown.cs.student.crops." + cropName);
-        Constructor<?> constructor = clazz.getConstructor(FarmLand.class, int.class);
-        ACrop newCrop = (ACrop) constructor.newInstance(l, 0);
+        // legacy code: create crop class using reflection
+//        Class<?> clazz = Class.forName("edu.brown.cs.student.crops." + cropName);
+//        Constructor<?> constructor = clazz.getConstructor(FarmLand.class, int.class);
+//        ACrop newCrop = (ACrop) constructor.newInstance(l, 0);
 
+        Crop newCrop = FarmProxy.getCrop(cropName, l, 0);
         l.setCrop(newCrop);
       } catch (Exception e) {
         System.out.println("Something wong");
@@ -297,7 +297,7 @@ public class FarmViewer {
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
       FarmLand l = thePlantation[x][y];
-      ACrop c = l.getCrop();
+      Crop c = l.getCrop();
       Instant now = Instant.now();
 
       if (!l.isOccupied()) {
@@ -373,7 +373,7 @@ public class FarmViewer {
       int x = Integer.parseInt(tokens[0]);
       int y = Integer.parseInt(tokens[1]);
       FarmLand l = thePlantation[x][y];
-      ACrop c = l.getCrop();
+      Crop c = l.getCrop();
       Instant now = Instant.now();
 
       if (!l.isOccupied()) {

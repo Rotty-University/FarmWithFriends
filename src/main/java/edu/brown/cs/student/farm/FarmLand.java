@@ -3,11 +3,9 @@ package edu.brown.cs.student.farm;
 import java.time.Duration;
 import java.time.Instant;
 
-import edu.brown.cs.student.crops.ACrop;
-
 public class FarmLand implements Land, java.io.Serializable {
   private String terrain;
-  private ACrop crop;
+  private Crop crop;
   private boolean isPlowed;
   private Instant lastDryInstant;
   private Instant nextDryInstant;
@@ -110,14 +108,14 @@ public class FarmLand implements Land, java.io.Serializable {
   /**
    * @return the crop
    */
-  public ACrop getCrop() {
+  public Crop getCrop() {
     return crop;
   }
 
   /**
    * @param crop the crop to set
    */
-  public void setCrop(ACrop crop) {
+  public void setCrop(Crop crop) {
     this.crop = crop;
   }
 
