@@ -96,6 +96,7 @@ class Home extends React.Component {
         	this.setState({currentUserName: JSON.parse(response)});
         }.bind(this));
     	
+        console.log("mounted that bitch");
     }
 
     generateFarmArray(rows, columns, activetool) {

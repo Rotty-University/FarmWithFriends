@@ -48,7 +48,7 @@ public final class Main {
 
   static String message = "";
   static String createMessage = "";
-  static String userCookie = null;
+//  static String userCookie = null;
   static int currentMapID = 1;
   static int freeSpaceInMap;
 
@@ -94,7 +94,6 @@ public final class Main {
 
     FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
     runSparkServer((int) options.valueOf("port"));
-//    initFarmViewerAndHandler();
     repl.run();
   }
 
@@ -155,33 +154,17 @@ public final class Main {
   }
 
   // call this whenever someone logs in and the game starts
-  private static void initFarmViewerAndHandler() {
-//    // baseline initialization of the post request.
-//    if (userCookie == null) {
-//      app = new FarmViewer(repl, "");
-//      String[] tokens = {
-//          userCookie
-//      };
-//      app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
-//
-//      // init farming handlers
-//      farmingHandlers = new FarmingHandlers(app);
-//      Spark.post("/farmActions", farmingHandlers.new ActionHandler());
-//      Spark.post("/farmUpdate", farmingHandlers.new UpdateHandler());
-//      return;
-//    }
-
+  private static void initFarmViewerAndHandler(String username) {
     // current user exists, init app
-    app = new FarmViewer(repl, userCookie);
+    app = new FarmViewer(repl, username);
     String[] tokens = {
-        userCookie
+        username
     };
     app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
 
     farmingHandlers = new FarmingHandlers(app);
-    Spark.post("/farmActions/" + userCookie, farmingHandlers.new ActionHandler());
-    Spark.post("/farmUpdate/" + userCookie, farmingHandlers.new UpdateHandler());
-//    farmingHandlers.setApp(app);
+    Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
+    Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
   }
 
   /**
@@ -214,13 +197,11 @@ public final class Main {
 
     @Override
     public String handle(Request req, Response res) throws Exception {
-      if (userCookie == null) {
-        System.out.println("can't find current username");
+      String username = req.session().attribute("username");
 
-        return null;
-      }
-
-      return GSON.toJson(userCookie);
+      // MUST create a new STRING variable before this,
+      // otherwise it will automatically cast to Json element
+      return GSON.toJson(username);
     }
 
   }
@@ -237,7 +218,7 @@ public final class Main {
       message = "";
       // checking to make sure the user isn't already logged on. Will take to their
       // homepage if they are.
-      if (req.cookies().containsKey(userCookie)) {
+      if (req.session().attribute("username") != null) {
         message = "You are already logged in";
         res.redirect("/home");
         return new ModelAndView(null, "home.ftl");
@@ -255,28 +236,19 @@ public final class Main {
   private static class HomePageAlreadyLoggedInHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
+      String username = req.session().attribute("username");
       // checking to make sure that the user is logged in before they can access this
       // page.
-      if (userCookie == null) {
+      if (username == null) {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
       // if the user still hasn't picked a spot on the map, then they will be sent
       // back to the new user page.
-      if (FarmProxy.getStatusOfUser(userCookie).equals("true")) {
+      if (FarmProxy.getStatusOfUser(username).equals("true")) {
         res.redirect("/new_user");
       }
       Map<String, Object> variables = ImmutableMap.of("title", "Farmulator");
-
-      // create new farm for user if it doesn't exist
-      FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
-      if (nextFarmFile == null) {
-        FarmProxy.initializeFarm(userCookie);
-
-        nextFarmFile = FarmProxy.loadFarm(userCookie);
-      }
-      // init farm and start game
-      initFarmViewerAndHandler();
 
       return new ModelAndView(variables, "user_home.ftl");
     }
@@ -345,20 +317,19 @@ public final class Main {
         res.redirect("/login");
       }
       // valid login credentials.
-      userCookie = username;
-      res.cookie(username, username);
+      res.cookie("username", username);
 
       // keeping track of the logged in user.
       req.session(true);
-      req.session().attribute(username, username);
+      req.session().attribute("username", username);
 
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
 
       // init farm and start game
-      initFarmViewerAndHandler();
+      initFarmViewerAndHandler(username);
 
       // have to redirect here if they havent picked a location on the map yet
-      if (FarmProxy.getStatusOfUser(userCookie).equals("true")) {
+      if (FarmProxy.getStatusOfUser(username).equals("true")) {
         res.redirect("/new_user");
       }
       return new ModelAndView(variables, "user_home.ftl");
@@ -479,23 +450,22 @@ public final class Main {
       // change the true back to false eventually after they pick a spot on map.
       FarmProxy.insertUserInfoIntoDatabase(username, Arrays.toString(hashedPassword),
           Arrays.toString(salt), email, currentMapID, "true");
-      userCookie = username;
 
-      res.cookie(username, username);
+      res.cookie("username", username);
       // keeping track of user.
       req.session(true);
-      req.session().attribute(username, username);
+      req.session().attribute("username", username);
 
       // make new farm for this user if it doesn't exist
-      FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
+      FarmFile nextFarmFile = FarmProxy.loadFarm(username);
       if (nextFarmFile == null) {
-        FarmProxy.initializeFarm(userCookie);
+        FarmProxy.initializeFarm(username);
 
-        nextFarmFile = FarmProxy.loadFarm(userCookie);
+        nextFarmFile = FarmProxy.loadFarm(username);
       }
 
       // init farm and start game
-      initFarmViewerAndHandler();
+      initFarmViewerAndHandler(username);
 
       createMessage = "";
       Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
@@ -514,18 +484,19 @@ public final class Main {
   private static class NewUserPageAlreadyLoggedInHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
+      String username = req.session().attribute("username");
       // checking to make sure that the user is logged in before they can access this
       // page.
-      if (userCookie == null) {
+      if (username == null) {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
       // checking to make sure that the user can't go back to the map page if they
       // already picked a spot there.
-      if (FarmProxy.getStatusOfUser(userCookie).equals("false")) {
+      if (FarmProxy.getStatusOfUser(username).equals("false")) {
         res.redirect("/home");
       }
-      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "name", userCookie);
+      Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "name", username);
       return new ModelAndView(variables, "new_user.ftl");
     }
   }
@@ -538,15 +509,20 @@ public final class Main {
   private static class LogOutHandler implements TemplateViewRoute {
     @Override
     public ModelAndView handle(Request req, Response res) {
-      if (userCookie == null) {
+      String username = req.session().attribute("username");
+
+      if (username == null) {
         res.redirect("/login");
         return new ModelAndView(null, "home.ftl");
       }
-      if (req.session().attributes().contains(userCookie)) {
-        res.removeCookie(userCookie);
-        req.session().removeAttribute(userCookie);
-        userCookie = null;
-      }
+//      if (req.session().attributes().contains(userCookie)) {
+//        res.removeCookie(userCookie);
+//        req.session().removeAttribute(userCookie);
+//        userCookie = null;
+//      }
+
+      req.session().invalidate();
+
       message = "You have been logged out. Thank you.";
       Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "message", message);
       return new ModelAndView(variables, "home.ftl");
@@ -561,51 +537,52 @@ public final class Main {
   private static class AddingFriendsHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
       // getting the text value.
-      String username = qm.value("text");
+      String newFriendName = qm.value("text");
       String message = "";
       Map<String, String> variables;
       // making sure the user can't add themselves.
-      if (username.equals(userCookie)) {
+      if (username.equals(newFriendName)) {
         message = "You can't add yourself. Try again.";
         variables = ImmutableMap.of("message", message);
         GSON.toJson(variables);
         return GSON.toJson(variables);
       }
-      // Making sure that the user name they are trying add exists.
-      if (FarmProxy.getUserNameFromDataBase(username) == null) {
+      // Making sure that the new friend's name they are trying add exists.
+      if (FarmProxy.getUserNameFromDataBase(newFriendName) == null) {
         message = "The user doesn't exist. Try adding someone else.";
       } else {
-        String friendslist = FarmProxy.getFriendsList(userCookie);
+        String friendslist = FarmProxy.getFriendsList(username);
         String[] friends = friendslist.split(",");
-        // check to make sure the user isn't already in the friends list.
+        // check to make sure the new friend isn't already in user's friends list.
         for (String friend : friends) {
-          if (username.equals(friend)) {
+          if (newFriendName.equals(friend)) {
             message = "This friend is already in your friends list.";
             variables = ImmutableMap.of("message", message);
             GSON.toJson(variables);
             return GSON.toJson(variables);
           }
         }
-        String friendslistpending = FarmProxy.getFriendsListPending(username);
+        String friendslistpending = FarmProxy.getFriendsListPending(newFriendName);
         String[] friendspending = friendslistpending.split(",");
         // check to make sure the user isn't already in the pending friends list of the
         // other user.
         for (String friend : friendspending) {
-          if (userCookie.equals(friend)) {
-            message = "You already sent a friend request to this person.";
+          if (username.equals(friend)) {
+            message = "You already sent a friend request to this person, stop spamming";
             variables = ImmutableMap.of("message", message);
             GSON.toJson(variables);
             return GSON.toJson(variables);
           }
         }
         // the user is trying to send a request to somebody that already sent to them
-        friendslistpending = FarmProxy.getFriendsListPending(userCookie);
+        friendslistpending = FarmProxy.getFriendsListPending(newFriendName);
         friendspending = friendslistpending.split(",");
-        // check to make sure the user isn't already in the friends list.
         for (String friend : friendspending) {
-          if (userCookie.equals(friend)) {
+          if (username.equals(friend)) {
             message = "This person already sent you one. Check your pending friend requests.";
             variables = ImmutableMap.of("message", message);
             GSON.toJson(variables);
@@ -614,7 +591,7 @@ public final class Main {
         }
         // add this current user who is trying to add to the pending list of the user
         // they are trying to add
-        FarmProxy.updateFriendsPending(userCookie, username);
+        FarmProxy.updateFriendsPending(username, newFriendName);
         message = "Sending the request right now";
         System.out.println("adding them");
       }
@@ -627,15 +604,17 @@ public final class Main {
   private static class TradePostHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
       Map<String, String> variables;
       String cropS = qm.value("cSell");
       String quantS = qm.value("qSell");
       String cropB = qm.value("cBuy");
       String quantB = qm.value("qBuy");
-      if (FarmProxy.getOneInventoryItem(userCookie, cropS) >= Integer.parseInt(quantS)) {
+      if (FarmProxy.getOneInventoryItem(username, cropS) >= Integer.parseInt(quantS)) {
 
-        FarmProxy.updateTradingCenter(userCookie, cropS, quantS, cropB, quantB);
+        FarmProxy.updateTradingCenter(username, cropS, quantS, cropB, quantB);
         variables = ImmutableMap.of("message", "Trade Posted");
       } else {
         variables = ImmutableMap.of("message", "Not enough " + cropS + " to make this trade");
@@ -652,7 +631,9 @@ public final class Main {
   private static class FriendLoaderHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      String friendslist = FarmProxy.getFriendsList(userCookie);
+      String username = req.session().attribute("username");
+
+      String friendslist = FarmProxy.getFriendsList(username);
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
       GSON.toJson(variables);
       return GSON.toJson(variables);
@@ -691,8 +672,10 @@ public final class Main {
 
     @Override
     public Object handle(Request request, Response response) {
+      String username = request.session().attribute("username");
+
       QueryParamsMap qm = request.queryMap();
-      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(userCookie);
+      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(username);
       StringBuilder htmlCode = new StringBuilder();
       for (String r : userInventory.keySet()) {
         htmlCode.append("<option value=\"" + r + "\">" + r + "</option>");
@@ -712,8 +695,10 @@ public final class Main {
 
     @Override
     public Object handle(Request request, Response response) {
+      String username = request.session().attribute("username");
+
       QueryParamsMap qm = request.queryMap();
-      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(userCookie);
+      Map<String, Integer> userInventory = FarmProxy.getAllInventoryItems(username);
       StringBuilder htmlCode = new StringBuilder();
       htmlCode.append("<tr><th>Crop</th><th>Amount</th></tr>");
       for (String r : userInventory.keySet()) {
@@ -736,7 +721,9 @@ public final class Main {
   private static class FriendPendingLoaderHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
-      String friendslist = FarmProxy.getFriendsListPending(userCookie);
+      String username = req.session().attribute("username");
+
+      String friendslist = FarmProxy.getFriendsListPending(username);
       Map<String, String> variables = ImmutableMap.of("list", friendslist);
       GSON.toJson(variables);
       return GSON.toJson(variables);
@@ -751,14 +738,16 @@ public final class Main {
   private static class FriendAcceptedHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
-      String username = qm.value("text");
-      String friendslistpending = FarmProxy.getFriendsListPending(userCookie);
-      friendslistpending = friendslistpending.replace(username + ",", "");
-      FarmProxy.updateFriendsPendingAfterAdding(friendslistpending, userCookie);
-      FarmProxy.updateFriendsList(userCookie, username);
-      FarmProxy.updateFriendsList(username, userCookie);
-      Map<String, String> variables = ImmutableMap.of("list", username);
+      String newFriendName = qm.value("text");
+      String friendslistpending = FarmProxy.getFriendsListPending(username);
+      friendslistpending = friendslistpending.replace(newFriendName + ",", "");
+      FarmProxy.updateFriendsPendingAfterAdding(friendslistpending, username);
+      FarmProxy.updateFriendsList(username, newFriendName);
+      FarmProxy.updateFriendsList(newFriendName, username);
+      Map<String, String> variables = ImmutableMap.of("list", newFriendName);
       GSON.toJson(variables);
       return GSON.toJson(variables);
     }
@@ -796,8 +785,10 @@ public final class Main {
   private static class MapRetriever implements Route {
     @Override
     public String handle(Request req, Response res) {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
-      int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
+      int id = FarmProxy.getMapIDofUserFromDataBase(username);
       String needMap = "false";
       String mapdata = FarmProxy.getMapFromDataBase(id);
       if (mapdata == null) {
@@ -823,17 +814,19 @@ public final class Main {
   private static class ClickOnMapHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
       String mapData = qm.value("dictionary_data");
       String row = qm.value("row");
       String col = qm.value("col");
       // keeping track of this users location in the map.
-      FarmProxy.updateTheRowAndColumnofUserLocationInMap(userCookie, Integer.parseInt(row),
+      FarmProxy.updateTheRowAndColumnofUserLocationInMap(username, Integer.parseInt(row),
           Integer.parseInt(col));
       // Updating the map so it knows the space that is already occupied and the user
       // can't click on.
       FarmProxy.updateTheMapData(currentMapID, mapData);
-      FarmProxy.updateNewUserIndication(userCookie, "false");
+      FarmProxy.updateNewUserIndication(username, "false");
       Map<String, String> variables = ImmutableMap.of("data", mapData);
       res.redirect("/home");
       GSON.toJson(variables);
@@ -849,18 +842,20 @@ public final class Main {
   private static class MapRetrieverForReact implements Route {
     @Override
     public String handle(Request req, Response res) {
-      int id = FarmProxy.getMapIDofUserFromDataBase(userCookie);
+      String username = req.session().attribute("username");
+
+      int id = FarmProxy.getMapIDofUserFromDataBase(username);
       String mapdata = FarmProxy.getMapFromDataBase(id);
-      int[] coords = FarmProxy.getRowAndColumnOfUserMapLocation(userCookie);
+      int[] coords = FarmProxy.getRowAndColumnOfUserMapLocation(username);
       String row = String.valueOf(coords[0]);
       String col = String.valueOf(coords[1]);
-      String friends = FarmProxy.getFriendsList(userCookie);
+      String friends = FarmProxy.getFriendsList(username);
       String[] splitFriends = friends.split(",");
       Map<String, String> mapOfFriends = new HashMap<>();
       for (String userFriend : splitFriends) {
         if (userFriend.length() > 1) {
           if (FarmProxy.getMapIDofUserFromDataBase(userFriend) == FarmProxy
-              .getMapIDofUserFromDataBase(userCookie)) {
+              .getMapIDofUserFromDataBase(username)) {
             int[] coordinates = FarmProxy.getRowAndColumnOfUserMapLocation(userFriend);
             mapOfFriends.put(String.valueOf(coordinates[0]) + "," + String.valueOf(coordinates[1]),
                 "friend_space");
@@ -881,23 +876,30 @@ public final class Main {
   private static class MakeTradeHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
       String tradeData = qm.value("data");
       String[] data = tradeData.split(",");
       String message;
-      int cropGiveQ = FarmProxy.getOneInventoryItem(userCookie, data[3]);
-      int cropGetQ = FarmProxy.getOneInventoryItem(userCookie, data[1]);
+      int cropGiveQ = FarmProxy.getOneInventoryItem(username, data[3]);
+      int cropGetQ = FarmProxy.getOneInventoryItem(username, data[1]);
       int sellQ = Integer.parseInt(data[2]);
       int buyQ = Integer.parseInt(data[4]);
+
+      // TODO: this trade logic is problematic, I will come back to fix it later
+      // need to fix: if seller's quantity has changed since posting the trade,
+      // they will always be able to execute the trade (even by ending up with
+      // negative quantity of the crop they are trying to sell)
       if (cropGiveQ > Integer.parseInt(data[4])) {
-        FarmProxy.updateInventory(userCookie, data[1],
-            FarmProxy.getOneInventoryItem(userCookie, data[1]) + sellQ);
-        FarmProxy.updateInventory(userCookie, data[3],
-            FarmProxy.getOneInventoryItem(userCookie, data[3]) - buyQ);
+        FarmProxy.updateInventory(username, data[1],
+            FarmProxy.getOneInventoryItem(username, data[1]) + sellQ);
+        FarmProxy.updateInventory(username, data[3],
+            FarmProxy.getOneInventoryItem(username, data[3]) - buyQ);
         FarmProxy.updateInventory(data[0], data[1],
-            FarmProxy.getOneInventoryItem(userCookie, data[1]) - sellQ);
+            FarmProxy.getOneInventoryItem(username, data[1]) - sellQ);
         FarmProxy.updateInventory(data[0], data[3],
-            FarmProxy.getOneInventoryItem(userCookie, data[3]) + buyQ);
+            FarmProxy.getOneInventoryItem(username, data[3]) + buyQ);
         FarmProxy.removeTradeListing(tradeData);
         message = "Trade Successful!";
       } else {
@@ -917,11 +919,13 @@ public final class Main {
   private static class ClickingFriendOnMapHandler implements Route {
     @Override
     public String handle(Request req, Response res) {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
       String row = qm.value("row");
       String col = qm.value("col");
       String friendName = FarmProxy.getUserNameFromRowAndColumnOfUserMap(Integer.parseInt(row),
-          Integer.parseInt(col), FarmProxy.getMapIDofUserFromDataBase(userCookie));
+          Integer.parseInt(col), FarmProxy.getMapIDofUserFromDataBase(username));
       Map<String, String> variables = ImmutableMap.of("name", friendName);
       GSON.toJson(variables);
       return GSON.toJson(variables);
