@@ -18,6 +18,8 @@ public class FarmViewer {
   private FarmFile serializedFarm;
   private FarmLand[][] thePlantation;
   private String farmName;
+  private Command plantCommand, plowCommand, showCommand, waterCommand, harvestCommand,
+      inspectCommand, switchCommand;
 
   public FarmViewer(REPL repl, String viewerName) {
     // init
@@ -28,13 +30,22 @@ public class FarmViewer {
     serializedFarm = null;
     thePlantation = null;
 
-    repl.register("plant", new PlantCommand());
-    repl.register("plow", new PlowCommand());
-    repl.register("s", new ShowCommand());
-    repl.register("water", new WaterCommand());
-    repl.register("harvest", new HarvestCommand());
-    repl.register("inspect", new InspectInventoryCommand());
-    repl.register("switch", new SwitchCommand());
+    // set commands
+    plantCommand = new PlantCommand();
+    plowCommand = new PlowCommand();
+    showCommand = new ShowCommand();
+    waterCommand = new WaterCommand();
+    harvestCommand = new HarvestCommand();
+    inspectCommand = new InspectInventoryCommand();
+    switchCommand = new SwitchCommand();
+
+    repl.register("plant", plantCommand);
+    repl.register("plow", plowCommand);
+    repl.register("s", showCommand);
+    repl.register("water", waterCommand);
+    repl.register("harvest", harvestCommand);
+    repl.register("inspect", inspectCommand);
+    repl.register("switch", switchCommand);
   }
 
   // Helper methods ------------------------------------------------------------
@@ -439,6 +450,34 @@ public class FarmViewer {
    */
   public String getFarmName() {
     return farmName;
+  }
+
+  public Command getPlantCommand() {
+    return plantCommand;
+  }
+
+  public Command getPlowCommand() {
+    return plowCommand;
+  }
+
+  public Command getShowCommand() {
+    return showCommand;
+  }
+
+  public Command getWaterCommand() {
+    return waterCommand;
+  }
+
+  public Command getHarvestCommand() {
+    return harvestCommand;
+  }
+
+  public Command getInspectCommand() {
+    return inspectCommand;
+  }
+
+  public Command getSwitchCommand() {
+    return switchCommand;
   }
 
   // ---------------------------------------------------------------------------------

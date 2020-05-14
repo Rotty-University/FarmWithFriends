@@ -83,14 +83,23 @@ class Home extends React.Component {
         super(props);
         this.state = {
             prevselectedtool: "select",
+            currentUserName: "default"
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
         this.closeTheDiv = this.closeTheDiv.bind(this)
     }
+    
+    componentDidMount() {        
+        // assign the current username and pass it down to children
+        $.post("/currentUserName").done(function(response) {
+        	this.setState({currentUserName: JSON.parse(response)});
+        }.bind(this));
+    	
+    }
 
     generateFarmArray(rows, columns, activetool) {
-        return <Table id={"farmTable"} rows={rows} columns={columns} active={activetool}/>;
+        return <Table id={"farmTable"} rows={rows} columns={columns} active={activetool} currentUserName={this.state.currentUserName}/>;
     }
 
     updatePrevSelectedTool(e) {
@@ -167,7 +176,7 @@ class Table extends React.Component {
     
     updateTiles() {    	
             // send as parameter
-            $.post("/farmUpdate", response => {
+            $.post("/farmUpdate/" + (String)(this.props.currentUserName), response => {
                 // get result
                 const result = JSON.parse(response);
                 
@@ -234,6 +243,7 @@ class Table extends React.Component {
                     column={idx}
                     activetool={this.props.active}
                 	actionMap = {this.actionMap}
+                	currentUserName = {this.props.currentUserName}
                 /></td>)
             }
             rows.push(<tr key={i} id={rowID}>{cell}</tr>)
@@ -275,7 +285,7 @@ class Tile extends React.Component {
         };
 
         // send as parameter
-        $.post("/farmActions", dict, response => {
+        $.post("/farmActions/" + (String)(this.props.currentUserName), dict, response => {
             // get result
             const thisTileInfo = JSON.parse(response);
 

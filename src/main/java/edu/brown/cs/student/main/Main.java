@@ -94,7 +94,7 @@ public final class Main {
 
     FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
     runSparkServer((int) options.valueOf("port"));
-    initFarmViewerAndHandler();
+//    initFarmViewerAndHandler();
     repl.run();
   }
 
@@ -147,35 +147,41 @@ public final class Main {
     Spark.post("/mapRetriever", new MapRetriever());
     Spark.post("clickOnMap", new ClickOnMapHandler());
     Spark.get("/mapRetrieverForMapsComponent", new MapRetrieverForReact());
-    Spark.post("showingWhatFriendWasClicked", new ClickingFriendOnMapHandler());
+    Spark.post("/showingWhatFriendWasClicked", new ClickingFriendOnMapHandler());
+
+    Spark.post("/currentUserName", new GetCurrentUserHandler());
 
     // all farmingHandler routes are made in initFarmViewerAndHandler
   }
 
   // call this whenever someone logs in and the game starts
   private static void initFarmViewerAndHandler() {
-    // baseline initialization of the post request.
-    if (userCookie == null) {
-      app = new FarmViewer(repl, "");
-      String[] tokens = {
-          userCookie
-      };
-      app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
-
-      // init farming handlers
-      farmingHandlers = new FarmingHandlers(app);
-      Spark.post("/farmActions", farmingHandlers.new ActionHandler());
-      Spark.post("farmUpdate", farmingHandlers.new UpdateHandler());
-      return;
-    }
+//    // baseline initialization of the post request.
+//    if (userCookie == null) {
+//      app = new FarmViewer(repl, "");
+//      String[] tokens = {
+//          userCookie
+//      };
+//      app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
+//
+//      // init farming handlers
+//      farmingHandlers = new FarmingHandlers(app);
+//      Spark.post("/farmActions", farmingHandlers.new ActionHandler());
+//      Spark.post("/farmUpdate", farmingHandlers.new UpdateHandler());
+//      return;
+//    }
 
     // current user exists, init app
     app = new FarmViewer(repl, userCookie);
     String[] tokens = {
         userCookie
     };
-    app.new SwitchCommand().execute(tokens, new PrintWriter(System.out));
-    farmingHandlers.setApp(app);
+    app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
+
+    farmingHandlers = new FarmingHandlers(app);
+    Spark.post("/farmActions/" + userCookie, farmingHandlers.new ActionHandler());
+    Spark.post("/farmUpdate/" + userCookie, farmingHandlers.new UpdateHandler());
+//    farmingHandlers.setApp(app);
   }
 
   /**
@@ -202,6 +208,21 @@ public final class Main {
    */
   public REPL getREPL() {
     return repl;
+  }
+
+  private static class GetCurrentUserHandler implements Route {
+
+    @Override
+    public String handle(Request req, Response res) throws Exception {
+      if (userCookie == null) {
+        System.out.println("can't find current username");
+
+        return null;
+      }
+
+      return GSON.toJson(userCookie);
+    }
+
   }
 
   /**
@@ -250,7 +271,6 @@ public final class Main {
       // create new farm for user if it doesn't exist
       FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
       if (nextFarmFile == null) {
-        // TODO: fix initializeFarm in proxy
         FarmProxy.initializeFarm(userCookie);
 
         nextFarmFile = FarmProxy.loadFarm(userCookie);
@@ -327,13 +347,16 @@ public final class Main {
       // valid login credentials.
       userCookie = username;
       res.cookie(username, username);
+
       // keeping track of the logged in user.
       req.session(true);
       req.session().attribute(username, username);
+
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
 
       // init farm and start game
       initFarmViewerAndHandler();
+
       // have to redirect here if they havent picked a location on the map yet
       if (FarmProxy.getStatusOfUser(userCookie).equals("true")) {
         res.redirect("/new_user");
@@ -466,7 +489,6 @@ public final class Main {
       // make new farm for this user if it doesn't exist
       FarmFile nextFarmFile = FarmProxy.loadFarm(userCookie);
       if (nextFarmFile == null) {
-        // TODO: fix initializeFarm in proxy
         FarmProxy.initializeFarm(userCookie);
 
         nextFarmFile = FarmProxy.loadFarm(userCookie);

@@ -63,22 +63,22 @@ public class FarmingHandlers {
       switch (action) {
       case 1:
         // plow
-        app.new PlowCommand().execute(commands, pw);
+        app.getPlowCommand().execute(commands, pw);
         break;
 
       case 2:
         // plant
-        app.new PlantCommand().execute(commands, pw);
+        app.getPlantCommand().execute(commands, pw);
         break;
 
       case 3:
         // water
-        app.new WaterCommand().execute(commands, pw);
+        app.getWaterCommand().execute(commands, pw);
         break;
 
       case 4:
         // harvest
-        app.new HarvestCommand().execute(commands, pw);
+        app.getHarvestCommand().execute(commands, pw);
         break;
 
       default:
