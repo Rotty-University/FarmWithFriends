@@ -30,6 +30,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import spark.Session;
 import spark.Spark;
 import spark.TemplateViewRoute;
 import spark.template.freemarker.FreeMarkerEngine;
@@ -43,12 +44,9 @@ public final class Main {
   private static final int DEFAULT_PORT = 4567;
   private static REPL repl;
   private static final Gson GSON = new Gson();
-  private static FarmViewer app;
-  private static FarmingHandlers farmingHandlers;
 
   static String message = "";
   static String createMessage = "";
-//  static String userCookie = null;
   static int currentMapID = 1;
   static int freeSpaceInMap;
 
@@ -153,20 +151,35 @@ public final class Main {
     // all farmingHandler routes are made in initFarmViewerAndHandler
   }
 
+  // -------------------------------------------------------------------------
+
+  // Main helpers
+
   // call this whenever someone logs in and the game starts
-  private static void initFarmViewerAndHandler(String username) {
-    // current user exists, init app
-    app = new FarmViewer(repl, username);
+  private static void startNewSession(String username, Request req) {
+    // create new farmviewer and guiHandlers for this user's session
+    FarmViewer app = new FarmViewer(repl, username);
     String[] tokens = {
         username
     };
     app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
 
-    farmingHandlers = new FarmingHandlers(app);
+    FarmingHandlers farmingHandlers = new FarmingHandlers(app);
     Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
     Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
+
+    // create new session for this user
+    Session session = req.session(true);
+
+    // bind objects to this session
+    session.attribute("username", username);
+    session.attribute("app", app);
+    session.attribute("handler", farmingHandlers);
   }
 
+  // --------------------------------------------------------------------------
+
+  // Spark route handlers
   /**
    * Display an error page when an exception occurs in the server.
    *
@@ -185,7 +198,6 @@ public final class Main {
     }
   }
 
-  // mutators
   /**
    * @return the current REPL object
    */
@@ -319,14 +331,10 @@ public final class Main {
       // valid login credentials.
       res.cookie("username", username);
 
-      // keeping track of the logged in user.
-      req.session(true);
-      req.session().attribute("username", username);
-
       Map<String, Object> variables = ImmutableMap.of("title", "Farming Simulator");
 
       // init farm and start game
-      initFarmViewerAndHandler(username);
+      startNewSession(username, req);
 
       // have to redirect here if they havent picked a location on the map yet
       if (FarmProxy.getStatusOfUser(username).equals("true")) {
@@ -452,9 +460,6 @@ public final class Main {
           Arrays.toString(salt), email, currentMapID, "true");
 
       res.cookie("username", username);
-      // keeping track of user.
-      req.session(true);
-      req.session().attribute("username", username);
 
       // make new farm for this user if it doesn't exist
       FarmFile nextFarmFile = FarmProxy.loadFarm(username);
@@ -465,7 +470,7 @@ public final class Main {
       }
 
       // init farm and start game
-      initFarmViewerAndHandler(username);
+      startNewSession(username, req);
 
       createMessage = "";
       Map<String, String> variables = ImmutableMap.of("message", createMessage, "canCreate",
