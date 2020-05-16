@@ -325,9 +325,9 @@ public class FarmViewer {
 
         // update inventory
         // TODO: add getInventory method to proxy
-        int oldVal = FarmProxy.getOneInventoryItem(viewerName, cropName);
+        int oldVal = FarmProxy.getOneInventoryItem(viewerName, "crops", cropName);
         int total = oldVal + yield;
-        FarmProxy.updateInventory(viewerName, cropName, total);
+        FarmProxy.updateInventory(viewerName, "crops", cropName, total);
 
         // update crop/land status
         l.setCrop(l.getCrop().respawn());
@@ -400,9 +400,9 @@ public class FarmViewer {
         int yield = c.getYield();
 
         // update inventory
-        int oldVal = FarmProxy.getOneInventoryItem(viewerName, cropName);
+        int oldVal = FarmProxy.getOneInventoryItem(viewerName, "crops", cropName);
         int total = oldVal + yield;
-        FarmProxy.updateInventory(viewerName, cropName, total);
+        FarmProxy.updateInventory(viewerName, "crops", cropName, total);
 
         // update crop/land status
         l.setCrop(l.getCrop().respawn());

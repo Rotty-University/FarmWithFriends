@@ -282,7 +282,7 @@ class Tile extends React.Component {
             col : this.props.column,
             action : this.props.actionMap.get(this.props.activetool),
             //TODO: change the crop name here once the front end selection is set up
-            crop : "demo_crop"
+            crop : "tomatoes"
         };
 
         // send as parameter

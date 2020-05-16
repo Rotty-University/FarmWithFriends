@@ -617,7 +617,7 @@ public final class Main {
       String quantS = qm.value("qSell");
       String cropB = qm.value("cBuy");
       String quantB = qm.value("qBuy");
-      if (FarmProxy.getOneInventoryItem(username, cropS) >= Integer.parseInt(quantS)) {
+      if (FarmProxy.getOneInventoryItem(username, "crops", cropS) >= Integer.parseInt(quantS)) {
 
         FarmProxy.updateTradingCenter(username, cropS, quantS, cropB, quantB);
         variables = ImmutableMap.of("message", "Trade Posted");
@@ -887,8 +887,8 @@ public final class Main {
       String tradeData = qm.value("data");
       String[] data = tradeData.split(",");
       String message;
-      int cropGiveQ = FarmProxy.getOneInventoryItem(username, data[3]);
-      int cropGetQ = FarmProxy.getOneInventoryItem(username, data[1]);
+      int cropGiveQ = FarmProxy.getOneInventoryItem(username, "crops", data[3]);
+      int cropGetQ = FarmProxy.getOneInventoryItem(username, "crops", data[1]);
       int sellQ = Integer.parseInt(data[2]);
       int buyQ = Integer.parseInt(data[4]);
 
@@ -897,14 +897,14 @@ public final class Main {
       // they will always be able to execute the trade (even by ending up with
       // negative quantity of the crop they are trying to sell)
       if (cropGiveQ > Integer.parseInt(data[4])) {
-        FarmProxy.updateInventory(username, data[1],
-            FarmProxy.getOneInventoryItem(username, data[1]) + sellQ);
-        FarmProxy.updateInventory(username, data[3],
-            FarmProxy.getOneInventoryItem(username, data[3]) - buyQ);
-        FarmProxy.updateInventory(data[0], data[1],
-            FarmProxy.getOneInventoryItem(username, data[1]) - sellQ);
-        FarmProxy.updateInventory(data[0], data[3],
-            FarmProxy.getOneInventoryItem(username, data[3]) + buyQ);
+        FarmProxy.updateInventory(username, "crops", data[1],
+            FarmProxy.getOneInventoryItem(username, "crops", data[1]) + sellQ);
+        FarmProxy.updateInventory(username, "crops", data[3],
+            FarmProxy.getOneInventoryItem(username, "crops", data[3]) - buyQ);
+        FarmProxy.updateInventory(data[0], "crops", data[1],
+            FarmProxy.getOneInventoryItem(username, "crops", data[1]) - sellQ);
+        FarmProxy.updateInventory(data[0], "crops", data[3],
+            FarmProxy.getOneInventoryItem(username, "crops", data[3]) + buyQ);
         FarmProxy.removeTradeListing(tradeData);
         message = "Trade Successful!";
       } else {

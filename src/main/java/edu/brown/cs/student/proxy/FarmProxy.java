@@ -56,14 +56,16 @@ public final class FarmProxy {
               + "salt text,email text);");
       prep.executeUpdate();
       prep.close();
+
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer,"
               + " friends text, friendspending text, mapid integer, isNewUser text"
-              + ", row int, col int);");
+              + ", row int, col int, balance integer);");
       prep.executeUpdate();
       prep.close();
+
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_inventory(username text, tomatoes integer, "
+          "CREATE TABLE IF NOT EXISTS user_inventory_crops(username text, tomatoes integer, "
               + "corn integer, wheat integer, cotton integer, rice integer, sugar integer,"
               + "apples integer, pears integer, oranges integer, tangerines integer, "
               + "bananas integer, strawberries integer, kiwis integer, watermelons integer,"
@@ -74,10 +76,25 @@ public final class FarmProxy {
               + "broccoli int, lavendar integer, rosemary integer, demo_crop integer, demo_crop2 integer);");
       prep.executeUpdate();
       prep.close();
+
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_inventory_seeds(username text, tomatoes integer, "
+              + "corn integer, wheat integer, cotton integer, rice integer, sugar integer,"
+              + "apples integer, pears integer, oranges integer, tangerines integer, "
+              + "bananas integer, strawberries integer, kiwis integer, watermelons integer,"
+              + " avocados integer, lettuce integer, potatoes integer, cucumbers integer, "
+              + "carrots integer, greenbeans integer, cherries integer, grapes integer, "
+              + "lemons integer, papayas integer, peaches integer, pineapples integer, "
+              + "pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, "
+              + "broccoli int, lavendar integer, rosemary integer, demo_crop integer, demo_crop2 integer);");
+      prep.executeUpdate();
+      prep.close();
+
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text, free_space integer);");
       prep.executeUpdate();
       prep.close();
+
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS trading_center(trader text, crop_sell text, quant_sell text"
               + ", crop_buy text, quant_buy text);");
@@ -97,7 +114,9 @@ public final class FarmProxy {
       prep.executeUpdate();
       prep = conn.prepareStatement("DROP TABLE IF EXISTS user_data;");
       prep.executeUpdate();
-      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory;");
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory_crops;");
+      prep.executeUpdate();
+      prep = conn.prepareStatement("DROP TABLE IF EXISTS user_inventory_seeds;");
       prep.executeUpdate();
       prep = conn.prepareStatement("DROP TABLE IF EXISTS user_maps;");
       prep.executeUpdate();
@@ -179,7 +198,7 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
       prep = conn.prepareStatement("INSERT INTO user_data(username, friends, friendspending, "
-          + "mapid, isNewUser, row, col) VALUES (?, ?,?,?,?,?,?);");
+          + "mapid, isNewUser, row, col, balance) VALUES (?, ?,?,?,?,?,?, ?);");
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
@@ -187,11 +206,14 @@ public final class FarmProxy {
       prep.setString(5, newUser);
       prep.setInt(6, -1);
       prep.setInt(7, -1);
+      prep.setInt(8, 0);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
+
+      // init harvested crop value
       prep = conn.prepareStatement(
-          "INSERT INTO user_inventory VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,"
+          "INSERT INTO user_inventory_crops VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,"
               + "?, ?,?,?,?,?,?,?,?,?,?,?,?);");
       prep.setString(1, username);
       prep.setInt(2, 0);
@@ -230,12 +252,56 @@ public final class FarmProxy {
       prep.setInt(35, 0);
       prep.setInt(36, 0);
       prep.setInt(37, 0);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
 
+      // init seed value
+      prep = conn.prepareStatement(
+          "INSERT INTO user_inventory_seeds VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,"
+              + "?, ?,?,?,?,?,?,?,?,?,?,?,?);");
+      prep.setString(1, username);
+      prep.setInt(2, 0);
+      prep.setInt(3, 0);
+      prep.setInt(4, 0);
+      prep.setInt(5, 0);
+      prep.setInt(6, 0);
+      prep.setInt(7, 0);
+      prep.setInt(8, 0);
+      prep.setInt(9, 0);
+      prep.setInt(10, 0);
+      prep.setInt(11, 0);
+      prep.setInt(12, 0);
+      prep.setInt(13, 0);
+      prep.setInt(14, 0);
+      prep.setInt(15, 0);
+      prep.setInt(16, 0);
+      prep.setInt(17, 0);
+      prep.setInt(18, 0);
+      prep.setInt(19, 0);
+      prep.setInt(20, 0);
+      prep.setInt(21, 0);
+      prep.setInt(22, 0);
+      prep.setInt(23, 0);
+      prep.setInt(24, 0);
+      prep.setInt(25, 0);
+      prep.setInt(26, 0);
+      prep.setInt(27, 0);
+      prep.setInt(28, 0);
+      prep.setInt(29, 0);
+      prep.setInt(30, 0);
+      prep.setInt(31, 0);
+      prep.setInt(32, 0);
+      prep.setInt(33, 0);
+      prep.setInt(34, 0);
+      prep.setInt(35, 0);
+      prep.setInt(36, 0);
+      prep.setInt(37, 0);
       prep.addBatch();
       prep.executeBatch();
       prep.close();
     } catch (SQLException e) {
-      System.err.println("ERROR: Can't insert intot he database.");
+      System.err.println("ERROR: Can't insert into the database.");
     }
 
   }
@@ -658,16 +724,17 @@ public final class FarmProxy {
    * This method will retrieve one inventory item from the users inventory.
    *
    * @param userName the username for who to get the crop of.
-   * @param cropName the name of the crop.
+   * @param category the type of inventory (database table) to look from
+   * @param itemName the name of the crop.
    * @return it will return the number of the crop.
    */
-  public static int getOneInventoryItem(String userName, String cropName) {
+  public static int getOneInventoryItem(String userName, String category, String itemName) {
     PreparedStatement prep;
     ResultSet rs = null;
     int ret = 0;
     try {
-      prep = conn
-          .prepareStatement("SELECT " + cropName + " FROM user_inventory WHERE username= ?;");
+      prep = conn.prepareStatement(
+          "SELECT " + itemName + " FROM user_inventory_" + category + " WHERE username= ?;");
       prep.setString(1, userName);
 
       rs = prep.executeQuery();
@@ -688,15 +755,17 @@ public final class FarmProxy {
    * This method will update the inventory of the user.
    *
    * @param userName the username for whom to update inventory for
-   * @param cropName a string that represents the fruit name
-   * @param number   the number to update the inventory of that fruit to.
+   * @param category the type of inventory (database table) to look from
+   * @param itemName a string that represents the item name
+   * @param number   the number to update the inventory of that item to.
    */
-  public static void updateInventory(String userName, String cropName, int number) {
+  public static void updateInventory(String userName, String category, String itemName,
+      int number) {
     PreparedStatement prep;
     try {
       // update the string that represents the friend list pending.
-      prep = conn
-          .prepareStatement("UPDATE user_inventory SET " + cropName + " = ? WHERE username=?;");
+      prep = conn.prepareStatement(
+          "UPDATE user_inventory_" + category + " SET " + itemName + " = ? WHERE username=?;");
       prep.setInt(1, number);
       prep.setString(2, userName);
       prep.executeUpdate();
@@ -999,7 +1068,7 @@ public final class FarmProxy {
     String[] cropNames = getAllCropNames();
 
     try {
-      prep = conn.prepareStatement("SELECT * FROM user_inventory WHERE username=?;");
+      prep = conn.prepareStatement("SELECT * FROM user_inventory_crops WHERE username=?;");
       prep.setString(1, userName);
 
       ResultSet rs = prep.executeQuery();
@@ -1078,6 +1147,52 @@ public final class FarmProxy {
     return user;
   }
 
+  // --------------------------------------------------------------------------
+
+  // ******************************
+  // *user balance related queries*
+  // ******************************
+  /**
+   * return the amount of cash a user has at the moment
+   *
+   * @param username user to look up
+   * @return the amount of cash the input user has
+   */
+  public static int getUserBalance(String username) {
+    PreparedStatement prep;
+    ResultSet rs;
+    int balance = 0;
+    try {
+      prep = conn.prepareStatement("SELECT balance FROM user_data WHERE username=?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      if (rs.next()) {
+        balance = rs.getInt(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      System.out.println("SQL error while looking up balance for " + username);
+    }
+    return balance;
+  }
+
+  public static void updateUserBalance(String username, int newAmount) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_data SET balance=? WHERE username=?;");
+      prep.setInt(1, newAmount);
+      prep.setString(1, username);
+
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("SQL error while updating balance for " + username);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+
   /*
    * returns the names of all the crops
    */
@@ -1094,7 +1209,9 @@ public final class FarmProxy {
 
   // ----------------------------------------------------------------------------
 
-  // crop related queries
+  // **********************
+  // *crop related queries*
+  // **********************
   private static void setCaches() {
     cropInfoCache = CacheBuilder.newBuilder().maximumSize(CACHE_SIZE)
         .build(new CacheLoader<String, Object[]>() {
@@ -1121,7 +1238,6 @@ public final class FarmProxy {
       // 0: seeded or 2: mature (for multiharvest crops)
       crop.setCropStatus(cropStatus);
 
-      System.out.println((int) cropInfo[0]);
       // init this crop's ID
       crop.setID((int) cropInfo[0]);
 
@@ -1198,7 +1314,7 @@ public final class FarmProxy {
     Object[] cropInfo = new Object[9];
 
     try {
-      prep = conn.prepareStatement("SELECT * FROM crop_data WHERE name=?;");
+      prep = conn.prepareStatement("SELECT * FROM crop_data_growth WHERE name=?;");
       prep.setString(1, cropName);
       ResultSet rs = prep.executeQuery();
       if (rs.next()) {
@@ -1252,4 +1368,39 @@ public final class FarmProxy {
 
   // ----------------------------------------------------------------------------
 
+  // ***********************
+  // *price related queries*
+  // ***********************
+
+  /**
+   * return an item's price (buy or sell)
+   *
+   * @param category  category of item
+   * @param buyOrSell literal string "buy" or "sell"
+   * @param itemName  name of the item to look up
+   * @return the requested item's buying or selling price, or -1 if error
+   *         encountered
+   */
+  public static int getOneItemPrice(String category, String buyOrSell, String itemName) {
+    PreparedStatement prep;
+    ResultSet rs;
+    int price = -1;;
+
+    try {
+      prep = conn.prepareStatement(
+          "SELECT " + buyOrSell + " FROM price_data_" + category + " WHERE name=?");
+      prep.setString(1, itemName);
+      rs = prep.executeQuery();
+      if (rs.next()) {
+        price = rs.getInt(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      System.out.println("SQL error encountered while looking for buy price");
+    }
+    return price;
+  }
+
+  // ----------------------------------------------------------------------------
 }
