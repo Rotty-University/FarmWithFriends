@@ -156,4 +156,24 @@ public class FarmingHandlers {
     } // end of handle()
   } // end of UpdateHandler class
 
+  /**
+   * called for switching farm being viewed
+   *
+   * @author zjk97
+   *
+   */
+  public class SwitchHandler implements Route {
+
+    @Override
+    public String handle(Request req, Response res) throws Exception {
+      String[] tokens = {
+          req.queryMap().value("nextOwnerName")
+      };
+
+      app.getSwitchCommand().execute(tokens, pw);
+
+      return null;
+    } // end of handle()
+  } // end of SwitchHandler class
+
 } // end of outer class

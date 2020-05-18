@@ -404,21 +404,19 @@ function clickingForFriends(){
         let row_num = Math.floor(row_val/30);
         let col_num = Math.floor(col_val/30);
         //if it isnt friend space don't do anything. 
-        console.log(map_information);
-        if(map_information[(row_num+1)+','+(col_num+1)][2] === 'white_space' ){
-            document.getElementById("message_for_clicking_on_map").innerHTML = "";
-            document.getElementById("message_for_clicking_on_map").innerHTML = "Your own farm";
-            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
-            document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
-        }
-        else if(map_information[(row_num+1)+','+(col_num+1)][2] != 'friend_space' ){
-            document.getElementById("message_for_clicking_on_map").innerHTML = "";
-            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "0px";
-            document.getElementById("message_for_clicking_on_map").style.paddingRight = "0px";
-        }
+//        console.log(map_information);
+        
+        // legacy code: before we implemented hover display of friend's name
+//        if(map_information[(row_num+1)+','+(col_num+1)][2] === 'white_space' ){
+//            document.getElementById("message_for_clicking_on_map").innerHTML = "";
+//            document.getElementById("message_for_clicking_on_map").innerHTML = "Your own farm";
+//            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
+//            document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
+//        }
+
         //the space is valid and we can output which friend they clicked on. 
-        else{
-            //sending  a post request with the row and column to get the username based off this row and column and same map.
+        if(map_information[(row_num+1)+','+(col_num+1)][2] === 'white_space' || map_information[(row_num+1)+','+(col_num+1)][2] === 'friend_space' ){
+        	//sending  a post request with the row and column to get the username based off this row and column and same map.
             const postParameters = {
                 row: (row_num+1),
                 col: (col_num+1),
@@ -439,7 +437,14 @@ function clickingForFriends(){
                 // };
             });
         }
-};
+        else{
+        	document.getElementById("message_for_clicking_on_map").innerHTML = "";
+            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "0px";
+            document.getElementById("message_for_clicking_on_map").style.paddingRight = "0px";
+            alert("Nobody has set up a farm there yet, invite your friends to move here!");
+        }
+}
+
 function setMapVar(mapinfo){
     map_information = mapinfo;
 }
@@ -467,9 +472,9 @@ class GameMap extends React.Component {
         document.getElementById("map_viewer").innerHTML = "";
         for(let x = 0 ; x < 20 ; x++){
             var extra = '';
-            extra += '<div class="row">';
+            extra += '<div class="map_row">';
             for(let y = 0 ; y < 20 ; y++){
-                extra += '<div class="col elementTab empty" x="' + (x+1) + '" y="' + (y+1) + '" id="spacee_' + (x+1) + '-' + (y+1) + '"></div>';
+                extra += '<div class="map_col elementTab empty" id="spacee_' + (x+1) + '-' + (y+1) + '"></div>';
                 map_empty.push((x+1)+","+(y+1));
             }
             extra += '</div>';
@@ -481,16 +486,28 @@ class GameMap extends React.Component {
         let row = object.row;
         let col = object.col;
         let friends_map = JSON.parse(object.friends)
-        console.log(friends_map);
+//        console.log(friends_map);
         // map_information = map_dictionary_with_objectlocations;
         map_dictionary_with_objectlocations[row+","+col][2] = "white_space";
+        $("#spacee_" + row + "-" + col).append("<span class='friend_pop_up'>" +  
+                "Your own farm" +  
+                "</span>");
             for(let x = 1; x<20+1;x++){
                 for(let y = 1; y<20+1;y++){
-                    if(friends_map[x.toString()+","+y.toString()] != undefined || friends_map[x.toString()+","+y.toString()] != null){
-                        map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2] = "friend_space";
-                        changeElementTypee(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],"friend_space");
+                	const xString = x.toString();
+                	const yString = y.toString();
+                	const friendName = friends_map[xString+","+yString];
+                	
+                    if(friendName != undefined || friendName != null){
+                        map_dictionary_with_objectlocations[xString+","+yString][2] = "friend_space";
+                        changeElementTypee(map_dictionary_with_objectlocations[xString+","+yString][0],map_dictionary_with_objectlocations[xString+","+yString][1],"friend_space");
+                        // add a pop up to show name of the friend
+                        const spanText = "<span class='friend_pop_up'>" +  
+                        friendName + "'s farm" +  
+                        "</span>";
+                        $("#spacee_" + xString + "-" + yString).append(spanText);
                     }else{
-                        changeElementTypee(map_dictionary_with_objectlocations[x.toString()+","+y.toString()][0],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][1],map_dictionary_with_objectlocations[x.toString()+","+y.toString()][2]);
+                        changeElementTypee(map_dictionary_with_objectlocations[xString+","+yString][0],map_dictionary_with_objectlocations[xString+","+yString][1],map_dictionary_with_objectlocations[xString+","+yString][2]);
 
                     }
                 }

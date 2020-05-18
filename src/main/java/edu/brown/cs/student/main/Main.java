@@ -167,6 +167,7 @@ public final class Main {
     FarmingHandlers farmingHandlers = new FarmingHandlers(app);
     Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
     Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
+    Spark.post("/farmSwitch/" + username, farmingHandlers.new SwitchHandler());
 
     // create new session for this user
     Session session = req.session(true);
@@ -863,7 +864,7 @@ public final class Main {
               .getMapIDofUserFromDataBase(username)) {
             int[] coordinates = FarmProxy.getRowAndColumnOfUserMapLocation(userFriend);
             mapOfFriends.put(String.valueOf(coordinates[0]) + "," + String.valueOf(coordinates[1]),
-                "friend_space");
+                userFriend);
           }
         }
       }
@@ -918,7 +919,7 @@ public final class Main {
 
   /**
    * This class will handle when the map is clicked on in the map react component
-   * so we can see which map location belongs to which friend.
+   * and switch the current user's view to the requested farm.
    *
    */
   private static class ClickingFriendOnMapHandler implements Route {
@@ -932,7 +933,16 @@ public final class Main {
       String friendName = FarmProxy.getUserNameFromRowAndColumnOfUserMap(Integer.parseInt(row),
           Integer.parseInt(col), FarmProxy.getMapIDofUserFromDataBase(username));
       Map<String, String> variables = ImmutableMap.of("name", friendName);
-      GSON.toJson(variables);
+
+      // switch farm in request user's app
+      String[] tokens = {
+          friendName
+      };
+
+      FarmViewer app = req.session().attribute("app");
+      app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
+
+      // return for frontend to display friend's name
       return GSON.toJson(variables);
     }
   }
