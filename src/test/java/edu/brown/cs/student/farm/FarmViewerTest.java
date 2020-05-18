@@ -27,7 +27,6 @@ public class FarmViewerTest {
 
     FarmFile nextFarmFile = FarmProxy.loadFarm(testerName);
     if (nextFarmFile == null) {
-      // TODO: fix initializeFarm in proxy
       FarmProxy.initializeFarm(testerName);
 
       nextFarmFile = FarmProxy.loadFarm(testerName);
@@ -47,7 +46,6 @@ public class FarmViewerTest {
     };
 
     app = new FarmViewer(repl, testerName);
-    app.new SwitchCommand().execute(tokens, pw);;
     app.setThePlantation(f);
     app.saveFarm();
   }

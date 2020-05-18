@@ -47,6 +47,8 @@ public class FarmingHandlers {
 
     @Override
     public String handle(Request req, Response res) throws Exception {
+      String username = req.session().attribute("username");
+
       QueryParamsMap qm = req.queryMap();
       String row = qm.value("row");
       String col = qm.value("col");
@@ -57,28 +59,52 @@ public class FarmingHandlers {
       int c = Integer.parseInt(col);
 
       String[] commands = {
-          row, col, cropName
+          row, col, cropName, username
       };
       // do stuff in backend
       switch (action) {
       case 1:
         // plow
+        if (!username.equals(app.getOwnerName())) {
+          // trying to operate on farm that doesn't belong to current user
+          return GSON.toJson(0);
+        }
+
         app.getPlowCommand().execute(commands, pw);
         break;
 
       case 2:
         // plant
+        if (!username.equals(app.getOwnerName())) {
+          // trying to operate on farm that doesn't belong to current user
+          return GSON.toJson(0);
+        }
+
         app.getPlantCommand().execute(commands, pw);
         break;
 
       case 3:
         // water
+        if (!username.equals(app.getOwnerName())) {
+          // trying to operate on farm that doesn't belong to current user
+          return GSON.toJson(0);
+        }
+
         app.getWaterCommand().execute(commands, pw);
         break;
 
       case 4:
         // harvest
+        if (!username.equals(app.getOwnerName())) {
+          // trying to operate on farm that doesn't belong to current user
+          return GSON.toJson(0);
+        }
+
         app.getHarvestCommand().execute(commands, pw);
+        break;
+
+      case 5:
+        // TODO: steal
         break;
 
       default:
@@ -155,25 +181,5 @@ public class FarmingHandlers {
       return GSON.toJson(hm);
     } // end of handle()
   } // end of UpdateHandler class
-
-  /**
-   * called for switching farm being viewed
-   *
-   * @author zjk97
-   *
-   */
-  public class SwitchHandler implements Route {
-
-    @Override
-    public String handle(Request req, Response res) throws Exception {
-      String[] tokens = {
-          req.queryMap().value("nextOwnerName")
-      };
-
-      app.getSwitchCommand().execute(tokens, pw);
-
-      return null;
-    } // end of handle()
-  } // end of SwitchHandler class
 
 } // end of outer class

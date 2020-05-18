@@ -11,8 +11,13 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
@@ -49,6 +54,15 @@ public final class Main {
   static String createMessage = "";
   static int currentMapID = 1;
   static int freeSpaceInMap;
+
+  // maps usernames to their corresponding farm viewers if they are open
+  private static LoadingCache<String, FarmViewer> farmViewersCache = CacheBuilder.newBuilder()
+      .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<String, FarmViewer>() {
+        @Override
+        public FarmViewer load(String key) {
+          return new FarmViewer(repl, key);
+        }
+      });
 
   /**
    * The initial method called when execution begins.
@@ -156,18 +170,13 @@ public final class Main {
   // Main helpers
 
   // call this whenever someone logs in and the game starts
-  private static void startNewSession(String username, Request req) {
+  private static void startNewSession(String username, Request req) throws ExecutionException {
     // create new farmviewer and guiHandlers for this user's session
-    FarmViewer app = new FarmViewer(repl, username);
-    String[] tokens = {
-        username
-    };
-    app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
+    FarmViewer app = farmViewersCache.get(username);
 
     FarmingHandlers farmingHandlers = new FarmingHandlers(app);
     Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
     Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
-    Spark.post("/farmSwitch/" + username, farmingHandlers.new SwitchHandler());
 
     // create new session for this user
     Session session = req.session(true);
@@ -288,7 +297,7 @@ public final class Main {
    */
   private static class HomePageHandler implements TemplateViewRoute {
     @Override
-    public ModelAndView handle(Request req, Response res) {
+    public ModelAndView handle(Request req, Response res) throws ExecutionException {
       QueryParamsMap data = req.queryMap();
       String username = data.value("username");
       String password = data.value("password");
@@ -354,7 +363,7 @@ public final class Main {
    */
   private static class NewUserPageHandler implements Route {
     @Override
-    public String handle(Request req, Response res) {
+    public String handle(Request req, Response res) throws ExecutionException {
       QueryParamsMap data = req.queryMap();
       String email = data.value("email");
       String username = data.value("username");
@@ -527,6 +536,7 @@ public final class Main {
 //        userCookie = null;
 //      }
 
+      // release all resources related to this user
       req.session().invalidate();
 
       message = "You have been logged out. Thank you.";
@@ -924,7 +934,7 @@ public final class Main {
    */
   private static class ClickingFriendOnMapHandler implements Route {
     @Override
-    public String handle(Request req, Response res) {
+    public String handle(Request req, Response res) throws ExecutionException {
       String username = req.session().attribute("username");
 
       QueryParamsMap qm = req.queryMap();
@@ -934,13 +944,10 @@ public final class Main {
           Integer.parseInt(col), FarmProxy.getMapIDofUserFromDataBase(username));
       Map<String, String> variables = ImmutableMap.of("name", friendName);
 
-      // switch farm in request user's app
-      String[] tokens = {
-          friendName
-      };
-
-      FarmViewer app = req.session().attribute("app");
-      app.getSwitchCommand().execute(tokens, new PrintWriter(System.out));
+      // switch the farm being presented on frontend
+      FarmingHandlers handler = req.session().attribute("handler");
+      FarmViewer app = farmViewersCache.get(friendName);
+      handler.setApp(app);
 
       // return for frontend to display friend's name
       return GSON.toJson(variables);

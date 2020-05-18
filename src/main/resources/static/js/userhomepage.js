@@ -8,6 +8,7 @@ class Main extends React.Component {
             active: "home"
         }
         this.changeActive = this.changeActive.bind(this)
+//        this.goToFarm = this.goToFarm.bind(this)
     }
 
     changeActive(e) {
@@ -23,12 +24,25 @@ class Main extends React.Component {
         update.className = "nav-bar-active";
         this.setState({active: newactive});
     }
+    
+    goToFarm() {
+        var newactive = "home";
+        var active = document.getElementById(this.state.active);
+        active = active.parentElement;
+        active = active.parentElement;
+        active.className = "";
+        var update = document.getElementById(newactive);
+        update = update.parentElement;
+        update = update.parentElement;
+        update.className = "nav-bar-active";
+        this.setState({active: newactive});
+    }
 
     render() {
         return (
             <div id={"homepagecontainer"}>
                 <NavBar active={this.state.active} action={this.changeActive}/>
-                <Game active = {this.state.active}/>
+                <Game active = {this.state.active} goToFarm={this.goToFarm}/>
             </div>
         );
     }
@@ -63,7 +77,7 @@ class Game extends React.Component {
     render() {
 
         let tabsMap = new Map();
-        tabsMap.set("map", <GameMap id={"map"}/>)
+        tabsMap.set("map", <GameMap id={"map"} goToFarm={this.props.goToFarm}/>)
         tabsMap.set("home", <Home id={"home"}/>)
         tabsMap.set("friends", <Friends id={"friends"}/>)
         tabsMap.set("shop", <Shop id={"shop"}/>)
@@ -289,13 +303,14 @@ class Tile extends React.Component {
         $.post("/farmActions/" + (String)(this.props.currentUserName), dict, response => {
             // get result
             const thisTileInfo = JSON.parse(response);
-
-//            alert("row: " + row +
-//                " col: " + col +
-//                " isPlowed " + (String)(thisTileInfo[0]) +
-//                " isWatered " + (String)(thisTileInfo[1]) +
-//                " cropID: " + (String)(thisTileInfo[2]) +
-//                " crop status: " + (String)(thisTileInfo[3]));
+            
+            // illegal action, return immediately
+            if (thisTileInfo == 0) {
+            	alert("Can't do that when you are not the farm owner");
+            	
+            	return;
+            }
+            
             const isPlowed = thisTileInfo[0];
             const isWatered = thisTileInfo[1];
             const cropID = thisTileInfo[2];
@@ -436,6 +451,9 @@ function clickingForFriends(){
                     // ReactDOM.render(viewer, document.getElementById('map_message_container'))
                 // };
             });
+            
+            // redirect to farm
+//            Main.goToFarm();
         }
         else{
         	document.getElementById("message_for_clicking_on_map").innerHTML = "";
@@ -453,74 +471,78 @@ class GameMap extends React.Component {
         constructor(props) {
         super(props);
         this.handleClick = this.handleClick.bind(this);
+        this.fillMap();
     }
-        handleClick() {
-        var total_x = 25; //Total width
-        var total_y = 25; // Total height
-        var total_elements = total_x * total_y; //Total of elements in the matrix
-        // var map = createArray(total_x, total_y);
-        var map_empty = [];
-        var basic_elements = [];
-        var tolerance = 10; // Number of consecutive blocks of the same type to make it right
-        var allow_multiples_seeds = true; //If this is set up to true, once we cannot continue expanding a current seed, we are going to generate a new one.
-        var total_options = [];
-        let dictionaryy = {};
-        //this dictionary will be set from the the getting map from database so we can use it in the clickhandler. 
-        // let map_information= {};
-        //will be used to count the number of total free spaces available through subtraction with total. 
-        let waterSpaceCount = {};
-        document.getElementById("map_viewer").innerHTML = "";
-        for(let x = 0 ; x < 20 ; x++){
-            var extra = '';
-            extra += '<div class="map_row">';
-            for(let y = 0 ; y < 20 ; y++){
-                extra += '<div class="map_col elementTab empty" id="spacee_' + (x+1) + '-' + (y+1) + '"></div>';
-                map_empty.push((x+1)+","+(y+1));
+        
+        fillMap() {
+        	var total_x = 25; //Total width
+            var total_y = 25; // Total height
+            var total_elements = total_x * total_y; //Total of elements in the matrix
+            // var map = createArray(total_x, total_y);
+            var map_empty = [];
+            var basic_elements = [];
+            var tolerance = 10; // Number of consecutive blocks of the same type to make it right
+            var allow_multiples_seeds = true; //If this is set up to true, once we cannot continue expanding a current seed, we are going to generate a new one.
+            var total_options = [];
+            let dictionaryy = {};
+            //this dictionary will be set from the the getting map from database so we can use it in the clickhandler. 
+            // let map_information= {};
+            //will be used to count the number of total free spaces available through subtraction with total. 
+            let waterSpaceCount = {};
+            document.getElementById("map_viewer").innerHTML = "";
+            for(let x = 0 ; x < 20 ; x++){
+                var extra = '';
+                extra += '<div class="map_row">';
+                for(let y = 0 ; y < 20 ; y++){
+                    extra += '<div class="map_col elementTab empty" id="spacee_' + (x+1) + '-' + (y+1) + '"></div>';
+                    map_empty.push((x+1)+","+(y+1));
+                }
+                extra += '</div>';
+                $("#map_viewer").append(extra);
             }
-            extra += '</div>';
-            $("#map_viewer").append(extra);
-        }
-        $.get("/mapRetrieverForMapsComponent", response => {
-        const object = JSON.parse(response);
-        let map_dictionary_with_objectlocations = JSON.parse(object.data);
-        let row = object.row;
-        let col = object.col;
-        let friends_map = JSON.parse(object.friends)
-//        console.log(friends_map);
-        // map_information = map_dictionary_with_objectlocations;
-        map_dictionary_with_objectlocations[row+","+col][2] = "white_space";
-        $("#spacee_" + row + "-" + col).append("<span class='friend_pop_up'>" +  
-                "Your own farm" +  
-                "</span>");
-            for(let x = 1; x<20+1;x++){
-                for(let y = 1; y<20+1;y++){
-                	const xString = x.toString();
-                	const yString = y.toString();
-                	const friendName = friends_map[xString+","+yString];
-                	
-                    if(friendName != undefined || friendName != null){
-                        map_dictionary_with_objectlocations[xString+","+yString][2] = "friend_space";
-                        changeElementTypee(map_dictionary_with_objectlocations[xString+","+yString][0],map_dictionary_with_objectlocations[xString+","+yString][1],"friend_space");
-                        // add a pop up to show name of the friend
-                        const spanText = "<span class='friend_pop_up'>" +  
-                        friendName + "'s farm" +  
-                        "</span>";
-                        $("#spacee_" + xString + "-" + yString).append(spanText);
-                    }else{
-                        changeElementTypee(map_dictionary_with_objectlocations[xString+","+yString][0],map_dictionary_with_objectlocations[xString+","+yString][1],map_dictionary_with_objectlocations[xString+","+yString][2]);
+            $.get("/mapRetrieverForMapsComponent", response => {
+            const object = JSON.parse(response);
+            let map_dictionary_with_objectlocations = JSON.parse(object.data);
+            let row = object.row;
+            let col = object.col;
+            let friends_map = JSON.parse(object.friends)
+//            console.log(friends_map);
+            // map_information = map_dictionary_with_objectlocations;
+            map_dictionary_with_objectlocations[row+","+col][2] = "white_space";
+            $("#spacee_" + row + "-" + col).append("<span class='friend_pop_up'>" +  
+                    "Your own farm" +  
+                    "</span>");
+                for(let x = 1; x<20+1;x++){
+                    for(let y = 1; y<20+1;y++){
+                    	const xString = x.toString();
+                    	const yString = y.toString();
+                    	const friendName = friends_map[xString+","+yString];
+                    	
+                        if(friendName != undefined || friendName != null){
+                            map_dictionary_with_objectlocations[xString+","+yString][2] = "friend_space";
+                            changeElementTypee(map_dictionary_with_objectlocations[xString+","+yString][0],map_dictionary_with_objectlocations[xString+","+yString][1],"friend_space");
+                            // add a pop up to show name of the friend
+                            const spanText = "<span class='friend_pop_up'>" +  
+                            friendName + "'s farm" +  
+                            "</span>";
+                            $("#spacee_" + xString + "-" + yString).append(spanText);
+                        }else{
+                            changeElementTypee(map_dictionary_with_objectlocations[xString+","+yString][0],map_dictionary_with_objectlocations[xString+","+yString][1],map_dictionary_with_objectlocations[xString+","+yString][2]);
 
+                        }
                     }
                 }
-            }
-        document.getElementById("map_viewer").style.display = "block";
-        // map_information = map_dictionary_with_objectlocations;
-        setMapVar(map_dictionary_with_objectlocations);
-        });   
+            document.getElementById("map_viewer").style.display = "block";
+            // map_information = map_dictionary_with_objectlocations;
+            setMapVar(map_dictionary_with_objectlocations);
+            });   
+        }
         
-    }
+        handleClick() {
+        	
+        }
 
     render() {
-        this.handleClick()
         return (
             <div id={"mapContainer"}>
                 <div className="maplegend">
