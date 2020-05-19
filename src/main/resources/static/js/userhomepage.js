@@ -8,7 +8,8 @@ class Main extends React.Component {
             active: "home"
         }
         this.changeActive = this.changeActive.bind(this)
-//        this.goToFarm = this.goToFarm.bind(this)
+        
+        window.mainComponent = this;
     }
 
     changeActive(e) {
@@ -129,7 +130,7 @@ class Home extends React.Component {
     }
     closeTheDiv(){
         document.getElementById("map_viewer").innerHTML = "";
-        document.getElementById("message_for_clicking_on_map").innerHTML = "";
+//        document.getElementById("message_for_clicking_on_map").innerHTML = "";
     }
 
 
@@ -388,7 +389,7 @@ class FriendHomeViewer extends React.Component {
     }
     closeTheDiv(){
         document.getElementById("map_viewer").innerHTML = "";
-        document.getElementById("message_for_clicking_on_map").innerHTML = "";
+//        document.getElementById("message_for_clicking_on_map").innerHTML = "";
     }
 
 
@@ -407,7 +408,7 @@ class FriendHomeViewer extends React.Component {
 
 function clickingForFriends(){
     let map_viewer = $("#map_viewer");
-     document.getElementById("message_for_clicking_on_map").innerHTML = "";
+//     document.getElementById("message_for_clicking_on_map").innerHTML = "";
         console.log(event.pageX);
         console.log(event.pageY);
         //storing the map object
@@ -439,11 +440,13 @@ function clickingForFriends(){
             //sending a post request to the showingWhatFriendwasclicked
             $.post("/showingWhatFriendWasClicked" , postParameters, response =>{
                 //the response has the name in it. 
-                let object  = JSON.parse(response);
-                let name = object.name;
-                document.getElementById("message_for_clicking_on_map").innerHTML = name +"'s farm";
-                document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
-                document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
+                const object  = JSON.parse(response);
+                const name = object.name;
+                
+                alert("Welcome to " + name + "'s farm, play nice and watch out for coyos")
+//                document.getElementById("message_for_clicking_on_map").innerHTML = name +"'s farm";
+//                document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
+//                document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
                 // document.getElementById("message_for_clicking_on_map").onclick = function () {
                     //load and show friends farm here
                     // let viewer = React.createElement(FriendHomeViewer);
@@ -453,12 +456,12 @@ function clickingForFriends(){
             });
             
             // redirect to farm
-//            Main.goToFarm();
+            window.mainComponent.goToFarm();
         }
         else{
-        	document.getElementById("message_for_clicking_on_map").innerHTML = "";
-            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "0px";
-            document.getElementById("message_for_clicking_on_map").style.paddingRight = "0px";
+//        	document.getElementById("message_for_clicking_on_map").innerHTML = "";
+//            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "0px";
+//            document.getElementById("message_for_clicking_on_map").style.paddingRight = "0px";
             alert("Nobody has set up a farm there yet, invite your friends to move here!");
         }
 }
