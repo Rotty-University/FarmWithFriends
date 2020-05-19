@@ -64,6 +64,16 @@ public final class Main {
         }
       });
 
+  // maps usernames to their corresponding frontend handler if they are open
+  private static LoadingCache<String, FarmingHandlers> farmingHandlersCache = CacheBuilder
+      .newBuilder().expireAfterAccess(5, TimeUnit.MINUTES)
+      .build(new CacheLoader<String, FarmingHandlers>() {
+        @Override
+        public FarmingHandlers load(String key) throws ExecutionException {
+          return new FarmingHandlers(farmViewersCache.get(key));
+        }
+      });
+
   /**
    * The initial method called when execution begins.
    *
@@ -174,7 +184,9 @@ public final class Main {
     // create new farmviewer and guiHandlers for this user's session
     FarmViewer app = farmViewersCache.get(username);
 
-    FarmingHandlers farmingHandlers = new FarmingHandlers(app);
+    FarmingHandlers farmingHandlers = farmingHandlersCache.get(username);
+    // default to user's farm upon login
+    farmingHandlers.setApp(app);
     Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
     Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
 
