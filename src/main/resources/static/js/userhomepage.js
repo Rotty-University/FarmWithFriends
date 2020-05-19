@@ -311,7 +311,13 @@ class Tile extends React.Component {
             
             // illegal action, return immediately
             if (thisTileInfo == 0) {
-            	alert("Can't do that when you are not the farm owner");
+            	Swal.fire({
+            		  title: 'Trespassing!',
+            		  text: "Can't do that when you are not the farm owner",
+            		  icon: 'error',
+            		  confirmButtonText: "Sorry, I'm just walking around",
+                	  allowOutsideClick: false
+            		});
             	
             	return;
             }
@@ -447,7 +453,12 @@ function clickingForFriends(){
                 const object  = JSON.parse(response);
                 const name = object.name;
                 
-                alert("Welcome to " + name + "'s farm, play nice and watch out for coyos")
+                Swal.fire({
+                	  text: "Welcome to " + name + "'s farm, play nice and watch out for coyos",
+                	  icon: "info",
+                	  confirmButtonText: "Nobody is afraid of a coyo",
+                	  allowOutsideClick: false
+                	});
 //                document.getElementById("message_for_clicking_on_map").innerHTML = name +"'s farm";
 //                document.getElementById("message_for_clicking_on_map").style.paddingLeft = "30px";
 //                document.getElementById("message_for_clicking_on_map").style.paddingRight = "30px";
