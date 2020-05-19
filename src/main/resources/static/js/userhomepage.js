@@ -477,7 +477,21 @@ function clickingForFriends(){
 //        	document.getElementById("message_for_clicking_on_map").innerHTML = "";
 //            document.getElementById("message_for_clicking_on_map").style.paddingLeft = "0px";
 //            document.getElementById("message_for_clicking_on_map").style.paddingRight = "0px";
-            alert("Nobody has set up a farm there yet, invite your friends to move here!");
+        	Swal.fire({
+          	  text: "Nobody has set up a farm there yet, invite your friends to move here!",
+          	  icon: "question",
+          	  confirmButtonText: "Share with my friends NOW!",
+          	  showCancelButton: true,
+          	  cancelButtonText: "Not now"
+          	}).then((result) => {
+          	  if (result.value) {
+          	    Swal.fire(
+          	      'Not yet!',
+          	      'You are playing this game in beta, consider yourself privileged',
+          	      'warning'
+          	    )
+          	  }
+          	});
         }
 }
 
