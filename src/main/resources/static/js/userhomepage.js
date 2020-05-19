@@ -191,7 +191,11 @@ class Table extends React.Component {
     }
     
     updateTiles() {    	
-            // send as parameter
+    	if (this.props.currentUserName === "default") {
+    		return;
+    	}
+
+        	// send as parameter
             $.post("/farmUpdate/" + (String)(this.props.currentUserName), response => {
                 // get result
                 const result = JSON.parse(response);
@@ -409,10 +413,10 @@ class FriendHomeViewer extends React.Component {
 function clickingForFriends(){
     let map_viewer = $("#map_viewer");
 //     document.getElementById("message_for_clicking_on_map").innerHTML = "";
-        console.log(event.pageX);
-        console.log(event.pageY);
+//        console.log(event.pageX);
+//        console.log(event.pageY);
         //storing the map object
-        console.log(map_viewer.offset());
+//        console.log(map_viewer.offset());
         //calculating the row and column values.
         const col_val = event.pageX - map_viewer.offset().left;
         const row_val = event.pageY - map_viewer.offset().top;
