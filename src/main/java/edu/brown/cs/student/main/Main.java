@@ -195,8 +195,8 @@ public final class Main {
 
     // bind objects to this session
     session.attribute("username", username);
-    session.attribute("app", app);
-    session.attribute("handler", farmingHandlers);
+//    session.attribute("app", app);
+//    session.attribute("handler", farmingHandlers);
   }
 
   // --------------------------------------------------------------------------
@@ -957,7 +957,8 @@ public final class Main {
       Map<String, String> variables = ImmutableMap.of("name", friendName);
 
       // switch the farm being presented on frontend
-      FarmingHandlers handler = req.session().attribute("handler");
+      // TODO: change this to cache get and see if it fixes failed to switch farm bug
+      FarmingHandlers handler = farmingHandlersCache.get(username);
       FarmViewer app = farmViewersCache.get(friendName);
       handler.setApp(app);
 
