@@ -103,6 +103,12 @@ class Home extends React.Component {
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
         this.closeTheDiv = this.closeTheDiv.bind(this)
+        
+        window.homeComponent = this;
+    }
+    
+    getCurrentUsername() {
+    	return this.state.currentUserName;
     }
     
     componentDidMount() {        
@@ -448,10 +454,13 @@ function clickingForFriends(){
                 col: (col_num+1),
             }
             //sending a post request to the showingWhatFriendwasclicked
-            $.post("/showingWhatFriendWasClicked" , postParameters, response =>{
+            $.post("/showingWhatFriendWasClicked", postParameters, response =>{
                 //the response has the name in it. 
                 const object  = JSON.parse(response);
                 const name = object.name;
+
+                // redirect to farm
+                window.mainComponent.goToFarm();
                 
                 Swal.fire({
                 	  text: "Welcome to " + name + "'s farm, play nice and watch out for coyos",
@@ -470,8 +479,6 @@ function clickingForFriends(){
                 // };
             });
             
-            // redirect to farm
-            window.mainComponent.goToFarm();
         }
         else{
 //        	document.getElementById("message_for_clicking_on_map").innerHTML = "";
