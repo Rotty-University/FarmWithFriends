@@ -10,14 +10,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
@@ -56,23 +53,10 @@ public final class Main {
   static int freeSpaceInMap;
 
   // maps usernames to their corresponding farm viewers if they are open
-  private static LoadingCache<String, FarmViewer> farmViewersCache = CacheBuilder.newBuilder()
-      .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<String, FarmViewer>() {
-        @Override
-        public FarmViewer load(String key) {
-          return new FarmViewer(repl, key);
-        }
-      });
+  private static Map<String, FarmViewer> openedFarmViewers = new HashMap<String, FarmViewer>();
 
   // maps usernames to their corresponding frontend handler if they are open
-  private static LoadingCache<String, FarmingHandlers> farmingHandlersCache = CacheBuilder
-      .newBuilder().expireAfterAccess(5, TimeUnit.MINUTES)
-      .build(new CacheLoader<String, FarmingHandlers>() {
-        @Override
-        public FarmingHandlers load(String key) throws ExecutionException {
-          return new FarmingHandlers(farmViewersCache.get(key));
-        }
-      });
+  private static Map<String, FarmingHandlers> onlineFarmingHandlers = new HashMap<String, FarmingHandlers>();
 
   /**
    * The initial method called when execution begins.
@@ -115,6 +99,7 @@ public final class Main {
 //// -------------------------
 
     FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
+    initAllFarmViewers();
     runSparkServer((int) options.valueOf("port"));
     repl.run();
   }
@@ -182,11 +167,13 @@ public final class Main {
   // call this whenever someone logs in and the game starts
   private static void startNewSession(String username, Request req) throws ExecutionException {
     // create new farmviewer and guiHandlers for this user's session
-    FarmViewer app = farmViewersCache.get(username);
+    FarmViewer app = openedFarmViewers.getOrDefault(username, new FarmViewer(repl, username));
+    openedFarmViewers.put(username, app);
 
-    FarmingHandlers farmingHandlers = farmingHandlersCache.get(username);
     // default to user's farm upon login
-    farmingHandlers.setApp(app);
+    FarmingHandlers farmingHandlers = new FarmingHandlers(app);
+    onlineFarmingHandlers.put(username, farmingHandlers);
+
     Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
     Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
 
@@ -197,6 +184,15 @@ public final class Main {
     session.attribute("username", username);
 //    session.attribute("app", app);
 //    session.attribute("handler", farmingHandlers);
+  }
+
+  // MUST run this after setting up database
+  private void initAllFarmViewers() {
+    List<String> names = FarmProxy.getAllUserNameWithFarm();
+
+    for (int i = 0; i < names.size(); i++) {
+      openedFarmViewers.put(names.get(i), new FarmViewer(repl, names.get(i)));
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -550,6 +546,7 @@ public final class Main {
 
       // release all resources related to this user
       req.session().invalidate();
+      onlineFarmingHandlers.remove(username);
 
       message = "You have been logged out. Thank you.";
       Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "message", message);
@@ -958,8 +955,8 @@ public final class Main {
 
       // switch the farm being presented on frontend
       // TODO: change this to cache get and see if it fixes failed to switch farm bug
-      FarmingHandlers handler = farmingHandlersCache.get(username);
-      FarmViewer app = farmViewersCache.get(friendName);
+      FarmingHandlers handler = onlineFarmingHandlers.get(username);
+      FarmViewer app = openedFarmViewers.get(friendName);
       handler.setApp(app);
 
       // return for frontend to display friend's name

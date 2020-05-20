@@ -14,6 +14,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -1400,6 +1402,34 @@ public final class FarmProxy {
       System.out.println("SQL error encountered while looking for buy price");
     }
     return price;
+  }
+
+  // ----------------------------------------------------------------------------
+
+  // **********************
+  // *user related queries*
+  // **********************
+
+  public static List<String> getAllUserNameWithFarm() {
+    PreparedStatement prep;
+    ResultSet rs;
+    List<String> names = new LinkedList<String>();
+
+    try {
+      prep = conn.prepareStatement("SELECT username FROM user_data WHERE isNewUser == ?");
+      prep.setString(1, "false");
+      rs = prep.executeQuery();
+
+      while (rs.next()) {
+        names.add(rs.getString(1));
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      System.out.println("SQL error encountered while getting all usernames with farm");
+    }
+
+    return names;
   }
 
   // ----------------------------------------------------------------------------

@@ -21,7 +21,7 @@ public class FarmingHandlers {
 
   public FarmingHandlers(FarmViewer a) {
     app = a;
-    System.out.println(app.getFarmName());
+    System.out.println("new farming handlers created for: " + app.getOwnerName());
     pw = new PrintWriter(System.out);
   }
 
