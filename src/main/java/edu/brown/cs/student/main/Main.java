@@ -166,12 +166,18 @@ public final class Main {
 
   // call this whenever someone logs in and the game starts
   private static void startNewSession(String username, Request req) throws ExecutionException {
+//    System.out.println("before " + username + "logged in: ");
+//    for (String s : onlineFarmingHandlers.keySet()) {
+//      System.out.println(s);
+//    }
+
     // create new farmviewer and guiHandlers for this user's session
     FarmViewer app = openedFarmViewers.getOrDefault(username, new FarmViewer(repl, username));
     openedFarmViewers.put(username, app);
 
     // default to user's farm upon login
-    FarmingHandlers farmingHandlers = new FarmingHandlers(app);
+    FarmingHandlers farmingHandlers = onlineFarmingHandlers.getOrDefault(username,
+        new FarmingHandlers(app));
     onlineFarmingHandlers.put(username, farmingHandlers);
 
     Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
@@ -546,7 +552,11 @@ public final class Main {
 
       // release all resources related to this user
       req.session().invalidate();
-      onlineFarmingHandlers.remove(username);
+
+//      System.out.println("currently online after " + username + "logged out: ");
+//      for (String s : onlineFarmingHandlers.keySet()) {
+//        System.out.println(s);
+//      }
 
       message = "You have been logged out. Thank you.";
       Map<String, Object> variables = ImmutableMap.of("title", "Farmulator", "message", message);
