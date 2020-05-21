@@ -172,13 +172,18 @@ public final class Main {
 //    }
 
     // create new farmviewer and guiHandlers for this user's session
-    FarmViewer app = openedFarmViewers.getOrDefault(username, new FarmViewer(repl, username));
-    openedFarmViewers.put(username, app);
+    FarmViewer app = openedFarmViewers.get(username);
+    if (app == null) {
+      app = new FarmViewer(repl, username);
+      openedFarmViewers.put(username, app);
+    }
 
     // default to user's farm upon login
-    FarmingHandlers farmingHandlers = onlineFarmingHandlers.getOrDefault(username,
-        new FarmingHandlers(app));
-    onlineFarmingHandlers.put(username, farmingHandlers);
+    FarmingHandlers farmingHandlers = onlineFarmingHandlers.get(username);
+    if (farmingHandlers == null) {
+      farmingHandlers = new FarmingHandlers(app);
+      onlineFarmingHandlers.put(username, farmingHandlers);
+    }
 
     Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
     Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
@@ -964,7 +969,6 @@ public final class Main {
       Map<String, String> variables = ImmutableMap.of("name", friendName);
 
       // switch the farm being presented on frontend
-      // TODO: change this to cache get and see if it fixes failed to switch farm bug
       FarmingHandlers handler = onlineFarmingHandlers.get(username);
       FarmViewer app = openedFarmViewers.get(friendName);
       handler.setApp(app);
