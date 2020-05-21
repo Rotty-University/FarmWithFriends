@@ -202,7 +202,7 @@ class Table extends React.Component {
     	}
 
         	// send as parameter
-            $.post("/farmUpdate/" + (String)(this.props.currentUserName), response => {
+            $.post("/farmUpdates/" + (String)(this.props.currentUserName), response => {
                 // get result
                 const result = JSON.parse(response);
                 

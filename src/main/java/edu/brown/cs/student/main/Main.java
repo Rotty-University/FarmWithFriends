@@ -153,7 +153,7 @@ public final class Main {
     Spark.post("/mapRetriever", new MapRetriever());
     Spark.post("clickOnMap", new ClickOnMapHandler());
     Spark.get("/mapRetrieverForMapsComponent", new MapRetrieverForReact());
-    Spark.post("/showingWhatFriendWasClicked", new ClickingFriendOnMapHandler());
+    Spark.post("/showingWhatFriendWasClicked", this::ClickingFriendOnMapHandler);
 
     Spark.post("/currentUserName", new GetCurrentUserHandler());
 
@@ -185,8 +185,8 @@ public final class Main {
       onlineFarmingHandlers.put(username, farmingHandlers);
     }
 
-    Spark.post("/farmActions/" + username, farmingHandlers.new ActionHandler());
-    Spark.post("/farmUpdate/" + username, farmingHandlers.new UpdateHandler());
+    Spark.post("/farmActions/" + username, farmingHandlers::handleActions);
+    Spark.post("/farmUpdates/" + username, farmingHandlers::handleUpdates);
 
     // create new session for this user
     Session session = req.session(true);
@@ -956,26 +956,23 @@ public final class Main {
    * and switch the current user's view to the requested farm.
    *
    */
-  private static class ClickingFriendOnMapHandler implements Route {
-    @Override
-    public String handle(Request req, Response res) throws ExecutionException {
-      String username = req.session().attribute("username");
+  public String ClickingFriendOnMapHandler(Request req, Response res) {
+    String username = req.session().attribute("username");
 
-      QueryParamsMap qm = req.queryMap();
-      String row = qm.value("row");
-      String col = qm.value("col");
-      String friendName = FarmProxy.getUserNameFromRowAndColumnOfUserMap(Integer.parseInt(row),
-          Integer.parseInt(col), FarmProxy.getMapIDofUserFromDataBase(username));
-      Map<String, String> variables = ImmutableMap.of("name", friendName);
+    QueryParamsMap qm = req.queryMap();
+    String row = qm.value("row");
+    String col = qm.value("col");
+    String friendName = FarmProxy.getUserNameFromRowAndColumnOfUserMap(Integer.parseInt(row),
+        Integer.parseInt(col), FarmProxy.getMapIDofUserFromDataBase(username));
+    Map<String, String> variables = ImmutableMap.of("name", friendName);
 
-      // switch the farm being presented on frontend
-      FarmingHandlers handler = onlineFarmingHandlers.get(username);
-      FarmViewer app = openedFarmViewers.get(friendName);
-      handler.setApp(app);
+    // switch the farm being presented on frontend
+    FarmingHandlers handler = onlineFarmingHandlers.get(username);
+    FarmViewer app = openedFarmViewers.get(friendName);
+    handler.setApp(app);
 
-      // return for frontend to display friend's name
-      return GSON.toJson(variables);
-    }
+    // return for frontend to display friend's name
+    return GSON.toJson(variables);
   }
 
 }
