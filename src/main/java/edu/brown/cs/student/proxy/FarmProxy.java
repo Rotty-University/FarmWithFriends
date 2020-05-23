@@ -51,7 +51,6 @@ public final class FarmProxy {
     String urlToDB = "jdbc:sqlite:" + path;
     try {
       conn = DriverManager.getConnection(urlToDB);
-      dropTables();
       PreparedStatement prep;
 ////      // simulator databases
       prep = conn

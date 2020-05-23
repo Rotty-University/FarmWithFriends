@@ -46,17 +46,10 @@ public class FarmingHandlers {
     String username = req.session().attribute("username");
 
     QueryParamsMap qm = req.queryMap();
-    String row = qm.value("row");
-    String col = qm.value("col");
+    int row = Integer.parseInt(qm.value("row"));
+    int col = Integer.parseInt(qm.value("col"));
     int action = Integer.parseInt(qm.value("action"));
-    String cropName = qm.value("crop");
 
-    int r = Integer.parseInt(row);
-    int c = Integer.parseInt(col);
-
-    String[] commands = {
-        row, col, cropName, username
-    };
     // do stuff in backend
     switch (action) {
     case 1:
@@ -66,7 +59,7 @@ public class FarmingHandlers {
         return GSON.toJson(0);
       }
 
-      app.getPlowCommand().execute(commands, pw);
+      app.plow(username, row, col);;
       break;
 
     case 2:
@@ -76,7 +69,8 @@ public class FarmingHandlers {
         return GSON.toJson(0);
       }
 
-      app.getPlantCommand().execute(commands, pw);
+      String cropName = qm.value("crop");
+      app.plant(username, cropName, row, col);
       break;
 
     case 3:
@@ -86,7 +80,8 @@ public class FarmingHandlers {
         return GSON.toJson(0);
       }
 
-      app.getWaterCommand().execute(commands, pw);
+      int durationInSeconds = Integer.parseInt(qm.value("waterDuration"));
+      app.water(row, col, durationInSeconds);;
       break;
 
     case 4:
@@ -96,7 +91,7 @@ public class FarmingHandlers {
         return GSON.toJson(0);
       }
 
-      app.getHarvestCommand().execute(commands, pw);
+      app.harvest(username, row, col);
       break;
 
     case 5:
@@ -120,7 +115,7 @@ public class FarmingHandlers {
     Instant now = Instant.now();
 
     // return info of the specific tile
-    FarmLand land = app.getThePlantation()[r][c];
+    FarmLand land = app.getThePlantation()[row][col];
     int[] arr = new int[5];
 
     arr[0] = land.isPlowed() ? 1 : 0;

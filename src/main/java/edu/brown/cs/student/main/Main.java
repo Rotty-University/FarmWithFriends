@@ -22,7 +22,6 @@ import edu.brown.cs.student.farm.FarmFile;
 import edu.brown.cs.student.farm.FarmViewer;
 import edu.brown.cs.student.guihandlers.FarmingHandlers;
 import edu.brown.cs.student.proxy.FarmProxy;
-import edu.brown.cs.student.repl.REPL;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -44,7 +43,6 @@ import spark.template.freemarker.FreeMarkerEngine;
 public final class Main {
 
   private static final int DEFAULT_PORT = 4567;
-  private static REPL repl;
   private static final Gson GSON = new Gson();
 
   static String message = "";
@@ -80,9 +78,6 @@ public final class Main {
     parser.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(DEFAULT_PORT);
     OptionSet options = parser.parse(args);
 
-    // Process commands in a REPL
-    repl = new REPL(System.in);
-
 //// uncomment here to use commandline only
 //    // *************************************
 //    // *** DO NOT DELETE***
@@ -101,7 +96,6 @@ public final class Main {
     FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
     initAllFarmViewers();
     runSparkServer((int) options.valueOf("port"));
-    repl.run();
   }
 
   private static FreeMarkerEngine createEngine() {
@@ -174,7 +168,7 @@ public final class Main {
     // create new farmviewer and guiHandlers for this user's session
     FarmViewer app = openedFarmViewers.get(username);
     if (app == null) {
-      app = new FarmViewer(repl, username);
+      app = new FarmViewer(username);
       openedFarmViewers.put(username, app);
     }
 
@@ -202,7 +196,7 @@ public final class Main {
     List<String> names = FarmProxy.getAllUserNameWithFarm();
 
     for (int i = 0; i < names.size(); i++) {
-      openedFarmViewers.put(names.get(i), new FarmViewer(repl, names.get(i)));
+      openedFarmViewers.put(names.get(i), new FarmViewer(names.get(i)));
     }
   }
 
@@ -225,13 +219,6 @@ public final class Main {
       }
       res.body(stacktrace.toString());
     }
-  }
-
-  /**
-   * @return the current REPL object
-   */
-  public REPL getREPL() {
-    return repl;
   }
 
   private static class GetCurrentUserHandler implements Route {

@@ -1,13 +1,10 @@
 package edu.brown.cs.student.farm;
 
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
 import edu.brown.cs.student.proxy.FarmProxy;
-import edu.brown.cs.student.repl.Command;
-import edu.brown.cs.student.repl.REPL;
 
 public class FarmViewer {
 
@@ -16,10 +13,8 @@ public class FarmViewer {
   private FarmFile serializedFarm;
   private FarmLand[][] thePlantation;
   private String farmName;
-  private Command plantCommand, plowCommand, showCommand, waterCommand, harvestCommand,
-      inspectCommand;
 
-  public FarmViewer(REPL repl, String ownerName) {
+  public FarmViewer(String ownerName) {
     // init
     FarmFile farmFile = FarmProxy.loadFarm(ownerName);
     if (farmFile == null) {
@@ -33,21 +28,6 @@ public class FarmViewer {
     serializedFarm = farmFile;
     thePlantation = farmFile.getThePlantation();
     farmName = farmFile.getFarmName();
-
-    // set commands
-    plantCommand = new PlantCommand();
-    plowCommand = new PlowCommand();
-    showCommand = new ShowCommand();
-    waterCommand = new WaterCommand();
-    harvestCommand = new HarvestCommand();
-    inspectCommand = new InspectInventoryCommand();
-
-    repl.register("plant", plantCommand);
-    repl.register("plow", plowCommand);
-    repl.register("s", showCommand);
-    repl.register("water", waterCommand);
-    repl.register("harvest", harvestCommand);
-    repl.register("inspect", inspectCommand);
   }
 
   // Helper methods ------------------------------------------------------------
@@ -130,279 +110,252 @@ public class FarmViewer {
 
   // ---------------------------------------------------------------------------
 
-  // command to print the farm
-  public class ShowCommand implements Command {
-    @Override
-    public void execute(String[] tokens, PrintWriter pw) {
-      showFarm();
+  // ********************
+  // *Operation Commands*
+  // ********************
 
-      // save after every command
-      saveFarm();
+  /**
+   * Perform "plow" operation on the given plot of land
+   *
+   * @param username user requesting this operation
+   * @param row      row of the given plot of land
+   * @param col      col of the given plot of land
+   */
+  public void plow(String username, int row, int col) {
+
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
+
+      return;
     }
+
+    if (!username.equals(ownerName)) {
+      System.out.println("Can't do that: you're not the owner");
+
+      return;
+    }
+
+    FarmLand l = thePlantation[row][col];
+
+    if (l.isOccupied() && l.getCrop().getCropStatus() != 5) {
+      System.out.println("Don't plow the plant, you worked hard on it");
+      return;
+    }
+
+    l.setCrop(null);
+    l.setIsPlowed(true);
+
+    // save after every command
+    saveFarm();
   }
 
-  // plow a land
-  public class PlowCommand implements Command {
+  /**
+   * Perform "plant" operation on the given plot of land
+   *
+   * @param username user requesting this operation
+   * @param cropName name of the crop to be planted
+   * @param row      row of the given plot of land
+   * @param col      col of the given plot of land
+   */
+  public void plant(String username, String cropName, int row, int col) {
 
-    @Override
-    public void execute(String[] tokens, PrintWriter pw) {
-      String username = tokens[3];
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
 
-      if (thePlantation == null) {
-        System.out.println("Can't do that: no farm selected");
-
-        return;
-      }
-
-      if (!username.equals(ownerName)) {
-        pw.println("Can't do that: you're not the owner");
-
-        return;
-      }
-
-      int x = Integer.parseInt(tokens[0]);
-      int y = Integer.parseInt(tokens[1]);
-      FarmLand l = thePlantation[x][y];
-
-      if (l.isOccupied() && l.getCrop().getCropStatus() != 5) {
-        pw.println("Don't plow the plant, you worked hard on it");
-        return;
-      }
-
-      l.setCrop(null);
-      l.setIsPlowed(true);
-
-//      showFarm();
-
-      // save after every command
-      saveFarm();
+      return;
     }
-  }
 
-  // plant a seed
-  public class PlantCommand implements Command {
+    if (!username.equals(ownerName)) {
+      System.out.println("Can't do that: you're not the owner");
 
-    @Override
-    public void execute(String[] tokens, PrintWriter pw) {
-      String username = tokens[3];
+      return;
+    }
 
-      if (thePlantation == null) {
-        System.out.println("Can't do that: no farm selected");
+    FarmLand l = thePlantation[row][col];
 
-        return;
-      }
+    if (!l.isPlowed()) {
+      System.out.println("Please plow this land first");
+      return;
+    }
 
-      if (!username.equals(ownerName)) {
-        pw.println("Can't do that: you're not the owner");
+    if (l.isOccupied()) {
+      System.out.println("This land is already occupied");
+      return;
+    }
 
-        return;
-      }
-
-      int x = Integer.parseInt(tokens[0]);
-      int y = Integer.parseInt(tokens[1]);
-      String cropName = tokens[2];
-      FarmLand l = thePlantation[x][y];
-
-      if (!l.isPlowed()) {
-        pw.println("Please plow this land first");
-        return;
-      }
-
-      if (l.isOccupied()) {
-        pw.println("This land is already occupied");
-        return;
-      }
-
-      try {
-        // legacy code: create crop class using reflection
+    try {
+      // legacy code: create crop class using reflection
 //        Class<?> clazz = Class.forName("edu.brown.cs.student.crops." + cropName);
 //        Constructor<?> constructor = clazz.getConstructor(FarmLand.class, int.class);
 //        ACrop newCrop = (ACrop) constructor.newInstance(l, 0);
 
-        Crop newCrop = FarmProxy.getCrop(cropName, l, 0);
-        l.setCrop(newCrop);
-      } catch (Exception e) {
-        System.out.println("Something wong");
-        e.printStackTrace();
-      }
+      Crop newCrop = FarmProxy.getCrop(cropName, l, 0);
+      l.setCrop(newCrop);
+    } catch (Exception e) {
+      System.out.println("Something wong");
+      e.printStackTrace();
+    }
+
+    // save after every command
+    saveFarm();
+  }
+
+  /**
+   * Perform "water" operation on the given plot of land
+   *
+   * @param row               row of the given plot of land
+   * @param col               col of the given plot of land
+   * @param durationInSeconds how long the water effect should last
+   */
+  public void water(int row, int col, int durationInSeconds) {
+
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
+
+      return;
+    }
+
+    Instant now = Instant.now();
+
+    FarmLand l = thePlantation[row][col];
+
+    if (!l.isPlowed()) {
+      System.out.println("Plow first then water");
+      return;
+    }
+
+    // water the land
+    l.water(now, Duration.ofSeconds(durationInSeconds));
+
+    // save after every command
+    saveFarm();
+  }
+
+  /**
+   * Perform "harvest" operation on the given plot of land
+   *
+   * @param username user requesting this operation
+   * @param row      row of the given plot of land
+   * @param col      col of the given plot of land
+   */
+  public void harvest(String username, int row, int col) {
+
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
+
+      return;
+    }
+
+    if (!username.equals(ownerName)) {
+      System.out.println("Can't do that: you're not the owner");
+
+      return;
+    }
+
+    FarmLand l = thePlantation[row][col];
+    Crop c = l.getCrop();
+    Instant now = Instant.now();
+
+    if (!l.isOccupied()) {
+      System.out.println("Can't harvest here, your didn't plant anything");
+      return;
+    }
+
+    c.updateStatus(now);
+
+    if (c.getCropStatus() == 3 || c.getCropStatus() == 4) {
+      // can harvest
+      String cropName = c.getName();
+      int yield = c.getYield();
+
+      // update inventory
+      int oldVal = FarmProxy.getOneInventoryItem(username, "crops", cropName);
+      int total = oldVal + yield;
+      FarmProxy.updateInventory(username, "crops", cropName, total);
+
+      // update crop/land status
+      l.setCrop(l.getCrop().respawn());
+
+      System.out.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
+    } else if (c.getCropStatus() == 5) {
+      // crop withered
+      System.out.println("You have left your plant neglected for too long, plow and star over");
+    } else {
+      // cannot harvest yet
+      System.out.println("Crop cannot be harvested yet, you should work harder");
+    }
 
 //      showFarm();
 
-      // save after every command
-      saveFarm();
+    // save after every command
+    saveFarm();
+  }
+
+  public void inspect(String username) {
+
+    System.out.println("You have: ");
+
+    Map<String, Integer> inventory = FarmProxy.getAllInventoryItems(username);
+
+    for (String s : inventory.keySet()) {
+      System.out.println(inventory.get(s) + " units of " + s);
     }
   }
 
-  public class WaterCommand implements Command {
-    @Override
-    public void execute(String[] tokens, PrintWriter pw) {
+  public void steal(String username, int row, int col) {
 
-      if (thePlantation == null) {
-        System.out.println("Can't do that: no farm selected");
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
 
-        return;
-      }
-
-      Instant now = Instant.now();
-
-      int x = Integer.parseInt(tokens[0]);
-      int y = Integer.parseInt(tokens[1]);
-      FarmLand l = thePlantation[x][y];
-
-      if (!l.isPlowed()) {
-        pw.println("Plow first then water");
-        return;
-      }
-
-      // water the land
-      l.water(now, Duration.ofSeconds(10));
-
-//      showFarm();
-
-      // save after every command
-      saveFarm();
+      return;
     }
+
+    if (username.equals(ownerName)) {
+      System.out.println("Can't do that: you ARE the owner");
+
+      return;
+    }
+
+    FarmLand l = thePlantation[row][col];
+    Crop c = l.getCrop();
+    Instant now = Instant.now();
+
+    if (!l.isOccupied()) {
+      System.out.println("Nothing to steal here");
+      return;
+    }
+
+    c.updateStatus(now);
+
+    if (c.getCropStatus() == 4) {
+      // can steal
+      String cropName = c.getName();
+      int yield = c.getYield();
+
+      // update inventory
+      int oldVal = FarmProxy.getOneInventoryItem(username, "crops", cropName);
+      int total = oldVal + yield;
+      FarmProxy.updateInventory(username, "crops", cropName, total);
+
+      // update crop/land status
+      l.setCrop(l.getCrop().respawn());
+
+      System.out.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
+    } else if (c.getCropStatus() == 5) {
+      // crop withered
+      System.out.println("You have left your plant neglected for too long, plow and star over");
+    } else {
+      // cannot harvest yet
+      System.out.println("Crop cannot be harvested yet, you should work harder");
+    }
+
+    // save after every command
+    saveFarm();
   }
 
-  public class HarvestCommand implements Command {
+  // ---------------------------------------------------------------------------------
 
-    @Override
-    public void execute(String[] tokens, PrintWriter pw) {
-      String username = tokens[3];
-
-      if (thePlantation == null) {
-        System.out.println("Can't do that: no farm selected");
-
-        return;
-      }
-
-      if (!username.equals(ownerName)) {
-        pw.println("Can't do that: you're not the owner");
-
-        return;
-      }
-
-      int x = Integer.parseInt(tokens[0]);
-      int y = Integer.parseInt(tokens[1]);
-      FarmLand l = thePlantation[x][y];
-      Crop c = l.getCrop();
-      Instant now = Instant.now();
-
-      if (!l.isOccupied()) {
-        pw.println("Can't harvest here, your didn't plant anything");
-        return;
-      }
-
-      c.updateStatus(now);
-
-      if (c.getCropStatus() == 3 || c.getCropStatus() == 4) {
-        // can harvest
-        String cropName = c.getName();
-        int yield = c.getYield();
-
-        // update inventory
-        // TODO: add getInventory method to proxy
-        int oldVal = FarmProxy.getOneInventoryItem(username, "crops", cropName);
-        int total = oldVal + yield;
-        FarmProxy.updateInventory(username, "crops", cropName, total);
-
-        // update crop/land status
-        l.setCrop(l.getCrop().respawn());
-
-        pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
-      } else if (c.getCropStatus() == 5) {
-        // crop withered
-        pw.println("You have left your plant neglected for too long, plow and star over");
-      } else {
-        // cannot harvest yet
-        pw.println("Crop cannot be harvested yet, you should work harder");
-      }
-
-//      showFarm();
-
-      // save after every command
-      saveFarm();
-    }
-  } // end of harvest command class
-
-  public class InspectInventoryCommand implements Command {
-
-    @Override
-    public void execute(String[] tokens, PrintWriter pw) {
-      String username = tokens[3];
-
-      pw.println("You have: ");
-
-      // TODO: add getter to proxy
-      Map<String, Integer> inventory = FarmProxy.getAllInventoryItems(username);
-
-      for (String s : inventory.keySet()) {
-        pw.println(inventory.get(s) + " units of " + s);
-      }
-    }
-
-  } // end of inspect command class
-
-  public class StealCommand implements Command {
-
-    @Override
-    public void execute(String[] tokens, PrintWriter pw) {
-      String username = tokens[3];
-
-      if (thePlantation == null) {
-        System.out.println("Can't do that: no farm selected");
-
-        return;
-      }
-
-      if (username.equals(ownerName)) {
-        pw.println("Can't do that: you ARE the owner");
-
-        return;
-      }
-
-      int x = Integer.parseInt(tokens[0]);
-      int y = Integer.parseInt(tokens[1]);
-      FarmLand l = thePlantation[x][y];
-      Crop c = l.getCrop();
-      Instant now = Instant.now();
-
-      if (!l.isOccupied()) {
-        pw.println("Nothing to steal here");
-        return;
-      }
-
-      c.updateStatus(now);
-
-      if (c.getCropStatus() == 4) {
-        // can steal
-        String cropName = c.getName();
-        int yield = c.getYield();
-
-        // update inventory
-        int oldVal = FarmProxy.getOneInventoryItem(username, "crops", cropName);
-        int total = oldVal + yield;
-        FarmProxy.updateInventory(username, "crops", cropName, total);
-
-        // update crop/land status
-        l.setCrop(l.getCrop().respawn());
-
-        pw.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
-      } else if (c.getCropStatus() == 5) {
-        // crop withered
-        pw.println("You have left your plant neglected for too long, plow and star over");
-      } else {
-        // cannot harvest yet
-        pw.println("Crop cannot be harvested yet, you should work harder");
-      }
-
-      // save after every command
-      saveFarm();
-    }
-
-  } // end of steal command class
-
-  // mutators ------------------------------------------------------------
+  // mutators
   public FarmLand[][] getThePlantation() {
     return thePlantation;
   }
@@ -423,30 +376,6 @@ public class FarmViewer {
    */
   public String getFarmName() {
     return farmName;
-  }
-
-  public Command getPlantCommand() {
-    return plantCommand;
-  }
-
-  public Command getPlowCommand() {
-    return plowCommand;
-  }
-
-  public Command getShowCommand() {
-    return showCommand;
-  }
-
-  public Command getWaterCommand() {
-    return waterCommand;
-  }
-
-  public Command getHarvestCommand() {
-    return harvestCommand;
-  }
-
-  public Command getInspectCommand() {
-    return inspectCommand;
   }
 
   // ---------------------------------------------------------------------------------

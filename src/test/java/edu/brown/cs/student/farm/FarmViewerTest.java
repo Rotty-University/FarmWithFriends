@@ -3,7 +3,6 @@ package edu.brown.cs.student.farm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -12,15 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.brown.cs.student.proxy.FarmProxy;
-import edu.brown.cs.student.repl.REPL;
 
 public class FarmViewerTest {
   FarmViewer app;
-  PrintWriter pw = new PrintWriter(System.out);
 
   @Before
   public void setUp() throws Exception {
-    REPL repl = new REPL(System.in);
     FarmProxy.setUpDataBase("data/farm_simulator.sqlite3");
 
     String testerName = "JUnitTest";
@@ -41,11 +37,7 @@ public class FarmViewerTest {
       }
     }
 
-    String[] tokens = {
-        testerName
-    };
-
-    app = new FarmViewer(repl, testerName);
+    app = new FarmViewer(testerName);
     app.setThePlantation(f);
     app.saveFarm();
   }
@@ -56,14 +48,10 @@ public class FarmViewerTest {
 
   @Test
   public void plantThenWater() throws InterruptedException {
-    String[] xy = {
-        "0", "0", "demo_crop"
-    };
-    String[] empty = {};
 
-    plow(xy);
-    plant(xy);
-    water(xy);
+    app.plow("JUnitTest", 0, 0);
+    app.plant("JUnitTest", "demo_crop", 0, 0);
+    app.water(0, 0, 10);
     Instant justNow = Instant.now();
     assertTrue(cropAt(0, 0).getDurationUntilNextStage().equals(Duration.ofSeconds(3)));
     assertTrue(cropAt(0, 0).getCropStatus() == 0);
@@ -71,7 +59,7 @@ public class FarmViewerTest {
     // wait 8 seconds
     Thread.sleep(8000);
 
-    water(xy);
+    app.water(0, 0, 10);
     show();
     assertTrue(cropAt(0, 0).getCropStatus() == 2);
     assertTrue(cropAt(0, 0).getDurationUntilNextStage().equals(Duration.ofSeconds(4)));
@@ -95,18 +83,6 @@ public class FarmViewerTest {
   // helpers
   void show() {
     app.showFarm();
-  }
-
-  void plow(String[] tokens) {
-    app.new PlowCommand().execute(tokens, pw);
-  }
-
-  void plant(String[] tokens) {
-    app.new PlantCommand().execute(tokens, pw);
-  }
-
-  void water(String[] tokens) {
-    app.new WaterCommand().execute(tokens, pw);
   }
 
   Crop cropAt(int x, int y) {
