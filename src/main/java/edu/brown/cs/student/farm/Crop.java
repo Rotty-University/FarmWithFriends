@@ -20,6 +20,7 @@ public class Crop implements java.io.Serializable {
   private int minYield;
   private int maxYield;
   private int yield;
+  private int stealableYield;
   private int maxHarvestTimes;
   private int currentHarvestTimes;
   private int sproutInfestChance;
@@ -226,6 +227,10 @@ public class Crop implements java.io.Serializable {
     return currentHarvestTimes;
   }
 
+  public int getStealableYield() {
+    return stealableYield;
+  }
+
   // -------------------------------------------------------------------
 
   // setters
@@ -303,6 +308,10 @@ public class Crop implements java.io.Serializable {
 
   public void setCurrentHarvestTimes(int c) {
     currentHarvestTimes = c;
+  }
+
+  public void setStealableYield(int i) {
+    stealableYield = i;
   }
 
   // -------------------------------------------------------------------

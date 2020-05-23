@@ -51,6 +51,7 @@ public final class FarmProxy {
     String urlToDB = "jdbc:sqlite:" + path;
     try {
       conn = DriverManager.getConnection(urlToDB);
+      dropTables();
       PreparedStatement prep;
 ////      // simulator databases
       prep = conn
@@ -1259,8 +1260,12 @@ public final class FarmProxy {
       crop.setMaxYield((int) cropInfo[5]);
 
       // init yield
-      crop.setYield(
-          (int) (Math.random() * ((int) cropInfo[5] - (int) cropInfo[4] + 1)) + (int) cropInfo[4]);
+      int yield = (int) (Math.random() * ((int) cropInfo[5] - (int) cropInfo[4] + 1))
+          + (int) cropInfo[4];
+      crop.setYield(yield);
+
+      // init stealable yield
+      crop.setStealableYield((int) (yield * 0.2));
 
       // init max harvest times
       crop.setMaxHarvestTimes((int) cropInfo[6]);
