@@ -50,6 +50,10 @@ public class FarmingHandlers {
     int col = Integer.parseInt(qm.value("col"));
     int action = Integer.parseInt(qm.value("action"));
 
+    // use this var to tell frontend if a steal happened or not and how much was
+    // stolen (default -100 if no stealing happened)
+    int stealStatus = -100;
+
     // do stuff in backend
     switch (action) {
     case 1:
@@ -86,16 +90,17 @@ public class FarmingHandlers {
 
     case 4:
       // harvest
-      if (!username.equals(app.getOwnerName())) {
-        // trying to operate on farm that doesn't belong to current user
-        return GSON.toJson(0);
-      }
-
-      app.harvest(username, row, col);
+//      if (!username.equals(app.getOwnerName())) {
+//        // trying to operate on farm that doesn't belong to current user
+//        return GSON.toJson(0);
+//      }
+//
+//      app.harvest(username, row, col);
+      stealStatus = app.steal(username, row, col);
       break;
 
     case 5:
-      // TODO: steal
+      stealStatus = app.steal(username, row, col);
       break;
 
     default:
@@ -104,26 +109,25 @@ public class FarmingHandlers {
     }
 
     // get updated farm
-    // return Map<"row#col", int[]>
     // array for each entry:
     // 0: isPlowed (0 false, 1 true)
     // 1: isWatered
     // 2: cropID (-9 if no crop)
     // 3: cropStatus (-9 if no crop)
     // TODO 4: time left until next stage
-
-    Instant now = Instant.now();
+    // 5: stealsStatus (see FarmViewer for coding)
 
     // return info of the specific tile
     FarmLand land = app.getThePlantation()[row][col];
-    int[] arr = new int[5];
+    int[] arr = new int[6];
 
     arr[0] = land.isPlowed() ? 1 : 0;
-    arr[1] = land.isWatered(now) ? 1 : 0;
+    arr[1] = land.isWatered(Instant.now()) ? 1 : 0;
     arr[2] = land.isOccupied() ? land.getCrop().getID() : -9;
     arr[3] = land.isOccupied() ? land.getCrop().getCropStatus() : -9;
     // TODO: update this once we have a plan
     arr[4] = 0;
+    arr[5] = stealStatus;
 
     return GSON.toJson(arr);
 

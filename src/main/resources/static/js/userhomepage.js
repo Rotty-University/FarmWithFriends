@@ -190,7 +190,7 @@ class Table extends React.Component {
         this.actionMap.set("plant", 2);
         this.actionMap.set("water", 3);
         this.actionMap.set("harvest", 4);
-        this.actionMap.set("delete", 5);
+        this.actionMap.set("steal", 5);
         
         // set up timer to constantly update
         setInterval(this.updateTiles, 500);
@@ -363,6 +363,47 @@ class Tile extends React.Component {
 
             //This is updating the visual appearance of the tile:
             this.setState({spritepath: newPath})
+            
+            // alert to show the result of steal
+            const stealStatus = thisTileInfo[5];
+        	// always check this first because most operations are not steal
+            if (stealStatus == -100) {
+            	return;
+            }
+
+            let stealTitle = "Failed to steal";
+            let stealMessage = "";
+            let stealIcon = "error";
+            let stealButtonMessage = "ugh, fine";
+            if (stealStatus == -1) {
+            	stealMessage = "Can't do that: you ARE the owner";
+            } else if (stealStatus == 0) {
+            	stealMessage = "You are too late, this crop has been stolen too many times";
+            } else if (stealStatus == -2) {
+            	stealMessage = "Nothing to steal here";
+            } else if (stealStatus == -3) {
+            	stealMessage = "Can't steal withered crop";
+            } else if (stealStatus == -4) {
+            	stealMessage = "Crop cannot be harvested yet, come back to steal later";
+            } else if (stealStatus == 100) {
+            	stealTitle = "HOLY SMOKE"
+            	stealIcon = "warning";
+            	stealMessage = "YOU STOLE EVERYTHING!!! (this only happens 1% of the time)";
+            	stealButtonMessage = "I knew I was the 1%";
+            } else {
+            	stealTitle = "Hehe...";
+            	stealIcon = "success";
+            	stealMessage = "You successfully stole " + stealStatus + " from the owner";
+            	stealButtonMessage = "I'll fuckin do it again";
+            }
+            
+        	Swal.fire({
+        		  title: stealTitle,
+        		  text: stealMessage,
+        		  icon: stealIcon,
+        		  confirmButtonText: stealButtonMessage,
+            	  allowOutsideClick: false
+        		});
         });
     }
     

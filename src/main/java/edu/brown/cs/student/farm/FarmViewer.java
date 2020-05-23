@@ -302,18 +302,27 @@ public class FarmViewer {
     }
   }
 
-  public void steal(String username, int row, int col) {
+  /**
+   * Perform "steal" operation on the given plot of land
+   *
+   * @param username user requesting this operation
+   * @param row      row of the given plot of land
+   * @param col      col of the given plot of land
+   * @return amount of crop successfully stolen (negative if steal failed, 100 if
+   *         1% event happened)
+   */
+  public synchronized int steal(String username, int row, int col) {
 
     if (thePlantation == null) {
       System.out.println("Can't do that: no farm selected");
 
-      return;
+      return -99;
     }
 
     if (username.equals(ownerName)) {
       System.out.println("Can't do that: you ARE the owner");
 
-      return;
+      return -1;
     }
 
     FarmLand l = thePlantation[row][col];
@@ -322,35 +331,63 @@ public class FarmViewer {
 
     if (!l.isOccupied()) {
       System.out.println("Nothing to steal here");
-      return;
+      return -2;
     }
 
     c.updateStatus(now);
 
+    int stolen;
+    boolean isAllStolen = false;
     if (c.getCropStatus() == 4) {
       // can steal
       String cropName = c.getName();
-      int yield = c.getYield();
+      int stealableYield = c.getStealableYield();
+
+      // no stealable yield left
+      if (stealableYield <= 0) {
+        System.out.println("You are too late, this crop has been stolen too many times");
+
+        return 0;
+      }
+
+      if ((int) (Math.random() * 100) == 0) {
+        // 1% chance to steal EVERYTHING
+        stolen = c.getYield();
+        isAllStolen = true;
+
+        // respawn crop if it's multi-harvest
+        l.setCrop(c.respawn());
+      } else {
+        // uniform distribution to steal from 0% to 100% of stealable yield
+        // floor to 1
+        stolen = Math.max(1, stealableYield * (int) (Math.random() * 101) / 100);
+        // update yield and stealableYield
+        c.setYield(c.getYield() - stolen);
+        c.setStealableYield(stealableYield - stolen);
+      }
 
       // update inventory
       int oldVal = FarmProxy.getOneInventoryItem(username, "crops", cropName);
-      int total = oldVal + yield;
+      int total = oldVal + stolen;
       FarmProxy.updateInventory(username, "crops", cropName, total);
 
-      // update crop/land status
-      l.setCrop(l.getCrop().respawn());
-
-      System.out.println("Successfully harvested " + yield + " " + c.getName() + "(s)");
+      System.out.println(username + " successfully stole " + stolen + " " + c.getName() + "(s) "
+          + "from " + ownerName);
     } else if (c.getCropStatus() == 5) {
       // crop withered
-      System.out.println("You have left your plant neglected for too long, plow and star over");
+      stolen = -3;
+      System.out.println("Can't steal withered crop");
     } else {
-      // cannot harvest yet
-      System.out.println("Crop cannot be harvested yet, you should work harder");
+      // cannot steal yet
+      stolen = -4;
+      System.out.println("Crop cannot be harvested yet, come back to steal later");
     }
 
     // save after every command
     saveFarm();
+
+    // return 100 if 1% event happened and everything was stolen
+    return isAllStolen ? 100 : stolen;
   }
 
   // ---------------------------------------------------------------------------------
