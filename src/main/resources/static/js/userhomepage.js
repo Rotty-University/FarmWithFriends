@@ -385,6 +385,8 @@ class Tile extends React.Component {
             	stealMessage = "Can't steal withered crop";
             } else if (stealStatus == -4) {
             	stealMessage = "Crop cannot be harvested yet, come back to steal later";
+            } else if (stealStatus == -5) {
+            	stealMessage = "You already stole once, don't be greedy";
             } else if (stealStatus == 100) {
             	stealTitle = "HOLY SMOKE"
             	stealIcon = "warning";

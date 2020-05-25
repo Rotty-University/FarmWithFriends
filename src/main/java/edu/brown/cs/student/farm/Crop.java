@@ -2,6 +2,7 @@ package edu.brown.cs.student.farm;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Set;
 
 import edu.brown.cs.student.proxy.FarmProxy;
@@ -12,6 +13,7 @@ public class Crop implements java.io.Serializable {
   private int id;
   private int cropStatus;
   private Set<String> desiredTerrains;
+  private Map<String, Integer> recordedThieves;
   private Duration[] lifeCycleTimes;
   private Duration durationUntilNextStage;
   private Duration witherDuration;
@@ -231,6 +233,10 @@ public class Crop implements java.io.Serializable {
     return stealableYield;
   }
 
+  public Map<String, Integer> getRecordedThieves() {
+    return recordedThieves;
+  }
+
   // -------------------------------------------------------------------
 
   // setters
@@ -312,6 +318,14 @@ public class Crop implements java.io.Serializable {
 
   public void setStealableYield(int i) {
     stealableYield = i;
+  }
+
+  public void incrementThiefStolenAmount(String username) {
+    recordedThieves.put(username, recordedThieves.getOrDefault(username, 0) + 1);
+  }
+
+  public void setRecordedThief(Map<String, Integer> hm) {
+    recordedThieves = hm;
   }
 
   // -------------------------------------------------------------------

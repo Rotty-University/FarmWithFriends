@@ -326,15 +326,22 @@ public class FarmViewer {
     }
 
     FarmLand l = thePlantation[row][col];
-    Crop c = l.getCrop();
-    Instant now = Instant.now();
 
     if (!l.isOccupied()) {
       System.out.println("Nothing to steal here");
       return -2;
     }
 
+    Crop c = l.getCrop();
+    Instant now = Instant.now();
     c.updateStatus(now);
+
+    // TODO: change the vale here if we decided to allow users steal multiple times
+    // in the future
+    if (c.getRecordedThieves().getOrDefault(username, 0) >= 1) {
+      System.out.println("You already stole once, don't be greedy");
+      return -5;
+    }
 
     int stolen;
     boolean isAllStolen = false;
@@ -370,6 +377,9 @@ public class FarmViewer {
       int oldVal = FarmProxy.getOneInventoryItem(username, "crops", cropName);
       int total = oldVal + stolen;
       FarmProxy.updateInventory(username, "crops", cropName, total);
+
+      // update recorded thief list
+      c.incrementThiefStolenAmount(username);
 
       System.out.println(username + " successfully stole " + stolen + " " + c.getName() + "(s) "
           + "from " + ownerName);
