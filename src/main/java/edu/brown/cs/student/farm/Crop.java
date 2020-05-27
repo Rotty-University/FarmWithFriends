@@ -29,6 +29,11 @@ public class Crop implements java.io.Serializable {
   private int matureInfestChance;
   private boolean isSproutInfested;
   private boolean isMatureInfested;
+  private boolean isInfested;
+  private Duration durationUntilSproutInfested;
+  private Duration durationUntilMatureInfested;
+  private Instant sproutInfestedInstant;
+  private Instant matureInfestedInstant;
 
   public Crop(String cropName) {
     // initialize this crop's name
@@ -42,7 +47,6 @@ public class Crop implements java.io.Serializable {
   public void startGrowing(Instant now) {
     // if this crop has not grown into "stealable"
     if (cropStatus < 4) {
-      // TODO: if infested, how to pause timer and start growing later
       nextStageInstant = now.plus(durationUntilNextStage);
     }
   }
@@ -75,6 +79,15 @@ public class Crop implements java.io.Serializable {
       stopGrowing();
 
       return isChanged;
+    }
+
+    // if infested, change status and display image
+    // use *InfestedInstant to control when to show user crop is infested
+    // use boolean isInfested to control crop growth with infestation
+    if (now.isAfter(matureInfestedInstant)) {
+      cropStatus = -2;
+    } else if (now.isAfter(sproutInfestedInstant)) {
+      cropStatus = -1;
     }
 
     // if timer is up
@@ -129,7 +142,16 @@ public class Crop implements java.io.Serializable {
       // set durationUntilNextStage for next stage
       durationUntilNextStage = lifeCycleTimes[cropStatus];
 
-      // TODO: add infestation time here
+      // set infested instant
+      if (cropStatus == 1 && isSproutInfested) {
+        // turn this off so crop will not repeatedly getting infested
+        isSproutInfested = false;
+        sproutInfestedInstant = nextStageInstant.plus(durationUntilSproutInfested);
+      } else if (cropStatus == 2 && isMatureInfested) {
+        // turn this off so crop will not repeatedly getting infested
+        isMatureInfested = false;
+        matureInfestedInstant = nextStageInstant.plus(durationUntilMatureInfested);
+      }
 
       // update nextStageInstant
       // NOTE: starting here, nextStageInstant marks the instant of the new stage
@@ -137,14 +159,25 @@ public class Crop implements java.io.Serializable {
       // been completed
       startGrowing(nextStageInstant);
 
-      // if land is no longer watered, or crop is not in harvest
-      if (cropStatus != 3 && !nextStageInstant.isBefore(farmLand.getNextDryInstant())) {
-        // pause growing
-        pauseGrowing(farmLand.getNextDryInstant());
+      // if crop is not in harvest
+      if (cropStatus < 3) {
+        Instant landNextDryInstant = farmLand.getNextDryInstant();
+
+        if (cropStatus == 1 && sproutInfestedInstant.isBefore(landNextDryInstant)) {
+          // infested before land dries
+          pauseGrowing(sproutInfestedInstant);
+          isInfested = true;
+        } else if (cropStatus == 2 && matureInfestedInstant.isBefore(landNextDryInstant)) {
+          pauseGrowing(matureInfestedInstant);
+          isInfested = true;
+        } else if (!nextStageInstant.isBefore(landNextDryInstant)) {
+          // if crop is healthy AND land is no longer watered
+          pauseGrowing(landNextDryInstant);
+        }
       }
 
       isChanged = true;
-    }
+    } // end of while loop
 
     // if crop is neglected for enough time IN ANY STAGE,
     // automatically wither
@@ -237,6 +270,26 @@ public class Crop implements java.io.Serializable {
     return recordedThieves;
   }
 
+  public Duration getDurationUntilSproutInfested() {
+    return durationUntilSproutInfested;
+  }
+
+  public Duration getDurationUntilMatureInfested() {
+    return durationUntilMatureInfested;
+  }
+
+  public boolean isInfested() {
+    return isInfested;
+  }
+
+  public Instant getSproutInfestedInstant() {
+    return sproutInfestedInstant;
+  }
+
+  public Instant getMatureInfestedInstant() {
+    return matureInfestedInstant;
+  }
+
   // -------------------------------------------------------------------
 
   // setters
@@ -326,6 +379,26 @@ public class Crop implements java.io.Serializable {
 
   public void setRecordedThief(Map<String, Integer> hm) {
     recordedThieves = hm;
+  }
+
+  public void setDurationUntilSproutInfested(Duration i) {
+    durationUntilSproutInfested = i;
+  }
+
+  public void setDurationUntilMatureInfested(Duration i) {
+    durationUntilMatureInfested = i;
+  }
+
+  public void setIsInfested(boolean b) {
+    isInfested = b;
+  }
+
+  public void setSproutInfestedInstant(Instant sproutInfestedInstant) {
+    this.sproutInfestedInstant = sproutInfestedInstant;
+  }
+
+  public void setMatureInfestedInstant(Instant matureInfestedInstant) {
+    this.matureInfestedInstant = matureInfestedInstant;
   }
 
   // -------------------------------------------------------------------

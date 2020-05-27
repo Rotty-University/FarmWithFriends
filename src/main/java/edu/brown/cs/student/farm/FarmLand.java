@@ -58,12 +58,15 @@ public class FarmLand implements Land, java.io.Serializable {
       // update next time to dry
       nextDryInstant = now.plus(durationToDry);
 
+      // do NOT delete this, not redundant
+      // case: water a land when it's still wet
       if (isOccupied()) {
         // update nextStageInstant if possible
         if (crop.getNextStageInstant().equals(Instant.MAX)) {
           crop.startGrowing(oldNextDryInstant);
         }
 
+        // TODO: add infested condition like below
         // pause growth if nextStageInstant is on or after next time to dry
         if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
           crop.pauseGrowing(nextDryInstant);
@@ -84,12 +87,24 @@ public class FarmLand implements Land, java.io.Serializable {
     // (1) there is a crop and
     // (2) crop is pausing and
     // (3) it's not infested
-    // TODO: add infested condition
     if (isOccupied() && crop.getNextStageInstant().equals(Instant.MAX)) {
+      // if infested, do not start growing
+      if (crop.isInfested()) {
+        return true;
+      }
+
       crop.startGrowing(now);
 
-      // pause growth if nextStageInstant is on or after next time to dry
-      if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
+      int cropStatus = crop.getCropStatus();
+      if (cropStatus == 1 && crop.getSproutInfestedInstant().isBefore(nextDryInstant)) {
+        // infested before land dries
+        crop.pauseGrowing(crop.getSproutInfestedInstant());
+        crop.setIsInfested(true);
+      } else if (cropStatus == 2 && crop.getMatureInfestedInstant().isBefore(nextDryInstant)) {
+        crop.pauseGrowing(crop.getMatureInfestedInstant());
+        crop.setIsInfested(true);
+      } else if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
+        // pause growth if nextStageInstant is on or after next time to dry
         crop.pauseGrowing(nextDryInstant);
       }
 

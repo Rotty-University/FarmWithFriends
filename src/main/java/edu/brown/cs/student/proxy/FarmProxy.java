@@ -1248,7 +1248,8 @@ public final class FarmProxy {
       crop.setDesiredTerrains((Set<String>) cropInfo[1]);
 
       // init this crop's lifeCycleTimes
-      crop.setLifeCycleTimes((Duration[]) cropInfo[2]);
+      Duration[] lifeCycleTimes = (Duration[]) cropInfo[2];
+      crop.setLifeCycleTimes(lifeCycleTimes);
 
       // default wither duration for each stage except harvest
       crop.setWitherDuration((Duration) cropInfo[3]);
@@ -1281,14 +1282,45 @@ public final class FarmProxy {
       crop.setMatureInfestChance((int) cropInfo[8]);
 
       // determine whether this crop will be infested
-      crop.setIsSproutInfested((int) (Math.random() * 100) + 1 <= (int) cropInfo[7] ? true : false);
-      crop.setIsMatureInfested((int) (Math.random() * 100) + 1 <= (int) cropInfo[8] ? true : false);
+      boolean isMatureInfested = (int) (Math.random() * 100) + 1 <= (int) cropInfo[8];
+      boolean isSproutInfested = (int) (Math.random() * 100) + 1 <= (int) cropInfo[7];
+      crop.setIsSproutInfested(isSproutInfested);
+      crop.setIsMatureInfested(isMatureInfested);
 
       // init life cycle time for first stage (0 or 2)
-      crop.setDurationUntilNextStage(((Duration[]) cropInfo[2])[cropStatus]);
+      crop.setDurationUntilNextStage(lifeCycleTimes[cropStatus]);
 
       // init auto wither time from current stage
       crop.setWitheredInstant(now.plus((Duration) cropInfo[3]));
+
+      // init sprout and mature infest duration
+      crop.setDurationUntilSproutInfested(Duration.ZERO);
+      crop.setDurationUntilMatureInfested(Duration.ZERO);
+
+      if (isSproutInfested) {
+        int percentage = (int) (Math.random() * 81) + 10;
+        Duration durationUntilInfested = lifeCycleTimes[1].multipliedBy(percentage).dividedBy(100);
+        crop.setDurationUntilSproutInfested(durationUntilInfested);
+        crop.setMatureInfestedInstant(now.plus(durationUntilInfested));
+      }
+
+      if (isMatureInfested) {
+        int percentage = (int) (Math.random() * 81) + 10;
+        Duration durationUntilInfested = lifeCycleTimes[2].multipliedBy(percentage).dividedBy(100);
+        crop.setDurationUntilMatureInfested(durationUntilInfested);
+      }
+
+      // init sprout and mature infest instant
+      crop.setSproutInfestedInstant(Instant.MAX);
+      crop.setMatureInfestedInstant(Instant.MAX);
+
+      // if respawn: initialize infest instant
+      if (cropStatus == 2 && isMatureInfested) {
+        crop.setMatureInfestedInstant(now.plus(crop.getDurationUntilMatureInfested()));
+      }
+
+      // init isInfested
+      crop.setIsInfested(false);
 
       // init time next stage based on water status
       if (land.isWatered(now)) {

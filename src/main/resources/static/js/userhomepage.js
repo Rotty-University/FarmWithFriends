@@ -43,7 +43,7 @@ class Main extends React.Component {
         return (
             <div id={"homepagecontainer"}>
                 <NavBar active={this.state.active} action={this.changeActive}/>
-                <Game active = {this.state.active} goToFarm={this.goToFarm}/>
+                <Game active = {this.state.active}/>
             </div>
         );
     }
@@ -61,7 +61,7 @@ class NavBar extends React.Component {
                 <p onClick={this.props.action}><a href={"#"}><img id={"map"} src={"css/images/iconMap.svg"} height={40} width={40}/></a></p>
                 <Friends id={"friends"}/>
                 <p className={"nav-bar-active"} onClick={this.props.action}><a href={"#"}><img  id={"home"} src={"css/images/iconHome.svg"} height={40} width={40}/></a></p>
-                {/*<p onClick={this.props.action}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>*/}
+                {<p onClick={this.props.action}><a href={"#"}><img id={"delete"} src={"css/images/iconDel.svg"} height={40} width={40}/></a></p>}
                 {/*<p onClick={this.props.action}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>*/}
                 <p><a href={"/logout"}><img src={"css/images/iconLeave.svg"} height={40} width={40}/></a></p>
             </div>
@@ -73,20 +73,21 @@ class Game extends React.Component {
 
     constructor(props) {
         super(props);
+
+        this.tabsMap = new Map();
+        this.tabsMap.set("map", <GameMap id={"map"}/>);
+        this.tabsMap.set("home", <Home id={"home"}/>);
+        this.tabsMap.set("friends", <Friends id={"friends"}/>);
+        this.tabsMap.set("shop", <Shop id={"shop"}/>);
+        this.tabsMap.set("settings", <Settings id={"settings"}/>);
+        this.tabsMap.set("store", <Store id={"store"}/>);
     }
 
     render() {
 
-        let tabsMap = new Map();
-        tabsMap.set("map", <GameMap id={"map"} goToFarm={this.props.goToFarm}/>)
-        tabsMap.set("home", <Home id={"home"}/>)
-        tabsMap.set("friends", <Friends id={"friends"}/>)
-        tabsMap.set("shop", <Shop id={"shop"}/>)
-        tabsMap.set("settings", <Settings id={"settings"}/>)
-
         return (
             <div className={"content-window"}>
-                {tabsMap.get(this.props.active)}
+                {this.tabsMap.get(this.props.active)}
             </div>
         );
     }
@@ -375,29 +376,38 @@ class Tile extends React.Component {
             let stealMessage = "";
             let stealIcon = "error";
             let stealButtonMessage = "ugh, fine";
-            if (stealStatus == -1) {
-            	stealMessage = "Can't do that: you ARE the owner";
-            } else if (stealStatus == 0) {
-            	stealMessage = "You are too late, this crop has been stolen too many times";
-            } else if (stealStatus == -2) {
-            	stealMessage = "Nothing to steal here";
-            } else if (stealStatus == -3) {
-            	stealMessage = "Can't steal withered crop";
-            } else if (stealStatus == -4) {
-            	stealMessage = "Crop cannot be harvested yet, come back to steal later";
-            } else if (stealStatus == -5) {
-            	stealMessage = "You already stole once, don't be greedy";
-            } else if (stealStatus == 100) {
-            	stealTitle = "HOLY SMOKE"
-            	stealIcon = "warning";
-            	stealMessage = "YOU STOLE EVERYTHING!!! (this only happens 1% of the time)";
-            	stealButtonMessage = "I knew I was the 1%";
-            } else {
-            	stealTitle = "Hehe...";
-            	stealIcon = "success";
-            	stealMessage = "You successfully stole " + stealStatus + " from the owner";
-            	stealButtonMessage = "I'll fuckin do it again";
-            }
+            switch (stealStatus) {
+			case -1:
+				stealMessage = "Can't do that: you ARE the owner";
+				break;
+			case 0:
+				stealMessage = "You are too late, this crop has been stolen too many times";
+				break;
+			case -2:
+				stealMessage = "Nothing to steal here";
+				break;
+			case -3:
+				stealMessage = "Can't steal withered crop";
+				break;
+			case -4:
+				stealMessage = "Crop cannot be harvested yet, come back to steal later";
+				break;
+			case -5:
+				stealMessage = "You already stole once, don't be greedy";
+				break;
+			case 100:
+				stealTitle = "HOLY SMOKE"
+	            stealIcon = "warning";
+	            stealMessage = "YOU STOLE EVERYTHING!!! (this only happens 1% of the time)";
+	            stealButtonMessage = "I knew I was the 1%";
+	            break;
+			default:
+				stealTitle = "Hehe...";
+        		stealIcon = "success";
+        		stealMessage = "You successfully stole " + stealStatus + " from the owner";
+        		stealButtonMessage = "I'll fuckin do it again";
+				break;
+			}
             
         	Swal.fire({
         		  title: stealTitle,
@@ -417,7 +427,7 @@ class Tile extends React.Component {
 
     render() {
         return (
-            <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
+            <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath} title="this is a tomato"/>
         );
     }
 }
@@ -650,7 +660,7 @@ class GameMap extends React.Component {
                             <th>Friend</th>
                         </tr>
                     </table>
-                    <p>Click On the Friend's Location to See Who it Is</p>
+                    <p>Click On the Friend's Location to Visit their farms</p>
                 </div>
                 
             </div>
@@ -824,5 +834,18 @@ class Settings extends React.Component {
         )
     }
 }
+                    
+// *******
+// *Store*
+// *******
+
+class Store extends React.Component {
+	render() {
+        return (
+            <p>{this.props.id}</p>
+        )
+    }
+}
+// ---------------------------------------
 
 ReactDOM.render(<Main/>, document.getElementById('nav_bar_container'));

@@ -90,13 +90,13 @@ public class FarmingHandlers {
 
     case 4:
       // harvest
-//      if (!username.equals(app.getOwnerName())) {
-//        // trying to operate on farm that doesn't belong to current user
-//        return GSON.toJson(0);
-//      }
-//
-//      app.harvest(username, row, col);
-      stealStatus = app.steal(username, row, col);
+      if (!username.equals(app.getOwnerName())) {
+        // trying to operate on farm that doesn't belong to current user
+        return GSON.toJson(0);
+      }
+
+      app.harvest(username, row, col);
+//      stealStatus = app.steal(username, row, col);
       break;
 
     case 5:

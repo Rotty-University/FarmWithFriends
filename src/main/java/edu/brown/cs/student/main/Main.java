@@ -160,10 +160,6 @@ public final class Main {
 
   // call this whenever someone logs in and the game starts
   private static void startNewSession(String username, Request req) throws ExecutionException {
-//    System.out.println("before " + username + "logged in: ");
-//    for (String s : onlineFarmingHandlers.keySet()) {
-//      System.out.println(s);
-//    }
 
     // create new farmviewer and guiHandlers for this user's session
     FarmViewer app = openedFarmViewers.get(username);
