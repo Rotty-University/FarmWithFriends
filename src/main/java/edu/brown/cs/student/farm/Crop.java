@@ -84,9 +84,9 @@ public class Crop implements java.io.Serializable {
     // if infested, change status and display image
     // use *InfestedInstant to control when to show user crop is infested
     // use boolean isInfested to control crop growth with infestation
-    if (now.isAfter(matureInfestedInstant)) {
+    if (!now.isBefore(matureInfestedInstant)) {
       cropStatus = -2;
-    } else if (now.isAfter(sproutInfestedInstant)) {
+    } else if (!now.isBefore(sproutInfestedInstant)) {
       cropStatus = -1;
     }
 
@@ -197,7 +197,6 @@ public class Crop implements java.io.Serializable {
    */
   public Crop respawn() {
     if (currentHarvestTimes > 1) {
-      // TODO: change this to using FarmProxy
       Crop newCrop = FarmProxy.getCrop(name, farmLand, 2);
       newCrop.setCurrentHarvestTimes(currentHarvestTimes - 1);
 

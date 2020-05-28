@@ -63,7 +63,7 @@ public class FarmingHandlers {
         return GSON.toJson(0);
       }
 
-      app.plow(username, row, col);;
+      app.plow(username, row, col);
       break;
 
     case 2:

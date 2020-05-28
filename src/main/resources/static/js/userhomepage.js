@@ -427,7 +427,7 @@ class Tile extends React.Component {
 
     render() {
         return (
-            <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath} title="this is a tomato"/>
+            <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
         );
     }
 }

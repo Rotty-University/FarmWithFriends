@@ -1305,6 +1305,7 @@ public final class FarmProxy {
       }
 
       if (isMatureInfested) {
+        System.out.println("mature infested");
         int percentage = (int) (Math.random() * 81) + 10;
         Duration durationUntilInfested = lifeCycleTimes[2].multipliedBy(percentage).dividedBy(100);
         crop.setDurationUntilMatureInfested(durationUntilInfested);
@@ -1314,18 +1315,35 @@ public final class FarmProxy {
       crop.setSproutInfestedInstant(Instant.MAX);
       crop.setMatureInfestedInstant(Instant.MAX);
 
+      // init isInfested
+      // NOTE: set this false before respawn condition
+      crop.setIsInfested(false);
+
       // if respawn: initialize infest instant
       if (cropStatus == 2 && isMatureInfested) {
         crop.setMatureInfestedInstant(now.plus(crop.getDurationUntilMatureInfested()));
+        crop.setIsInfested(true);
       }
-
-      // init isInfested
-      crop.setIsInfested(false);
 
       // init time next stage based on water status
       if (land.isWatered(now)) {
+        Instant nextDryInstant = land.getNextDryInstant();
+
         // watered, start timer
         crop.startGrowing(now);
+
+        // pause growing at appropriate time (if necessary)
+        if (cropStatus == 1 && crop.getSproutInfestedInstant().isBefore(nextDryInstant)) {
+          // infested before land dries
+          crop.pauseGrowing(crop.getSproutInfestedInstant());
+          crop.setIsInfested(true);
+        } else if (cropStatus == 2 && crop.getMatureInfestedInstant().isBefore(nextDryInstant)) {
+          crop.pauseGrowing(crop.getMatureInfestedInstant());
+          crop.setIsInfested(true);
+        } else if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
+          // pause growth if nextStageInstant is on or after next time to dry
+          crop.pauseGrowing(nextDryInstant);
+        }
       } else {
         // not watered, start growing AS SOON AS it's watered
         crop.stopGrowing();

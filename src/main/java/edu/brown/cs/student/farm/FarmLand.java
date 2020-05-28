@@ -46,55 +46,55 @@ public class FarmLand implements Land, java.io.Serializable {
    * @return true if water status changes, false if not
    */
   public boolean water(Instant now, Duration durationToDry) {
+    boolean hasChanged = !isWatered(now);
+
     if (isOccupied()) {
       // NOTE: order matters here, don't move this down
       // update crop status before growing first
       crop.updateStatus(now);
-    }
 
-    // already watered
-    if (isWatered(now)) {
-      Instant oldNextDryInstant = nextDryInstant;
-      // update next time to dry
-      nextDryInstant = now.plus(durationToDry);
+      // already watered
+      if (isWatered(now)) {
+        Instant oldNextDryInstant = nextDryInstant;
+        // update next time to dry
+        nextDryInstant = now.plus(durationToDry);
 
-      // do NOT delete this, not redundant
-      // case: water a land when it's still wet
-      if (isOccupied()) {
+        // do NOT delete this, not redundant
+        // case: water a land when it's still wet
+        // if infested, do not start growing
+        if (crop.isInfested()) {
+          return false;
+        }
+
         // update nextStageInstant if possible
         if (crop.getNextStageInstant().equals(Instant.MAX)) {
           crop.startGrowing(oldNextDryInstant);
         }
 
-        // TODO: add infested condition like below
-        // pause growth if nextStageInstant is on or after next time to dry
-        if (!(crop.getNextStageInstant().isBefore(nextDryInstant))) {
-          crop.pauseGrowing(nextDryInstant);
+        hasChanged = false;
+      } else {
+        // currently dry
+        hasChanged = true;
+        // update last time it's dry (now)
+        lastDryInstant = now;
+        // update next time to dry
+        nextDryInstant = now.plus(durationToDry);
+
+        // crop starts growing if
+        // (1) there is a crop and
+        // (2) crop is pausing and
+        // (3) it's not infested
+        if (crop.getNextStageInstant().equals(Instant.MAX)) {
+          // if infested, do not start growing
+          if (crop.isInfested()) {
+            return true;
+          }
+
+          crop.startGrowing(now);
         }
+      } // end of else
 
-        crop.updateStatus(now);
-      }
-
-      return false;
-    }
-
-    // currently dry, update last time it's dry (now)
-    lastDryInstant = now;
-    // update next time to dry
-    nextDryInstant = now.plus(durationToDry);
-
-    // crop starts growing if
-    // (1) there is a crop and
-    // (2) crop is pausing and
-    // (3) it's not infested
-    if (isOccupied() && crop.getNextStageInstant().equals(Instant.MAX)) {
-      // if infested, do not start growing
-      if (crop.isInfested()) {
-        return true;
-      }
-
-      crop.startGrowing(now);
-
+      // pause growing at appropriate time (if necessary)
       int cropStatus = crop.getCropStatus();
       if (cropStatus == 1 && crop.getSproutInfestedInstant().isBefore(nextDryInstant)) {
         // infested before land dries
@@ -109,9 +109,16 @@ public class FarmLand implements Land, java.io.Serializable {
       }
 
       crop.updateStatus(now);
-    }
 
-    return true;
+      return hasChanged;
+    } else {
+      if (hasChanged) {
+        lastDryInstant = nextDryInstant;
+      }
+      nextDryInstant = now.plus(durationToDry);
+
+      return hasChanged;
+    }
   }
 
   // mutators ----------------------------------------------------------

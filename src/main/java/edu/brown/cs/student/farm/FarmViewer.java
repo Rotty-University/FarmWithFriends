@@ -400,6 +400,70 @@ public class FarmViewer {
     return isAllStolen ? 100 : stolen;
   }
 
+  /**
+   * @param username user requesting this action
+   * @param row      row of the land
+   * @param col      col of the land
+   * @return 1 if successfully cured the infested crop, negative values for error
+   *         code
+   */
+  public int cure(String username, int row, int col) {
+    Instant now = Instant.now();
+
+    if (thePlantation == null) {
+      System.out.println("Can't do that: no farm selected");
+
+      return -99;
+    }
+
+    if (!username.equals(ownerName)) {
+      System.out.println("Can't cure if you are not the owner");
+      return -1;
+    }
+
+    FarmLand l = thePlantation[row][col];
+
+    if (!l.isOccupied()) {
+      System.out.println("Can't cure, no crop here");
+      return -2;
+    }
+
+    Crop c = l.getCrop();
+
+    if (c.getCropStatus() == 5) {
+      System.out.println("Crop is already dead, be more responsible next time");
+      return -3;
+    } else if (now.isAfter(c.getMatureInfestedInstant())) {
+      // mature infested
+      c.setMatureInfestedInstant(Instant.MAX);
+      c.setCropStatus(2);
+    } else if (now.isAfter(c.getSproutInfestedInstant())) {
+      // sprout infested
+      c.setSproutInfestedInstant(Instant.MAX);
+      c.setCropStatus(1);
+    } else {
+      // not infested, can't cure
+      System.out.println("Crop is healthy, don't waste your resources");
+      return -4;
+    }
+
+    // successfully cured
+    c.setIsInfested(false);
+    // start growing if land is watered
+    Instant nextDryInstant = l.getNextDryInstant();
+    if (now.isBefore(nextDryInstant)) {
+      c.startGrowing(now);
+
+      if (!(c.getNextStageInstant().isBefore(nextDryInstant))) {
+        // pause growth if nextStageInstant is on or after next time to dry
+        c.pauseGrowing(nextDryInstant);
+      }
+    }
+
+    System.out.println("Successfully cured " + c.getName() + " at " + row + ", " + col);
+    return 1;
+  }
+
   // ---------------------------------------------------------------------------------
 
   // mutators
