@@ -154,7 +154,9 @@ class Home extends React.Component {
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
+                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"cure"} src={"css/images/PestControl.png"} height={40} width={40}/>
                     <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"harvest"} src={"css/images/iconSickle.svg"} height={40} width={40}/>
+                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"steal"} src={"css/images/hand.png"} height={40} width={40}/>
                 </div>
             </div>
         )
@@ -192,6 +194,7 @@ class Table extends React.Component {
         this.actionMap.set("water", 3);
         this.actionMap.set("harvest", 4);
         this.actionMap.set("steal", 5);
+        this.actionMap.set("cure", 6);
         
         // set up timer to constantly update
         setInterval(this.updateTiles, 500);

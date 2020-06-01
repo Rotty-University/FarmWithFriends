@@ -54,6 +54,9 @@ public class FarmingHandlers {
     // stolen (default -100 if no stealing happened)
     int stealStatus = -100;
 
+    // TODO: decide what to do with this
+    int cureStatus = -100;
+
     // do stuff in backend
     switch (action) {
     case 1:
@@ -96,12 +99,14 @@ public class FarmingHandlers {
       }
 
       app.harvest(username, row, col);
-//      stealStatus = app.steal(username, row, col);
       break;
 
     case 5:
       stealStatus = app.steal(username, row, col);
       break;
+
+    case 6:
+      cureStatus = app.cure(username, row, col);
 
     default:
       // nothing yet
