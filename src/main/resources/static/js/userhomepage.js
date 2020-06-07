@@ -1,4 +1,54 @@
 'use strict';
+//import DragItem from "./dnd";
+//import DropSlot from "./dnd";
+
+// import doesn't work so we have this
+class DragItem extends React.Component {
+	
+	drag = (e) => {
+		e.dataTransfer.setData('transfer', e.target.id);
+	}
+	
+	noAllowDrop = (e) => {
+		e.stopPropagation();
+	}
+	
+	render() {
+		return (
+				<div id={this.props.id} draggable="true" onDragStart={this.drag} onDragOver={this.noAllowDrop}>
+				{this.props.children}
+				</div>
+		);
+	}
+}
+
+class DropSlot extends React.Component {
+	
+	drop = (e) => {
+		e.preventDefault();
+		const data = e.dataTransfer.getData('transfer');
+		// remove current child if there is any
+		while (e.target.firstChild) {
+		    e.target.removeChild(e.target.lastChild);
+		  }
+		// append the dragged element to this slot
+		e.target.appendChild(document.getElementById(data));
+	}
+	
+	allowDrop = (e) => {
+		e.preventDefault();
+	};
+		
+	render() {
+		return (
+				<div id={this.props.id} onDrop={this.drop} onDragOver={this.allowDrop}>
+				{this.props.children}
+				</div>
+		);
+	}
+}
+
+// ----------------------------------------------------------------
 
 class Main extends React.Component {
 
@@ -98,7 +148,8 @@ class Home extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            prevselectedtool: "select",
+            prevSelectedToolType: "select",
+            prevSelectedToolID: "",
             currentUserName: "default"
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
@@ -121,19 +172,28 @@ class Home extends React.Component {
         console.log("mounted that bitch");
     }
 
-    generateFarmArray(rows, columns, activetool) {
-        return <Table id={"farmTable"} rows={rows} columns={columns} active={activetool} currentUserName={this.state.currentUserName}/>;
+    generateFarmArray(rows, columns, activeToolType, activeToolID) {
+        return <Table id={"farmTable"} rows={rows} columns={columns} activeToolType={activeToolType} activeToolID={activeToolID} currentUserName={this.state.currentUserName}/>;
     }
 
     updatePrevSelectedTool(e) {
-        let newTool = e.target.id;
-        let current = document.getElementById(this.state.prevselectedtool);
+    	// changed e.target.id to .type here
+    	// type represents type of action while id represents exactly the tool/seed's name
+        const newToolType = e.target.type;
+        const newToolID = e.target.id;
+        
+        let current = document.getElementById(this.state.prevSelectedToolID);
         if (current != null) {
             current.className = "toolbaritem";
         }
-        let selected = document.getElementById(newTool);
+        let selected = document.getElementById(newToolID);
         selected.className = "toolbarSelected";
-        this.setState({prevselectedtool: newTool});
+        this.setState({
+        				prevSelectedToolType: newToolType,
+        				prevSelectedToolID: newToolID
+        			   });
+        
+        console.log(newToolType);
     }
     closeTheDiv(){
         document.getElementById("map_viewer").innerHTML = "";
@@ -143,25 +203,28 @@ class Home extends React.Component {
 
     render() {
         this.closeTheDiv()
-        let table = this.generateFarmArray(12, 20, this.state.prevselectedtool);
+        let table = this.generateFarmArray(12, 20, this.state.prevSelectedToolType, this.state.prevSelectedToolID);
         return (
             <div className={"homeContainer"} onClick={this.resetTool}>
                 <div className={"farmContainer"}>
                     {table}
                 </div>
                 <div className="toolbox">
-                    {/*<img className={"toolbarSelected"} onClick={this.updatePrevSelectedTool} id={"select"} src={"css/images/iconSelect.svg"} height={40} width={40}/>*/}
-                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
-                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
-                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
-                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"cure"} src={"css/images/PestControl.png"} height={40} width={40}/>
-                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"harvest"} src={"css/images/iconSickle.svg"} height={40} width={40}/>
-                    <img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"steal"} src={"css/images/hand.png"} height={40} width={40}/>
+                      <DropSlot id="tool1" height={40} width={40}> <DragItem id={"item1"}> <img className={"toolbaritem"} id="defaultPlough" type={"plough"} onClick={this.updatePrevSelectedTool} src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot className={"toolbaritem"} id="tool2" height={40} width={40}> </DropSlot>
+                      <DropSlot className={"toolbaritem"} id="tool3" height={40} width={40}> <DragItem id="defaultCure" type={"cure"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/PestControl.png"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot className={"toolbaritem"} id="tool4" height={40} width={40}> <DragItem id="defaultSickle" type={"harvest"} onClick={console.log("vonfused")}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                 </div>
             </div>
         )
     }
 }
+//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
+//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
+//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
+//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"cure"} src={"css/images/PestControl.png"} height={40} width={40}/>
+//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"harvest"} src={"css/images/iconSickle.svg"} height={40} width={40}/>
+//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"steal"} src={"css/images/hand.png"} height={40} width={40}/>
 
 
 class Table extends React.Component {
@@ -271,7 +334,8 @@ class Table extends React.Component {
                     spritepath={this.state.spritePaths[i][idx]}
                     row={i}
                     column={idx}
-                    activetool={this.props.active}
+                    activeToolType={this.props.activeToolType}
+                	activeToolID={this.props.activeToolID}
                 	actionMap = {this.actionMap}
                 	currentUserName = {this.props.currentUserName}
                 /></td>)
@@ -309,9 +373,9 @@ class Tile extends React.Component {
         const dict = {
         	row : this.props.row,
             col : this.props.column,
-            action : this.props.actionMap.get(this.props.activetool),
+            action : this.props.actionMap.get(this.props.activeToolType),
             //TODO: change the crop name here once the front end selection is set up
-            crop : "tomatoes",
+            crop : this.props.activeToolID,
             //TODO: change the water duration here
             waterDuration : 10
         };
@@ -432,51 +496,6 @@ class Tile extends React.Component {
         return (
             <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
         );
-    }
-}
-
-class FriendHomeViewer extends React.Component {
-
-    constructor() {
-        super()
-        this.state = {
-            prevselectedtool: "select",
-        }
-        this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
-        this.generateFarmArray = this.generateFarmArray.bind(this)
-        this.closeTheDiv = this.closeTheDiv.bind(this)
-    }
-
-    generateFarmArray(rows, columns, activetool) {
-        return <Table id={"farmTable"} rows={rows} columns={columns} active={activetool}/>;
-    }
-
-    updatePrevSelectedTool(e) {
-        let newTool = e.target.id;
-        let current = document.getElementById(this.state.prevselectedtool);
-        if (current != null) {
-            current.className = "toolbaritem";
-        }
-        let selected = document.getElementById(newTool);
-        selected.className = "toolbarSelected";
-        this.setState({prevselectedtool: newTool});
-    }
-    closeTheDiv(){
-        document.getElementById("map_viewer").innerHTML = "";
-//        document.getElementById("message_for_clicking_on_map").innerHTML = "";
-    }
-
-
-    render() {
-        // this.closeTheDiv()
-        let table = this.generateFarmArray(12, 20, this.state.prevselectedtool);
-        return (
-            <div className={"homeContainer"} onClick={this.resetTool}>
-                <div className={"farmContainer"}>
-                    {table}
-                </div>
-            </div>
-        )
     }
 }
 
