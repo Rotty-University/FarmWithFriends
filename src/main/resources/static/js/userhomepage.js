@@ -6,16 +6,17 @@
 class DragItem extends React.Component {
 	
 	drag = (e) => {
-		e.dataTransfer.setData('transfer', e.target.id);
-	}
-	
-	noAllowDrop = (e) => {
-		e.stopPropagation();
+		// if img is selected, default to parent DragItem
+		const selected = e.target.nodeName == "IMG" ? e.target.parentElement : e.target;
+		e.dataTransfer.setData('transfer', selected.id);
+		
+		// save parent DropSlot for swapping
+		e.dataTransfer.setData('originalSlot', selected.parentElement.id);
 	}
 	
 	render() {
 		return (
-				<div id={this.props.id} draggable="true" onDragStart={this.drag} onDragOver={this.noAllowDrop}>
+				<div id={this.props.id} data-tool-type={this.props.type} onClick={this.props.onClick} className={this.props.className} draggable="true" onDragStart={this.drag}>
 				{this.props.children}
 				</div>
 		);
@@ -26,13 +27,30 @@ class DropSlot extends React.Component {
 	
 	drop = (e) => {
 		e.preventDefault();
+		// new item for this slot
 		const data = e.dataTransfer.getData('transfer');
-		// remove current child if there is any
-		while (e.target.firstChild) {
-		    e.target.removeChild(e.target.lastChild);
-		  }
+		// the slot to swap this slot's item to
+		const originalSlotID = e.dataTransfer.getData("originalSlot");
+		
+		// always default to parent DropSlot 
+		let selected = e.target;
+		if (selected.nodeName == "IMG") {
+			selected = selected.parentElement.parentElement;
+		} else if (selected.nodeName == "DIV") {
+			selected = selected.parentElement;
+		}
+		
+		// do nothing if dragging on self
+		if (selected.children[0].id === data) {
+			return;	
+		}
+		
+		// swap current child if there is any
+		while (selected.firstChild) {
+			document.getElementById(originalSlotID).appendChild(selected.lastChild);
+		}
 		// append the dragged element to this slot
-		e.target.appendChild(document.getElementById(data));
+		selected.appendChild(document.getElementById(data));
 	}
 	
 	allowDrop = (e) => {
@@ -41,7 +59,7 @@ class DropSlot extends React.Component {
 		
 	render() {
 		return (
-				<div id={this.props.id} onDrop={this.drop} onDragOver={this.allowDrop}>
+				<div id={this.props.id} className={this.props.className} onDrop={this.drop} onDragOver={this.allowDrop}>
 				{this.props.children}
 				</div>
 		);
@@ -177,24 +195,34 @@ class Home extends React.Component {
     }
 
     updatePrevSelectedTool(e) {
-    	// changed e.target.id to .type here
-    	// type represents type of action while id represents exactly the tool/seed's name
-        const newToolType = e.target.type;
-        const newToolID = e.target.id;
+        let selected = e.target;
+        // if the img is selected, then set back to the parent DragItem
+        // we can NOT select the img here because the tool info is in DragItem
+        if (selected.nodeName == "IMG") {
+        	selected = selected.parentElement;
+        }
         
+    	// tool-type represents type of action while id represents exactly the tool/seed's name
+        const newToolType = selected.getAttribute("data-tool-type");
+        const newToolID = selected.id;
+//        console.log(newToolType);
+//        console.log(newToolID);
+        
+        // remove the highlight on the tool selected before by changing style
         let current = document.getElementById(this.state.prevSelectedToolID);
         if (current != null) {
             current.className = "toolbaritem";
         }
-        let selected = document.getElementById(newToolID);
+        
+        // select the tool by highlighting
         selected.className = "toolbarSelected";
         this.setState({
-        				prevSelectedToolType: newToolType,
-        				prevSelectedToolID: newToolID
+						prevSelectedToolID: newToolID,
+        				prevSelectedToolType: newToolType
         			   });
         
-        console.log(newToolType);
     }
+    
     closeTheDiv(){
         document.getElementById("map_viewer").innerHTML = "";
 //        document.getElementById("message_for_clicking_on_map").innerHTML = "";
@@ -210,10 +238,9 @@ class Home extends React.Component {
                     {table}
                 </div>
                 <div className="toolbox">
-                      <DropSlot id="tool1" height={40} width={40}> <DragItem id={"item1"}> <img className={"toolbaritem"} id="defaultPlough" type={"plough"} onClick={this.updatePrevSelectedTool} src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot className={"toolbaritem"} id="tool2" height={40} width={40}> </DropSlot>
-                      <DropSlot className={"toolbaritem"} id="tool3" height={40} width={40}> <DragItem id="defaultCure" type={"cure"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/PestControl.png"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot className={"toolbaritem"} id="tool4" height={40} width={40}> <DragItem id="defaultSickle" type={"harvest"} onClick={console.log("vonfused")}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool2" className={"toolSlot"}> </DropSlot>
+                      <DropSlot id="tool4"> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                 </div>
             </div>
         )

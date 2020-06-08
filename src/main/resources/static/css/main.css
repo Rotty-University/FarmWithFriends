@@ -112,6 +112,11 @@ body {
     transform: translate(-50%, -0%);
 }
 
+.toolSlot {
+	height: 50px;
+	width: 50px;
+}
+
 .toolbaritem {
     padding-right: 15px;
     padding-left: 15px;
