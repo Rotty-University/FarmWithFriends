@@ -101,20 +101,19 @@ body {
     background-repeat: no-repeat;
     height: 100%;
 }
+
 .toolbox {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
     background-color: #3c3e47;
     padding: 10px;
-    position: absolute;
+    position: fixed;
     left: 50%;
     bottom: 0%;
     transform: translate(-50%, -0%);
 }
 
 .toolSlot {
-	height: 50px;
-	width: 50px;
 }
 
 .toolbaritem {

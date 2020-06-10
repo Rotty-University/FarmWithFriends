@@ -73,11 +73,25 @@ class Main extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            active: "home"
+            active: "home",
+            currentUserName: "default"
         }
         this.changeActive = this.changeActive.bind(this)
         
         window.mainComponent = this;
+    }
+    
+    getCurrentUsername() {
+    	return this.state.currentUserName;
+    }
+    
+    componentDidMount() {        
+        // assign the current username and pass it down to children
+        $.post("/currentUserName").done(function(response) {
+        	this.setState({currentUserName: JSON.parse(response)});
+        }.bind(this));
+    	
+        console.log("mounted that bitch");
     }
 
     changeActive(e) {
@@ -111,7 +125,7 @@ class Main extends React.Component {
         return (
             <div id={"homepagecontainer"}>
                 <NavBar active={this.state.active} action={this.changeActive}/>
-                <Game active = {this.state.active}/>
+                <Game active = {this.state.active} currentUserName={this.state.currentUserName}/>
             </div>
         );
     }
@@ -143,15 +157,15 @@ class Game extends React.Component {
         super(props);
 
         this.tabsMap = new Map();
-        this.tabsMap.set("map", <GameMap id={"map"}/>);
-        this.tabsMap.set("home", <Home id={"home"}/>);
-        this.tabsMap.set("friends", <Friends id={"friends"}/>);
-        this.tabsMap.set("shop", <Shop id={"shop"}/>);
-        this.tabsMap.set("settings", <Settings id={"settings"}/>);
-        this.tabsMap.set("store", <Store id={"store"}/>);
     }
 
     render() {
+        this.tabsMap.set("map", <GameMap id={"map"} currentUserName={this.props.currentUserName}/>);
+        this.tabsMap.set("home", <Home id={"home"} currentUserName={this.props.currentUserName}/>);
+        this.tabsMap.set("friends", <Friends id={"friends"} currentUserName={this.props.currentUserName}/>);
+        this.tabsMap.set("shop", <Shop id={"shop"} currentUserName={this.props.currentUserName}/>);
+        this.tabsMap.set("settings", <Settings id={"settings"} currentUserName={this.props.currentUserName}/>);
+        this.tabsMap.set("store", <Store id={"store"} currentUserName={this.props.currentUserName}/>);
 
         return (
             <div className={"content-window"}>
@@ -161,37 +175,31 @@ class Game extends React.Component {
     }
 }
 
+class Inventory extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+				isShown: false,
+				
+		}
+	}
+}
+
 class Home extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
             prevSelectedToolType: "select",
-            prevSelectedToolID: "",
-            currentUserName: "default"
+            prevSelectedToolID: ""
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
         this.closeTheDiv = this.closeTheDiv.bind(this)
-        
-        window.homeComponent = this;
-    }
-    
-    getCurrentUsername() {
-    	return this.state.currentUserName;
-    }
-    
-    componentDidMount() {        
-        // assign the current username and pass it down to children
-        $.post("/currentUserName").done(function(response) {
-        	this.setState({currentUserName: JSON.parse(response)});
-        }.bind(this));
-    	
-        console.log("mounted that bitch");
     }
 
     generateFarmArray(rows, columns, activeToolType, activeToolID) {
-        return <Table id={"farmTable"} rows={rows} columns={columns} activeToolType={activeToolType} activeToolID={activeToolID} currentUserName={this.state.currentUserName}/>;
+        return <Table id={"farmTable"} rows={rows} columns={columns} activeToolType={activeToolType} activeToolID={activeToolID} currentUserName={this.props.currentUserName}/>;
     }
 
     updatePrevSelectedTool(e) {
@@ -236,11 +244,11 @@ class Home extends React.Component {
             <div className={"homeContainer"} onClick={this.resetTool}>
                 <div className={"farmContainer"}>
                     {table}
-                </div>
+                </div>                
                 <div className="toolbox">
                       <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool2" className={"toolSlot"}> </DropSlot>
-                      <DropSlot id="tool4"> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool4" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                 </div>
             </div>
         )
