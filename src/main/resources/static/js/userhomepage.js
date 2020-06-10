@@ -35,13 +35,15 @@ class DropSlot extends React.Component {
 		// always default to parent DropSlot 
 		let selected = e.target;
 		if (selected.nodeName == "IMG") {
+			// first selected is the img inside slot inside item
 			selected = selected.parentElement.parentElement;
-		} else if (selected.nodeName == "DIV") {
+		} else if (selected.className == "toolbaritem") {
+			// first selected is the item
 			selected = selected.parentElement;
 		}
 		
 		// do nothing if dragging on self
-		if (selected.children[0].id === data) {
+		if (selected.children.length > 0 && selected.children[0].id === data) {
 			return;	
 		}
 		
@@ -267,8 +269,11 @@ class Home extends React.Component {
                 </div>                
                 <div className="toolbox">
                       <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool2" className={"toolSlot"}> </DropSlot>
-                      <DropSlot id="tool4" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlant"} type={"plant"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool3" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultWaterCan"} type={"water"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconWaterCan.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool4" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultTerminator"} type={"cure"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/PestControl.png"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool5" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool6" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultStealingHand"} type={"steal"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/hand.png"} height={40} width={40}/> </DragItem> </DropSlot>
                 </div>
             </div>
         )

@@ -117,6 +117,7 @@ body {
 .toolSlot {
 	height: 50px;
 	width: 50px;
+	border-style: inset;
 }
 
 .toolbaritem {
