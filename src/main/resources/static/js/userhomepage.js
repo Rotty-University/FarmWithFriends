@@ -87,7 +87,7 @@ class Main extends React.Component {
     
     componentDidMount() {        
         // assign the current username and pass it down to children
-        $.post("/currentUserName").done(function(response) {
+        $.get("/currentUserName").done(function(response) {
         	this.setState({currentUserName: JSON.parse(response)});
         }.bind(this));
     	
@@ -179,9 +179,21 @@ class Inventory extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-				isShown: false,
-				
+				isLoaded: false
 		}
+	}
+	
+    componentDidMount() {        
+        // load all inventory items of the current user
+        $.get("/currentUserName").done(function(response) {
+        	this.setState({currentUserName: JSON.parse(response)});
+        }.bind(this));
+    	
+        console.log("mounted that bitch");
+    }
+	
+	render() {
+		
 	}
 }
 

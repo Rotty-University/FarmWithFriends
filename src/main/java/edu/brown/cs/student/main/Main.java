@@ -149,7 +149,7 @@ public final class Main {
     Spark.get("/mapRetrieverForMapsComponent", new MapRetrieverForReact());
     Spark.post("/showingWhatFriendWasClicked", this::ClickingFriendOnMapHandler);
 
-    Spark.post("/currentUserName", new GetCurrentUserHandler());
+    Spark.get("/currentUserName", new GetCurrentUserHandler());
 
     // all farmingHandler routes are made in initFarmViewerAndHandler
   }
