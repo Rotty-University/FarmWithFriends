@@ -111,14 +111,15 @@ body {
     left: 50%;
     bottom: 0%;
     transform: translate(-50%, -0%);
+    display: flex;
 }
 
 .toolSlot {
+	height: 50px;
+	width: 50px;
 }
 
 .toolbaritem {
-    padding-right: 15px;
-    padding-left: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
     border-radius: 5px;
@@ -129,8 +130,6 @@ body {
 }
 
 .toolbarSelected {
-    padding-right: 15px;
-    padding-left: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
     border-radius: 5px;

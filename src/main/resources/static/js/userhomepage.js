@@ -181,19 +181,27 @@ class Inventory extends React.Component {
 		this.state = {
 				isLoaded: false
 		}
+		
+		this.inventoryItems = new Map();
 	}
 	
     componentDidMount() {        
         // load all inventory items of the current user
-        $.get("/currentUserName").done(function(response) {
-        	this.setState({currentUserName: JSON.parse(response)});
+        $.get("/currentUserInventory").done(function(response) {
+        	this.inventoryItems = JSON.parse(response);
+        	
+        	this.setState({isLoaded: true});
         }.bind(this));
     	
-        console.log("mounted that bitch");
+        console.log("mounted inventory");
     }
 	
 	render() {
-		
+		return (
+	            <div className={"inventory"}>
+	                {this.tabsMap.get(this.props.active)}
+	            </div>
+	        );
 	}
 }
 
