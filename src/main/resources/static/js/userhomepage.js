@@ -149,7 +149,7 @@ class NavBar extends React.Component {
                 {/*<p onClick={this.props.action}><a href={"#"}><img id={"settings"} src={"css/images/iconGear.svg"} height={40} width={40}/></a></p>*/}
                 <p><a href={"/logout"}><img src={"css/images/iconLeave.svg"} height={40} width={40}/></a></p>
             </div>
-        );
+        )
     }
 }
 
@@ -181,28 +181,52 @@ class Inventory extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-				isLoaded: false
-		}
+				inventoryItems: []
+		};
 		
-		this.inventoryItems = new Map();
+		this.rows = 0;
+		this.cols = 0;
+		
+		this.reloadItems = this.reloadItems.bind(this);
 	}
-	
-    componentDidMount() {        
-        // load all inventory items of the current user
-        $.get("/currentUserInventory").done(function(response) {
-        	this.inventoryItems = JSON.parse(response);
-        	
-        	this.setState({isLoaded: true});
+    
+    reloadItems() {
+        $.get("/currentUserInventory/" + (String)(this.props.currentUserName)).done(function(response) {        	
+        	this.setState({inventoryItems: JSON.parse(response)});
+        	const res = JSON.parse(response);
+    		
+    		this.rows = parseInt(res[0][0]);
+    		this.cols = parseInt(res[1][0]);
+    		this.setState({inventoryItems: res[2]});
+    		
+    		console.log("items " + res[2]);
         }.bind(this));
-    	
-        console.log("mounted inventory");
     }
 	
 	render() {
+		// init the inventory box
+		const inventoryBox = [];
+		
+//<DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>		
+		for (var i = 0; i < this.rows; i++) {
+        	
+        	for (var j = 0; j < this.cols; j++) {
+        		// create a slot
+        		const thisSlot = <DropSlot className={"inventorySlot"} id={"inventorySlot" + (String)(i*this.cols + j)}/>;
+        		inventoryBox.push(thisSlot);
+        		
+//        		// create an item
+//        		const thisItem = document.createElement("DRAGITEM");
+//        		thisItem.setAttribute("className", "toolbaritem");
+//        		thisItem.setAttribute("id", "toolbaritem");
+        	}
+        }
+		
 		return (
-	            <div className={"inventory"}>
-	                {this.tabsMap.get(this.props.active)}
+				<div className={"inventoryBox"} id={"inventoryBox"}>
+				{inventoryBox}
 	            </div>
+	            <button onClick={this.reloadItems}> show inventory </button>
 	        );
 	}
 }
@@ -266,7 +290,8 @@ class Home extends React.Component {
             <div className={"homeContainer"} onClick={this.resetTool}>
                 <div className={"farmContainer"}>
                     {table}
-                </div>                
+                </div>    
+                <Inventory currentUserName={this.props.currentUserName} />
                 <div className="toolbox">
                       <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlant"} type={"plant"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
@@ -328,59 +353,59 @@ class Table extends React.Component {
     		return;
     	}
 
-        	// send as parameter
-            $.post("/farmUpdates/" + (String)(this.props.currentUserName), response => {
-                // get result
-                const result = JSON.parse(response);
-                
-                // update board
-                let newSpritePaths = [];
-                for (var i = 0; i < this.props.rows; i++) {                    
-                    // update this tile's sprite path
-                	let thisRow = [];
-                	for (var j = 0; j < this.props.columns; j++) {
-                    	// get this tile's info
-                        let row = (String)(i);
-                        let col = (String)(j);
-                        const thisTileInfo = result[row + "#" + col];
-                        
-                        const isPlowed = thisTileInfo[0];
-                        const isWatered = thisTileInfo[1];
-                        const cropID = thisTileInfo[2];
-                        const cropStatus = thisTileInfo[3];
-                        
-                		//general path
-                        let newPath = "css/images/";
+    	// send as parameter
+    	$.post("/farmUpdates/" + (String)(this.props.currentUserName), response => {
+    		// get result
+    		const result = JSON.parse(response);
 
-                        if (cropStatus != -9) {
-                            // show a crop (for now, until we figure out overlay)
-                            newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
-                        } else {
-                            // no crop, just show land
-                            newPath += "landImages/";
+    		// update board
+    		let newSpritePaths = [];
+    		for (var i = 0; i < this.props.rows; i++) {                    
+    			// update this tile's sprite path
+    			let thisRow = [];
+    			for (var j = 0; j < this.props.columns; j++) {
+    				// get this tile's info
+    				let row = (String)(i);
+    				let col = (String)(j);
+    				const thisTileInfo = result[row + "#" + col];
 
-                            if (isPlowed == 0) {
-                                // not plowed
-                                newPath += "unplowed";
-                            } else if (isWatered == 0) {
-                                // plowed but NOT watered
-                                newPath += "plowed";
-                            } else {
-                                // plowed AND watered
-                                newPath += "watered";
-                            }
-                        }
+    				const isPlowed = thisTileInfo[0];
+    				const isWatered = thisTileInfo[1];
+    				const cropID = thisTileInfo[2];
+    				const cropStatus = thisTileInfo[3];
 
-                        // add file format
-                        newPath += ".png";
-                		thisRow.push(newPath);
-                	}
-                	
-                	newSpritePaths.push(thisRow);
-                }
+    				//general path
+    				let newPath = "css/images/";
 
-                this.setState({spritePaths: newSpritePaths});
-            });
+    				if (cropStatus != -9) {
+    					// show a crop (for now, until we figure out overlay)
+    					newPath += "cropImages/" + (String)(cropID) + "/" + (String)(cropStatus);
+    				} else {
+    					// no crop, just show land
+    					newPath += "landImages/";
+
+    					if (isPlowed == 0) {
+    						// not plowed
+    						newPath += "unplowed";
+    					} else if (isWatered == 0) {
+    						// plowed but NOT watered
+    						newPath += "plowed";
+    					} else {
+    						// plowed AND watered
+    						newPath += "watered";
+    					}
+    				}
+
+    				// add file format
+    				newPath += ".png";
+    				thisRow.push(newPath);
+    			}
+
+    			newSpritePaths.push(thisRow);
+    		}
+
+    		this.setState({spritePaths: newSpritePaths});
+    	});
     }
 
     render(){

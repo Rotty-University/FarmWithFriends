@@ -102,6 +102,24 @@ body {
     height: 100%;
 }
 
+.inventoryBox {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    background-color: #3c3e47;
+    padding: 10px;
+	display: flex;
+	flex-wrap: wrap;
+	position: absolute;
+	right: 50%;
+	top: 50%;
+}
+
+.inventorySlot {
+	height: 50px;
+	width: 50px;
+	border-style: inset; 
+}
+
 .toolbox {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
@@ -117,7 +135,6 @@ body {
 .toolSlot {
 	height: 50px;
 	width: 50px;
-	border-style: inset;
 }
 
 .toolbaritem {

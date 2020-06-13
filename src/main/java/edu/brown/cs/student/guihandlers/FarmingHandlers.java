@@ -176,4 +176,21 @@ public class FarmingHandlers {
     return GSON.toJson(hm);
   } // end of handleUpdates()
 
+  public String loadInventoryItems(Request request, Response response) {
+    Map<Integer, String[]> inventoryInfo = new HashMap<Integer, String[]>();
+    String[] rows = {
+        "5"
+    };
+    String[] cols = {
+        "8"
+    };
+    String[] items = new String[30];
+
+    inventoryInfo.put(0, rows);
+    inventoryInfo.put(1, cols);
+    inventoryInfo.put(2, items);
+
+    return GSON.toJson(inventoryInfo);
+  } // end of loadInventoryItems()
+
 } // end of outer class
