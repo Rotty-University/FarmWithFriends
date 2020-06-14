@@ -187,10 +187,13 @@ class Inventory extends React.Component {
 		this.rows = 0;
 		this.cols = 0;
 		
-		this.reloadItems = this.reloadItems.bind(this);
+		this.show = this.show.bind(this);
+		this.hide = this.hide.bind(this);
+		
+		window.inventoryComponent = this;
 	}
     
-    reloadItems() {
+    show() {
         $.get("/currentUserInventory/" + (String)(this.props.currentUserName)).done(function(response) {        	
         	this.setState({inventoryItems: JSON.parse(response)});
         	const res = JSON.parse(response);
@@ -199,8 +202,12 @@ class Inventory extends React.Component {
     		this.cols = parseInt(res[1][0]);
     		this.setState({inventoryItems: res[2]});
     		
-    		console.log("items " + res[2]);
+    		document.getElementById("inventoryWindow").style.display="inline";
         }.bind(this));
+    }
+    
+    hide() {
+    	document.getElementById("inventoryWindow").style.display="none";
     }
 	
 	render() {
@@ -223,11 +230,13 @@ class Inventory extends React.Component {
         }
 		
 		return (
-				<div className={"inventoryBox"} id={"inventoryBox"}>
-				{inventoryBox}
-	            </div>
-	            <button onClick={this.reloadItems}> show inventory </button>
-	        );
+				<div className={"inventoryWindow"} id={"inventoryWindow"}>
+					<div className={"inventoryBox"} id={"inventoryBox"}>
+					{inventoryBox}
+					</div>
+					<button className={"closeInventory"} onClick={this.hide}> close inventory </button>
+				</div>
+	            );
 	}
 }
 
@@ -242,6 +251,8 @@ class Home extends React.Component {
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
         this.closeTheDiv = this.closeTheDiv.bind(this)
+        
+        this.test = this.test.bind(this);
     }
 
     generateFarmArray(rows, columns, activeToolType, activeToolID) {
@@ -281,6 +292,10 @@ class Home extends React.Component {
         document.getElementById("map_viewer").innerHTML = "";
 //        document.getElementById("message_for_clicking_on_map").innerHTML = "";
     }
+    
+    test() {
+    	window.inventoryComponent.show();
+    }
 
 
     render() {
@@ -291,7 +306,7 @@ class Home extends React.Component {
                 <div className={"farmContainer"}>
                     {table}
                 </div>    
-                <Inventory currentUserName={this.props.currentUserName} />
+                <Inventory currentUserName={this.props.currentUserName}/>
                 <div className="toolbox">
                       <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlant"} type={"plant"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
@@ -299,7 +314,10 @@ class Home extends React.Component {
                       <DropSlot id="tool4" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultTerminator"} type={"cure"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/PestControl.png"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool5" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool6" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultStealingHand"} type={"steal"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/hand.png"} height={40} width={40}/> </DragItem> </DropSlot>
+
+                      <button onClick={this.test}> show inventory </button>
                 </div>
+                <button onClick={this.test}> show inventory </button>
             </div>
         )
     }
