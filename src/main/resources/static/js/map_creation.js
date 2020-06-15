@@ -285,7 +285,7 @@
 			v.max = 10;
 			v.added = [];
 			basic_elements.push(v);
-			//Sabana
+			//Savana
 			var v = new Object();
 			v.class = 'sabana_space';
 			v.letter = 's';
@@ -307,7 +307,6 @@
 			
 			var type_selected = basic_elements[type];
 			if(typeof type_selected == "undefined" || type_selected == null){ // If it is invalid, then we return with nothing.
-				// logM("Error on the type selection");
 				return;
 			}
 			

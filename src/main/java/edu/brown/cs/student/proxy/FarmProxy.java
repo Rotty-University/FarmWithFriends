@@ -63,7 +63,7 @@ public final class FarmProxy {
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer,"
               + " friends text, friendspending text, mapid integer, isNewUser text"
-              + ", row int, col int, balance integer);");
+              + ", row int, col int, balance integer, terrain text);");
       prep.executeUpdate();
       prep.close();
 
@@ -1148,6 +1148,40 @@ public final class FarmProxy {
       return user;
     }
     return user;
+  }
+
+  public static void setTheTerrainType(String terrain, String username) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_data SET terrain=? WHERE username=?;");
+      prep.setString(1, terrain);
+      prep.setString(2, username);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  public static String getTheTerrainType(String username) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    String terrainType = null;
+    try {
+      prep = conn.prepareStatement("SELECT terrain FROM user_data WHERE username=?;");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        terrainType = rs.getString(1);
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return terrainType;
+    }
+    return terrainType;
   }
 
   // --------------------------------------------------------------------------

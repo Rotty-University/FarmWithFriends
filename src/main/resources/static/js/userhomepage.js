@@ -87,7 +87,49 @@ class Game extends React.Component {
 
         return (
             <div className={"content-window"}>
-                {this.tabsMap.get(this.props.active)}
+            	<div className={"cropDown"}>  
+                  	<label htmlFor="cars">Choose a crop:   </label>
+				  	<select className="cropOptions" name="cropOptions" onChange={() => selectedCropControl()}>
+				  	<option value="" selected disabled hidden></option>
+					   <option value="tomatoes">Tomatoes</option>
+					   <option value="corn">Corn</option>
+					   <option value="wheat">Wheat</option>
+					   <option value="cotton">Cotton</option>
+					   <option value="rice">Rice</option>
+					   <option value="sugar">Sugar</option>
+					   <option value="apples">Apples</option>
+					   <option value="pears">Pears</option>
+					   <option value="oranges">Oranges</option>
+					   <option value="tangerines">Tangerines</option>
+					   <option value="bananas">Bananas</option>
+					   <option value="strawberries">Strawberries</option>
+					   <option value="kiwis">Kiwis</option>
+					   <option value="watermelons">Watermelons</option>
+					   <option value="avocados">Avocados</option>
+					   <option value="lettuce">Lettuce</option>
+					   <option value="potatoes">Potatoes</option>
+					   <option value="cucumbers">Cucumbers</option>
+					   <option value="carrots">Carrots</option>
+					   <option value="greenbeans">Greenbeans</option>
+					   <option value="cherries">Cherries</option>
+					   <option value="grapes">Grapes</option>
+					   <option value="lemons">Lemons</option>
+					   <option value="papayas">Papayas</option>
+					   <option value="peaches">Peaches</option>
+					   <option value="pineapples">Pineapples</option>
+					   <option value="pomegranates">Pomegranates</option>
+					   <option value="cabbages">Cabbages</option>
+					   <option value="kale">Kale</option>
+					   <option value="peanuts">Peanuts</option>
+					   <option value="pumpkins">Pumpkins</option>
+					   <option value="broccoli">Broccoli</option>
+					   <option value="lavendar">Lavendar</option>
+					   <option value="rosemary">RoseMary</option>
+				  	</select> 
+				 </div>
+				 {this.tabsMap.get(this.props.active)}
+
+
             </div>
         );
     }

@@ -44,3 +44,14 @@ function createAccountHandler(){
             
         });
 };
+function selectedCropControl(){
+    let selected_item = $(".cropOptions");
+    console.log(selected_item.val());
+    const postParameters = {
+        crop : selected_item.val()
+    }
+    $.post("/cropSelection", postParameters, response => {
+        let responseObject = JSON.parse(response)
+        selected_item.val("");
+    })
+};

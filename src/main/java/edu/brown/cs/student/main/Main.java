@@ -148,7 +148,7 @@ public final class Main {
     Spark.post("clickOnMap", new ClickOnMapHandler());
     Spark.get("/mapRetrieverForMapsComponent", new MapRetrieverForReact());
     Spark.post("/showingWhatFriendWasClicked", this::ClickingFriendOnMapHandler);
-
+    Spark.post("/cropSelection", new CropSelection());
     Spark.post("/currentUserName", new GetCurrentUserHandler());
 
     // all farmingHandler routes are made in initFarmViewerAndHandler
@@ -843,6 +843,8 @@ public final class Main {
       String mapData = qm.value("dictionary_data");
       String row = qm.value("row");
       String col = qm.value("col");
+      String farmterrain = qm.value("farmtype");
+      FarmProxy.setTheTerrainType(farmterrain, username);
       // keeping track of this users location in the map.
       FarmProxy.updateTheRowAndColumnofUserLocationInMap(username, Integer.parseInt(row),
           Integer.parseInt(col));
@@ -956,6 +958,18 @@ public final class Main {
 
     // return for frontend to display friend's name
     return GSON.toJson(variables);
+  }
+
+  private static class CropSelection implements Route {
+    @Override
+    public String handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String username = req.session().attribute("username");
+      String crop = qm.value("crop");
+      Map<String, String> variables = ImmutableMap.of("valid", "true");
+      GSON.toJson(variables);
+      return GSON.toJson(variables);
+    }
   }
 
 }

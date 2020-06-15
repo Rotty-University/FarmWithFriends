@@ -259,3 +259,8 @@
 	border-top-left-radius: 10px;
 	transform: translate(-52%, 0%);
 }
+.cropDown{
+	position: absolute;
+	left: 2%;
+
+}
