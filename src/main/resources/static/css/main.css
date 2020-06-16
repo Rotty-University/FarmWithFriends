@@ -111,18 +111,21 @@ body {
 
 .closeInventory {
 	position: absolute;
-	float: right;
+	right: 0%;
+	top: 10%;
 }
 
 .inventoryBox {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
     background-color: #3c3e47;
     padding: 10px;
 	display: flex;
 	flex-wrap: wrap;
+	width: 530px;
 	position: absolute;
-	top: 10%;
 }
 
 .inventorySlot {
