@@ -68,30 +68,58 @@ public final class FarmProxy {
       prep.close();
 
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_inventory_crops(username text, tomatoes integer, "
+          "CREATE TABLE IF NOT EXISTS user_inventory_crops(username text, tomato integer, "
               + "corn integer, wheat integer, cotton integer, rice integer, sugar integer,"
-              + "apples integer, pears integer, oranges integer, tangerines integer, "
-              + "bananas integer, strawberries integer, kiwis integer, watermelons integer,"
-              + " avocados integer, lettuce integer, potatoes integer, cucumbers integer, "
-              + "carrots integer, greenbeans integer, cherries integer, grapes integer, "
-              + "lemons integer, papayas integer, peaches integer, pineapples integer, "
-              + "pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, "
+              + "apple integer, pear integer, orange integer, tangerine integer, "
+              + "banana integer, strawberry integer, kiwi integer, watermelon integer,"
+              + " avocado integer, lettuce integer, potato integer, cucumber integer, "
+              + "carrot integer, greenbean integer, cherry integer, grape integer, "
+              + "lemon integer, papaya integer, peach integer, pineapple integer, "
+              + "pomegranate integer, cabbage int, kale int, peanut int, pumpkin int, "
+              + "broccoli int, lavendar integer, rosemary integer, demo_crop integer, demo_crop2 integer);");
+      prep.executeUpdate();
+      prep.close();
+      // --------------------------------------------------------------------------------------------
+
+      // User tools tables
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_inventory_tools_plow(username text, defaultPlough integer);");
+      prep.executeUpdate();
+      prep.close();
+
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_inventory_tools_seeds(username text, tomato integer, "
+              + "corn integer, wheat integer, cotton integer, rice integer, sugar integer,"
+              + "apple integer, pear integer, orange integer, tangerine integer, "
+              + "banana integer, strawberry integer, kiwi integer, watermelon integer,"
+              + " avocado integer, lettuce integer, potato integer, cucumber integer, "
+              + "carrot integer, greenbean integer, cherry integer, grape integer, "
+              + "lemon integer, papaya integer, peach integer, pineapple integer, "
+              + "pomegranate integer, cabbage int, kale int, peanut int, pumpkin int, "
               + "broccoli int, lavendar integer, rosemary integer, demo_crop integer, demo_crop2 integer);");
       prep.executeUpdate();
       prep.close();
 
       prep = conn.prepareStatement(
-          "CREATE TABLE IF NOT EXISTS user_inventory_seeds(username text, tomatoes integer, "
-              + "corn integer, wheat integer, cotton integer, rice integer, sugar integer,"
-              + "apples integer, pears integer, oranges integer, tangerines integer, "
-              + "bananas integer, strawberries integer, kiwis integer, watermelons integer,"
-              + " avocados integer, lettuce integer, potatoes integer, cucumbers integer, "
-              + "carrots integer, greenbeans integer, cherries integer, grapes integer, "
-              + "lemons integer, papayas integer, peaches integer, pineapples integer, "
-              + "pomegranates integer, cabbages int, kale int, peanuts int, pumpkins int, "
-              + "broccoli int, lavendar integer, rosemary integer, demo_crop integer, demo_crop2 integer);");
+          "CREATE TABLE IF NOT EXISTS user_inventory_tools_water(username text, defaultWaterCan integer);");
       prep.executeUpdate();
       prep.close();
+
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_inventory_tools_cure(username text, defaultTerminator integer);");
+      prep.executeUpdate();
+      prep.close();
+
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_inventory_tools_harvest(username text, defaultSickle integer);");
+      prep.executeUpdate();
+      prep.close();
+
+      prep = conn.prepareStatement(
+          "CREATE TABLE IF NOT EXISTS user_inventory_tools_steal(username text, defaultStealingHand integer);");
+      prep.executeUpdate();
+      prep.close();
+      // --------------------------------------------------------------------------------------------
 
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_maps(mapid integer, mapdata text, free_space integer);");
@@ -259,12 +287,12 @@ public final class FarmProxy {
       prep.executeBatch();
       prep.close();
 
-      // init seed value
+      // init default TOOL values
       prep = conn.prepareStatement(
-          "INSERT INTO user_inventory_seeds VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,"
+          "INSERT INTO user_inventory_tools_seeds VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,"
               + "?, ?,?,?,?,?,?,?,?,?,?,?,?);");
       prep.setString(1, username);
-      prep.setInt(2, 0);
+      prep.setInt(2, 999);
       prep.setInt(3, 0);
       prep.setInt(4, 0);
       prep.setInt(5, 0);
@@ -303,10 +331,44 @@ public final class FarmProxy {
       prep.addBatch();
       prep.executeBatch();
       prep.close();
+
+      prep = conn.prepareStatement("INSERT INTO user_inventory_tools_cure VALUES (?,?);");
+      prep.setString(1, username);
+      prep.setInt(2, 999);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
+
+      prep = conn.prepareStatement("INSERT INTO user_inventory_tools_harvest VALUES (?,?);");
+      prep.setString(1, username);
+      prep.setInt(2, 999);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
+
+      prep = conn.prepareStatement("INSERT INTO user_inventory_tools_plow VALUES (?,?);");
+      prep.setString(1, username);
+      prep.setInt(2, 999);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
+
+      prep = conn.prepareStatement("INSERT INTO user_inventory_tools_steal VALUES (?,?);");
+      prep.setString(1, username);
+      prep.setInt(2, 999);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
+
+      prep = conn.prepareStatement("INSERT INTO user_inventory_tools_water VALUES (?,?);");
+      prep.setString(1, username);
+      prep.setInt(2, 999);
+      prep.addBatch();
+      prep.executeBatch();
+      prep.close();
     } catch (SQLException e) {
       System.err.println("ERROR: Can't insert into the database.");
     }
-
   }
 
   /**

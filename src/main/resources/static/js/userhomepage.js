@@ -252,7 +252,7 @@ class Home extends React.Component {
         this.generateFarmArray = this.generateFarmArray.bind(this)
         this.closeTheDiv = this.closeTheDiv.bind(this)
         
-        this.test = this.test.bind(this);
+        this.showInventory = this.showInventory.bind(this);
     }
 
     generateFarmArray(rows, columns, activeToolType, activeToolID) {
@@ -293,7 +293,7 @@ class Home extends React.Component {
 //        document.getElementById("message_for_clicking_on_map").innerHTML = "";
     }
     
-    test() {
+    showInventory() {
     	window.inventoryComponent.show();
     }
 
@@ -315,9 +315,8 @@ class Home extends React.Component {
                       <DropSlot id="tool5" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool6" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultStealingHand"} type={"steal"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/hand.png"} height={40} width={40}/> </DragItem> </DropSlot>
 
-                      <button onClick={this.test}> show inventory </button>
+                      <button onClick={this.showInventory}> show inventory </button>
                 </div>
-                <button onClick={this.test}> show inventory </button>
             </div>
         )
     }
