@@ -181,7 +181,8 @@ class Inventory extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-				inventoryItems: []
+				inventoryItemNames: [],
+				inventoryItemCounts: []
 		};
 		
 		this.rows = 0;
@@ -200,7 +201,9 @@ class Inventory extends React.Component {
     		
     		this.rows = parseInt(res[0][0]);
     		this.cols = parseInt(res[1][0]);
-    		this.setState({inventoryItems: res[2]});
+    		this.setState({inventoryItemNames: res[2],
+    					   inventoryItemTypes: res[3], 
+    					   inventoryItemCounts: res[4]});
     		
     		document.getElementById("inventoryWindow").style.display="inline";
         }.bind(this));
@@ -211,21 +214,31 @@ class Inventory extends React.Component {
     }
 	
 	render() {
+		// number of items in inventory
+		const numOfItems = this.state.inventoryItemNames.length;
 		// init the inventory box
 		const inventoryBox = [];
 		
 //<DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>		
 		for (var i = 0; i < this.rows; i++) {
-        	
         	for (var j = 0; j < this.cols; j++) {
-        		// create a slot
-        		const thisSlot = <DropSlot className={"inventorySlot"} id={"inventorySlot" + (String)(i*this.cols + j)}/>;
-        		inventoryBox.push(thisSlot);
+        		let thisSlot = null;
         		
-//        		// create an item
-//        		const thisItem = document.createElement("DRAGITEM");
-//        		thisItem.setAttribute("className", "toolbaritem");
-//        		thisItem.setAttribute("id", "toolbaritem");
+        		// create an item if there is more items to display
+        		if (i*this.cols + j < numOfItems) {
+            		const itemName = this.state.inventoryItemNames[i*this.cols + j];
+            		const itemType = this.state.inventoryItemTypes[i*this.cols + j];
+            		//TODO: reflect item counts
+            		const itemCount = this.state.inventoryItemCounts[i*this.cols + j];
+            		const thisItem = <DragItem className={"toolbaritem"} id={itemName} type={itemType} onClick={this.props.handleClick}> <img src={"css/images/toolImages/" + itemType + "/" + itemName + ".png"} height={40} width={40}/> </DragItem>
+            		
+            		thisSlot = <DropSlot children={thisItem} className={"inventorySlot"} id={"inventorySlot" + (String)(i*this.cols + j)}/>;
+        		} else {
+            		// just create a slot with no item
+            		thisSlot = <DropSlot className={"inventorySlot"} id={"inventorySlot" + (String)(i*this.cols + j)}/>;
+        		}
+        		
+        		inventoryBox.push(thisSlot);
         	}
         }
 		
@@ -306,7 +319,7 @@ class Home extends React.Component {
                 <div className={"farmContainer"}>
                     {table}
                 </div>    
-                <Inventory currentUserName={this.props.currentUserName}/>
+                <Inventory currentUserName={this.props.currentUserName} handleClick={this.updatePrevSelectedTool}/>
                 <div className="toolbox">
                       <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlant"} type={"plant"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
@@ -354,8 +367,8 @@ class Table extends React.Component {
         // set up action map for handleClick()
         this.actionMap = new Map();
         this.actionMap.set("select", 0);
-        this.actionMap.set("plough", 1);
-        this.actionMap.set("plant", 2);
+        this.actionMap.set("plow", 1);
+        this.actionMap.set("seeds", 2);
         this.actionMap.set("water", 3);
         this.actionMap.set("harvest", 4);
         this.actionMap.set("steal", 5);

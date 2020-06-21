@@ -9,9 +9,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -1553,4 +1555,72 @@ public final class FarmProxy {
   }
 
   // ----------------------------------------------------------------------------
+
+  // **********************
+  // *Tool related queries*
+  // **********************
+
+  /**
+   * Return all tools owned by the input username and the amount of each tool
+   * (will NOT return items that have a count of 0)
+   *
+   * @param username user's name
+   * @return a list containing lists of item's name, type, and amount
+   */
+  public static List<List<String>> getAllToolsByUsername(String username) {
+    PreparedStatement prep;
+    ResultSet rs;
+    String[] toolTables = {
+        "user_inventory_tools_cure", "user_inventory_tools_harvest", "user_inventory_tools_plow",
+        "user_inventory_tools_seeds", "user_inventory_tools_steal", "user_inventory_tools_water"
+    };
+    List<List<String>> toolList = new ArrayList<List<String>>();
+    List<String> rowList = new ArrayList<String>();
+    List<String> colList = new ArrayList<String>();
+    // TODO: add inventory size database
+    rowList.add("5");
+    colList.add("8");
+    List<String> nameList = new ArrayList<String>();
+    List<String> typeList = new ArrayList<String>();
+    List<String> countList = new ArrayList<String>();
+
+    toolList.add(rowList);
+    toolList.add(colList);
+    toolList.add(nameList);
+    toolList.add(typeList);
+    toolList.add(countList);
+
+    try {
+      for (String tableName : toolTables) {
+        prep = conn.prepareStatement("SELECT * FROM " + tableName + " WHERE username == ?");
+        prep.setString(1, username);
+        rs = prep.executeQuery();
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        while (rs.next()) {
+          int columnCount = rsmd.getColumnCount();
+
+          for (int i = 1; i <= columnCount; i++) {
+            int itemCount = rs.getInt(i);
+            if (itemCount > 0) {
+              nameList.add(rsmd.getColumnName(i));
+              countList.add(String.valueOf(itemCount));
+              // use substring here to find the type name
+              typeList.add(tableName.substring(21));
+            }
+          }
+        }
+
+        prep.close();
+        rs.close();
+      }
+    } catch (SQLException e) {
+      System.out.println("SQL error encountered while getting " + username + "'s tools");
+      e.printStackTrace();
+    }
+
+    return toolList;
+  }
+
+  // ----------------------------------------------------------------------------------
 }

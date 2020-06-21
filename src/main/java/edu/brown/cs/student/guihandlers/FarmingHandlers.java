@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 
 import edu.brown.cs.student.farm.FarmLand;
 import edu.brown.cs.student.farm.FarmViewer;
+import edu.brown.cs.student.proxy.FarmProxy;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -177,20 +178,9 @@ public class FarmingHandlers {
   } // end of handleUpdates()
 
   public String loadInventoryItems(Request request, Response response) {
-    Map<Integer, String[]> inventoryInfo = new HashMap<Integer, String[]>();
-    String[] rows = {
-        "5"
-    };
-    String[] cols = {
-        "8"
-    };
-    String[] items = new String[30];
+    String username = request.session().attribute("username");
 
-    inventoryInfo.put(0, rows);
-    inventoryInfo.put(1, cols);
-    inventoryInfo.put(2, items);
-
-    return GSON.toJson(inventoryInfo);
+    return GSON.toJson(FarmProxy.getAllToolsByUsername(username));
   } // end of loadInventoryItems()
 
 } // end of outer class
