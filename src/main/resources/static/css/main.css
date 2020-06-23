@@ -168,6 +168,15 @@ body {
     background-color: #636672;
 }
 
+particle {
+ 	border-radius: 50%;
+  	left: 0;
+  	pointer-events: none;
+  	position: fixed;
+  	top: 0;
+	opacity: 0;
+}
+
 .farmContainer {
     /*background-color: red;*/
     margin: 0px;

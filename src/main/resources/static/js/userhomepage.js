@@ -1,6 +1,6 @@
 'use strict';
-//import DragItem from "./dnd";
-//import DropSlot from "./dnd";
+//import DragItem from "./dnd/DragItem.js";
+//import DropSlot from "./dnd/DropSlot.js";
 
 // import doesn't work so we have this
 class DragItem extends React.Component {
@@ -321,8 +321,8 @@ class Home extends React.Component {
                 </div>    
                 <Inventory currentUserName={this.props.currentUserName} handleClick={this.updatePrevSelectedTool}/>
                 <div className="toolbox">
-                      <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlant"} type={"plant"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plow"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlant"} type={"seeds"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool3" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultWaterCan"} type={"water"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconWaterCan.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool4" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultTerminator"} type={"cure"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/PestControl.png"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool5" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
@@ -334,12 +334,6 @@ class Home extends React.Component {
         )
     }
 }
-//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plough"} src={"css/images/iconHoe.svg"} height={40} width={40}/>
-//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"plant"} src={"css/images/iconPlant.svg"} height={40} width={40}/>
-//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"water"} src={"css/images/iconWaterCan.svg"} height={40} width={40}/>
-//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"cure"} src={"css/images/PestControl.png"} height={40} width={40}/>
-//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"harvest"} src={"css/images/iconSickle.svg"} height={40} width={40}/>
-//<img className={"toolbaritem"} onClick={this.updatePrevSelectedTool} id={"steal"} src={"css/images/hand.png"} height={40} width={40}/>
 
 
 class Table extends React.Component {
@@ -449,6 +443,7 @@ class Table extends React.Component {
                     spritepath={this.state.spritePaths[i][idx]}
                     row={i}
                     column={idx}
+                	tileId={i*this.props.columns + idx}
                     activeToolType={this.props.activeToolType}
                 	activeToolID={this.props.activeToolID}
                 	actionMap = {this.actionMap}
@@ -547,6 +542,9 @@ class Tile extends React.Component {
             //This is updating the visual appearance of the tile:
             this.setState({spritepath: newPath})
             
+            // play particle effect
+            this.pop();
+            
             // alert to show the result of steal
             const stealStatus = thisTileInfo[5];
         	// always check this first because most operations are not steal
@@ -597,9 +595,70 @@ class Tile extends React.Component {
         		  icon: stealIcon,
         		  confirmButtonText: stealButtonMessage,
             	  allowOutsideClick: false
-        		});
+        		});            
         });
     }
+    
+    // ******************************************
+    // *for popping particle effect when clicked*
+    // ******************************************
+
+    pop() {
+    	const rect = document.getElementById("tile" + this.props.tileId).getBoundingClientRect();
+    	const centerX = (rect.left + rect.right) / 2;
+    	const centerY = (rect.top + rect.bottom) / 2;
+
+    	for (let i = 0; i < 30; i++) {
+    		this.createParticle(centerX, centerY);
+    	}
+    }
+    
+    createParticle(x, y) {
+    	const particle = document.createElement("particle");
+    	document.body.appendChild(particle);
+    	
+    	const size = Math.floor(Math.random() * 100 + 5);
+    	// Apply the size on each particle
+    	particle.style.width = `${size}px`;
+    	particle.style.height = `${size}px`;
+//    	// Generate a random color in a blue/purple palette
+//    	particle.style.background = `hsl(${Math.random() * 90 + 180}, 70%, 60%)`;
+    	// set image for this particle
+    	particle.style.backgroundImage = "css/images/cropImages/1/4.png";
+    	
+    	// Generate a random x & y destination within a distance of 75px from the mouse
+    	const destinationX = x + (Math.random() - 0.5) * 2 * 75;
+//    	const destinationY = y + (Math.random() - 0.5) * 2 * 75;
+    	const destinationY = y - Math.random() * 75;
+    	
+    	// Store the animation in a variable because we will need it later
+    	const animation = particle.animate([
+    		{
+    			// Set the origin position of the particle
+    			// We offset the particle with half its size to center it around the mouse
+    			transform: `translate(${x - (size / 2)}px, ${y - (size / 2)}px)`,
+    			opacity: 1
+    		},
+    		{
+    			// We define the final coordinates as the second keyframe
+    			transform: `translate(${destinationX}px, ${destinationY}px)`,
+    			opacity: 0
+    		}
+    		], {
+    		// Set a random duration from 500 to 1500ms
+    		duration: 500 + Math.random() * 500,
+    		easing: 'cubic-bezier(0, .9, .57, 1)',
+    		// Delay every particle with a random value from 0ms to 200ms
+    		delay: Math.random() * 100
+    	});
+    	
+    	// When the animation is finished, remove the element from the DOM
+    	animation.onfinish = () => {
+    		particle.remove();
+    	};
+    }
+    
+    // --------------------------------------------------------------------------------------
     
     componentDidUpdate(prevProps) {
     	if (this.props.spritepath !== prevProps.spritepath) {
@@ -609,7 +668,7 @@ class Tile extends React.Component {
 
     render() {
         return (
-            <img onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
+            <img id={"tile" + this.props.tileId} onClick={this.handleClick} className={"tileImage"} src={this.state.spritepath}/>
         );
     }
 }
