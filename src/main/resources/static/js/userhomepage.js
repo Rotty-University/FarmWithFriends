@@ -322,11 +322,11 @@ class Home extends React.Component {
                 <Inventory currentUserName={this.props.currentUserName} handleClick={this.updatePrevSelectedTool}/>
                 <div className="toolbox">
                       <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plow"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlant"} type={"seeds"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"tomato"} type={"seeds"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool3" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultWaterCan"} type={"water"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconWaterCan.svg"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool4" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultTerminator"} type={"cure"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/PestControl.png"} height={40} width={40}/> </DragItem> </DropSlot>
                       <DropSlot id="tool5" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool6" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultStealingHand"} type={"steal"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/hand.png"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool6" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultStealingHand"} type={"steal"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/defaultStealing.png"} height={40} width={40}/> </DragItem> </DropSlot>
 
                       <button onClick={this.showInventory}> show inventory </button>
                 </div>
@@ -605,8 +605,8 @@ class Tile extends React.Component {
 
     pop() {
     	const rect = document.getElementById("tile" + this.props.tileId).getBoundingClientRect();
-    	const centerX = (rect.left + rect.right) / 2;
-    	const centerY = (rect.top + rect.bottom) / 2;
+    	const centerX = rect.left;
+    	const centerY = rect.top;
 
     	for (let i = 0; i < 30; i++) {
     		this.createParticle(centerX, centerY);
@@ -621,10 +621,21 @@ class Tile extends React.Component {
     	// Apply the size on each particle
     	particle.style.width = `${size}px`;
     	particle.style.height = `${size}px`;
-//    	// Generate a random color in a blue/purple palette
+    	// Generate a random color in a blue/purple palette
 //    	particle.style.background = `hsl(${Math.random() * 90 + 180}, 70%, 60%)`;
     	// set image for this particle
-    	particle.style.backgroundImage = "css/images/cropImages/1/4.png";
+    	const chance = Math.floor(Math.random() * Math.floor(100));
+    	let backgroundImagePath = null;
+    	if (chance >= 60) {
+    		backgroundImagePath = 'url("css/images/particleImages/rock/small.png")';
+    	} else if (chance >= 35) {
+    		backgroundImagePath = 'url("css/images/particleImages/rock/lightBrown.png")';
+    	} else if (chance >= 10) {
+    		backgroundImagePath = 'url("css/images/particleImages/rock/darkBrown.png")';
+		} else {
+			backgroundImagePath = 'url("css/images/particleImages/rock/grey.png")';
+		}
+    	particle.style.backgroundImage = backgroundImagePath;
     	
     	// Generate a random x & y destination within a distance of 75px from the mouse
     	const destinationX = x + (Math.random() - 0.5) * 2 * 75;
@@ -635,8 +646,7 @@ class Tile extends React.Component {
     	const animation = particle.animate([
     		{
     			// Set the origin position of the particle
-    			// We offset the particle with half its size to center it around the mouse
-    			transform: `translate(${x - (size / 2)}px, ${y - (size / 2)}px)`,
+    			transform: `translate(${x}px, ${y}px)`,
     			opacity: 1
     		},
     		{
@@ -646,7 +656,7 @@ class Tile extends React.Component {
     		}
     		], {
     		// Set a random duration from 500 to 1500ms
-    		duration: 500 + Math.random() * 500,
+    		duration: 500 + Math.random() * 5000,
     		easing: 'cubic-bezier(0, .9, .57, 1)',
     		// Delay every particle with a random value from 0ms to 200ms
     		delay: Math.random() * 100
