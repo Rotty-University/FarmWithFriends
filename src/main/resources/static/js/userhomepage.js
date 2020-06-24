@@ -1,74 +1,4 @@
 'use strict';
-//import DragItem from "./dnd/DragItem.js";
-//import DropSlot from "./dnd/DropSlot.js";
-
-// import doesn't work so we have this
-class DragItem extends React.Component {
-	
-	drag = (e) => {
-		// if img is selected, default to parent DragItem
-		const selected = e.target.nodeName == "IMG" ? e.target.parentElement : e.target;
-		e.dataTransfer.setData('transfer', selected.id);
-		
-		// save parent DropSlot for swapping
-		e.dataTransfer.setData('originalSlot', selected.parentElement.id);
-	}
-	
-	render() {
-		return (
-				<div id={this.props.id} data-tool-type={this.props.type} onClick={this.props.onClick} className={this.props.className} draggable="true" onDragStart={this.drag}>
-				{this.props.children}
-				</div>
-		);
-	}
-}
-
-class DropSlot extends React.Component {
-	
-	drop = (e) => {
-		e.preventDefault();
-		// new item for this slot
-		const data = e.dataTransfer.getData('transfer');
-		// the slot to swap this slot's item to
-		const originalSlotID = e.dataTransfer.getData("originalSlot");
-		
-		// always default to parent DropSlot 
-		let selected = e.target;
-		if (selected.nodeName == "IMG") {
-			// first selected is the img inside slot inside item
-			selected = selected.parentElement.parentElement;
-		} else if (selected.className == "toolbaritem") {
-			// first selected is the item
-			selected = selected.parentElement;
-		}
-		
-		// do nothing if dragging on self
-		if (selected.children.length > 0 && selected.children[0].id === data) {
-			return;	
-		}
-		
-		// swap current child if there is any
-		while (selected.firstChild) {
-			document.getElementById(originalSlotID).appendChild(selected.lastChild);
-		}
-		// append the dragged element to this slot
-		selected.appendChild(document.getElementById(data));
-	}
-	
-	allowDrop = (e) => {
-		e.preventDefault();
-	};
-		
-	render() {
-		return (
-				<div id={this.props.id} className={this.props.className} onDrop={this.drop} onDragOver={this.allowDrop}>
-				{this.props.children}
-				</div>
-		);
-	}
-}
-
-// ----------------------------------------------------------------
 
 class Main extends React.Component {
 
@@ -617,25 +547,27 @@ class Tile extends React.Component {
     	const particle = document.createElement("particle");
     	document.body.appendChild(particle);
     	
-    	const size = Math.floor(Math.random() * 100 + 5);
+    	const size = Math.floor(Math.random() * 50 + 5);
     	// Apply the size on each particle
     	particle.style.width = `${size}px`;
     	particle.style.height = `${size}px`;
     	// Generate a random color in a blue/purple palette
 //    	particle.style.background = `hsl(${Math.random() * 90 + 180}, 70%, 60%)`;
     	// set image for this particle
-    	const chance = Math.floor(Math.random() * Math.floor(100));
-    	let backgroundImagePath = null;
-    	if (chance >= 60) {
-    		backgroundImagePath = 'url("css/images/particleImages/rock/small.png")';
-    	} else if (chance >= 35) {
-    		backgroundImagePath = 'url("css/images/particleImages/rock/lightBrown.png")';
-    	} else if (chance >= 10) {
-    		backgroundImagePath = 'url("css/images/particleImages/rock/darkBrown.png")';
-		} else {
-			backgroundImagePath = 'url("css/images/particleImages/rock/grey.png")';
-		}
-    	particle.style.backgroundImage = backgroundImagePath;
+//    	const chance = Math.floor(Math.random() * Math.floor(100));
+//    	let backgroundImagePath = null;
+//    	if (chance >= 60) {
+//    		backgroundImagePath = 'url("css/images/particleImages/rock/small.png")';
+//    	} else if (chance >= 35) {
+//    		backgroundImagePath = 'url("css/images/particleImages/rock/lightBrown.png")';
+//    	} else if (chance >= 10) {
+//    		backgroundImagePath = 'url("css/images/particleImages/rock/darkBrown.png")';
+//		} else {
+//			backgroundImagePath = 'url("css/images/particleImages/rock/grey.png")';
+//		}
+//    	particle.style.backgroundImage = backgroundImagePath;
+    	particle.style.backgroundImage = 'url("css/images/particleImages/rock/lightBrown.png")';
+//    	console.log(backgroundImagePath)
     	
     	// Generate a random x & y destination within a distance of 75px from the mouse
     	const destinationX = x + (Math.random() - 0.5) * 2 * 75;
@@ -652,7 +584,7 @@ class Tile extends React.Component {
     		{
     			// We define the final coordinates as the second keyframe
     			transform: `translate(${destinationX}px, ${destinationY}px)`,
-    			opacity: 0
+    			opacity: 1
     		}
     		], {
     		// Set a random duration from 500 to 1500ms

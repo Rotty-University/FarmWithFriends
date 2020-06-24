@@ -26,6 +26,8 @@
      <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
      <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
      <!-- Load React components & helper functions. -->
+     <script src="js/dnd/DragItem.js" type="text/babel"></script>
+     <script src="js/dnd/DropSlot.js" type="text/babel"></script>
      <script src="js/AddingFriends.js"></script>
      <script src="js/map_creation.js"></script>
      <script src="js/CreateAccount.js"></script>

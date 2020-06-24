@@ -1,4 +1,4 @@
-export default class DragItem extends React.Component {
+class DragItem extends React.Component {
 	
 	drag = (e) => {
 		// if img is selected, default to parent DragItem

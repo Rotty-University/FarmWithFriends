@@ -1,4 +1,4 @@
-export default class DropSlot extends React.Component {
+class DropSlot extends React.Component {
 	
 	drop = (e) => {
 		e.preventDefault();
