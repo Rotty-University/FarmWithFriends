@@ -251,12 +251,12 @@ class Home extends React.Component {
                 </div>    
                 <Inventory currentUserName={this.props.currentUserName} handleClick={this.updatePrevSelectedTool}/>
                 <div className="toolbox">
-                      <DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plow"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool2" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"tomato"} type={"seeds"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconPlant.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool3" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultWaterCan"} type={"water"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconWaterCan.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool4" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultTerminator"} type={"cure"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/PestControl.png"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool5" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultSickle"} type={"harvest"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconSickle.svg"} height={40} width={40}/> </DragItem> </DropSlot>
-                      <DropSlot id="tool6" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultStealingHand"} type={"steal"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/defaultStealing.png"} height={40} width={40}/> </DragItem> </DropSlot>
+                      <DropSlot id="tool1" className={"toolSlot"}/>
+                      <DropSlot id="tool2" className={"toolSlot"}/>
+                      <DropSlot id="tool3" className={"toolSlot"}/>
+                      <DropSlot id="tool4" className={"toolSlot"}/>
+                      <DropSlot id="tool5" className={"toolSlot"}/>
+                      <DropSlot id="tool6" className={"toolSlot"}/>
 
                       <button onClick={this.showInventory}> show inventory </button>
                 </div>
@@ -538,7 +538,7 @@ class Tile extends React.Component {
     	const centerX = rect.left;
     	const centerY = rect.top;
 
-    	for (let i = 0; i < 30; i++) {
+    	for (let i = 0; i < 50; i++) {
     		this.createParticle(centerX, centerY);
     	}
     }
@@ -554,25 +554,24 @@ class Tile extends React.Component {
     	// Generate a random color in a blue/purple palette
 //    	particle.style.background = `hsl(${Math.random() * 90 + 180}, 70%, 60%)`;
     	// set image for this particle
-//    	const chance = Math.floor(Math.random() * Math.floor(100));
-//    	let backgroundImagePath = null;
-//    	if (chance >= 60) {
-//    		backgroundImagePath = 'url("css/images/particleImages/rock/small.png")';
-//    	} else if (chance >= 35) {
-//    		backgroundImagePath = 'url("css/images/particleImages/rock/lightBrown.png")';
-//    	} else if (chance >= 10) {
-//    		backgroundImagePath = 'url("css/images/particleImages/rock/darkBrown.png")';
-//		} else {
-//			backgroundImagePath = 'url("css/images/particleImages/rock/grey.png")';
-//		}
-//    	particle.style.backgroundImage = backgroundImagePath;
-    	particle.style.backgroundImage = 'url("css/images/particleImages/rock/lightBrown.png")';
-//    	console.log(backgroundImagePath)
+    	const chance = Math.floor(Math.random() * Math.floor(100));
+    	let backgroundImagePath = null;
+    	if (chance >= 60) {
+    		backgroundImagePath = 'url("css/images/particleImages/rock/small.png")';
+    	} else if (chance >= 35) {
+    		backgroundImagePath = 'url("css/images/particleImages/rock/lightBrown.png")';
+    	} else if (chance >= 10) {
+    		backgroundImagePath = 'url("css/images/particleImages/rock/darkBrown.png")';
+		} else {
+			backgroundImagePath = 'url("css/images/particleImages/rock/grey.png")';
+		}
+    	particle.style.backgroundImage = backgroundImagePath;
+//    	particle.style.backgroundImage = 'url("css/images/particleImages/rock/darkBrown.png")';
     	
     	// Generate a random x & y destination within a distance of 75px from the mouse
     	const destinationX = x + (Math.random() - 0.5) * 2 * 75;
 //    	const destinationY = y + (Math.random() - 0.5) * 2 * 75;
-    	const destinationY = y - Math.random() * 75;
+    	const destinationY = y - Math.random() * 50;
     	
     	// Store the animation in a variable because we will need it later
     	const animation = particle.animate([
@@ -588,7 +587,7 @@ class Tile extends React.Component {
     		}
     		], {
     		// Set a random duration from 500 to 1500ms
-    		duration: 500 + Math.random() * 5000,
+    		duration: 500 + Math.random() * 800,
     		easing: 'cubic-bezier(0, .9, .57, 1)',
     		// Delay every particle with a random value from 0ms to 200ms
     		delay: Math.random() * 100
