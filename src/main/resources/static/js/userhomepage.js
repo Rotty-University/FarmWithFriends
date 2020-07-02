@@ -538,7 +538,7 @@ class Tile extends React.Component {
     	const centerX = rect.left;
     	const centerY = rect.top;
 
-    	for (let i = 0; i < 50; i++) {
+    	for (let i = 0; i < 70; i++) {
     		this.createParticle(centerX, centerY);
     	}
     }
@@ -573,30 +573,12 @@ class Tile extends React.Component {
 //    	const destinationY = y + (Math.random() - 0.5) * 2 * 75;
     	const destinationY = y - Math.random() * 50;
     	
-    	// Store the animation in a variable because we will need it later
-    	const animation = particle.animate([
-    		{
-    			// Set the origin position of the particle
-    			transform: `translate(${x}px, ${y}px)`,
-    			opacity: 1
-    		},
-    		{
-    			// We define the final coordinates as the second keyframe
-    			transform: `translate(${destinationX}px, ${destinationY}px)`,
-    			opacity: 1
-    		}
-    		], {
-    		// Set a random duration from 500 to 1500ms
-    		duration: 500 + Math.random() * 800,
-    		easing: 'cubic-bezier(0, .9, .57, 1)',
-    		// Delay every particle with a random value from 0ms to 200ms
-    		delay: Math.random() * 100
-    	});
-    	
-    	// When the animation is finished, remove the element from the DOM
-    	animation.onfinish = () => {
-    		particle.remove();
-    	};
+    	// GSAP implementation
+    	gsap.fromTo(particle, {opacity: 1, x: x, y: y}, 
+    			{opacity: 0.8, x: destinationX, y: destinationY, 
+    		duration: 0.3 + Math.random() * 0.8, delay: Math.random() * 0.1, 
+    		ease: CustomEase.create("custom", "M0,0 C0,0.9 0.57,1 1,1"), 
+    		onComplete: function(){particle.remove()}});
     }
     
     // --------------------------------------------------------------------------------------

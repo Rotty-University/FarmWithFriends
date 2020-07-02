@@ -25,6 +25,10 @@
      <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
      <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
      <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+     <!-- GSAP for animations -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.3.4/gsap.min.js"></script>
+	 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.3.4/MotionPathPlugin.min.js"></script>
+	 <script src="js/gsap/CustomEase.min.js"></script>
      <!-- Load React components & helper functions. -->
      <script src="js/dnd/DragItem.js" type="text/babel"></script>
      <script src="js/dnd/DropSlot.js" type="text/babel"></script>
