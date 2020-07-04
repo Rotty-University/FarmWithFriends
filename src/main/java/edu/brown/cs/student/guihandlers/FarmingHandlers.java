@@ -177,10 +177,30 @@ public class FarmingHandlers {
     return GSON.toJson(hm);
   } // end of handleUpdates()
 
+  /**
+   * load all inventory items from database
+   * 
+   * @param request  the request
+   * @param response the response
+   * @return String representing the Json object
+   */
   public String loadInventoryItems(Request request, Response response) {
     String username = request.session().attribute("username");
 
     return GSON.toJson(FarmProxy.getAllToolsByUsername(username));
   } // end of loadInventoryItems()
+
+  /**
+   * load shortcut tools from database
+   * 
+   * @param request  the request
+   * @param response the response
+   * @return String representing the Json object
+   */
+  public String loadShortcutTools(Request request, Response response) {
+    String username = request.session().attribute("username");
+
+    return GSON.toJson(FarmProxy.getShortcutToolsByUsername(username));
+  }
 
 } // end of outer class

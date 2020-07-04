@@ -1,9 +1,7 @@
 package edu.brown.cs.student.proxy;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -26,6 +24,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import edu.brown.cs.jzhang30.utils.Constants;
+import edu.brown.cs.jzhang30.utils.DatabaseUtils;
 import edu.brown.cs.student.farm.Crop;
 import edu.brown.cs.student.farm.FarmFile;
 import edu.brown.cs.student.farm.FarmLand;
@@ -65,7 +65,7 @@ public final class FarmProxy {
       prep = conn.prepareStatement(
           "CREATE TABLE IF NOT EXISTS user_data(username text, farm blob, new_user integer,"
               + " friends text, friendspending text, mapid integer, isNewUser text"
-              + ", row int, col int, balance integer);");
+              + ", row int, col int, balance integer, shortcutTools blob);");
       prep.executeUpdate();
       prep.close();
 
@@ -230,8 +230,11 @@ public final class FarmProxy {
       prep.addBatch();
       prep.executeBatch();
       prep.close();
+
+      // init user data
       prep = conn.prepareStatement("INSERT INTO user_data(username, friends, friendspending, "
-          + "mapid, isNewUser, row, col, balance) VALUES (?, ?,?,?,?,?,?, ?);");
+          + "mapid, isNewUser, row, col, balance, shortcutTools) VALUES (?, ?,?,?,?,?,?,?,?);");
+
       prep.setString(1, username);
       prep.setString(2, "");
       prep.setString(3, "");
@@ -240,6 +243,7 @@ public final class FarmProxy {
       prep.setInt(6, -1);
       prep.setInt(7, -1);
       prep.setInt(8, 0);
+      prep.setBytes(9, DatabaseUtils.convertToByteArray(Constants.DEFAULT_SHORTCUT_TOOLS));
       prep.addBatch();
       prep.executeBatch();
       prep.close();
@@ -370,6 +374,8 @@ public final class FarmProxy {
       prep.close();
     } catch (SQLException e) {
       System.err.println("ERROR: Can't insert into the database.");
+    } catch (IOException e) {
+      System.out.println("ERROR: Serialization error.");
     }
   }
 
@@ -711,23 +717,14 @@ public final class FarmProxy {
     try {
       // update the string that represents the friend list pending.
       prep = conn.prepareStatement("UPDATE user_data SET farm= ? WHERE username=?;");
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      ObjectOutputStream oos;
-      try {
-        oos = new ObjectOutputStream(bos);
+      byte[] data = DatabaseUtils.convertToByteArray(farm);
 
-        oos.writeObject(farm);
-        oos.flush();
-        oos.close();
-        bos.close();
-      } catch (IOException e) {
-        System.err.println("ERROR: Can't perform operation.");
-      }
-      byte[] data = bos.toByteArray();
       prep.setBytes(1, data);
       prep.setString(2, userName);
       prep.executeUpdate();
       prep.close();
+    } catch (IOException e) {
+      System.err.println("ERROR: Something went wrong while serializing to byte array.");
     } catch (SQLException e) {
       System.err.println("ERROR: Can't query into the database.");
     }
@@ -743,41 +740,31 @@ public final class FarmProxy {
   public static FarmFile loadFarm(String userID) {
     PreparedStatement prep;
     ResultSet rs = null;
-    ByteArrayInputStream bais = null;
-    ObjectInputStream ins = null;
     FarmFile farmclass = null;
     try {
       prep = conn.prepareStatement("SELECT farm FROM user_data WHERE username=?;");
       prep.setString(1, userID);
       rs = prep.executeQuery();
-      while (rs.next()) {
-        byte[] bytess = rs.getBytes(1);
-        if (bytess == null) {
-          return null;
-        }
-        bais = new ByteArrayInputStream(bytess);
-      }
-      if (bais == null) {
-        return farmclass;
-      }
-      try {
-        ins = new ObjectInputStream(bais);
-      } catch (IOException e) {
-        System.err.println("ERROR: Can't query into the database.");
-        return null;
+      byte[] bytes = null;
 
+      while (rs.next()) {
+        bytes = rs.getBytes(1);
       }
-      try {
-        farmclass = (FarmFile) ins.readObject();
-      } catch (ClassNotFoundException e) {
-        System.err.println("ERROR: Can't read to this class.");
-        return null;
-      } catch (IOException e) {
-        System.err.println("ERROR: Can't perform operation.");
+
+      if (bytes == null) {
         return null;
       }
+
+      farmclass = DatabaseUtils.convertByteArrayToObject(bytes, FarmFile.class);
+
       rs.close();
       prep.close();
+    } catch (IOException e) {
+      System.err.println("ERROR: Can't query into the database.");
+      return null;
+    } catch (ClassNotFoundException e) {
+      System.err.println("ERROR: Can't read to this class.");
+      return null;
     } catch (SQLException e) {
       System.err.println("ERROR: Can't query into the database.");
       return null;
@@ -1622,5 +1609,38 @@ public final class FarmProxy {
     return toolList;
   }
 
+  public static String[][] getShortcutToolsByUsername(String username) {
+    PreparedStatement prep;
+    ResultSet rs;
+    String[][] tools = null;
+
+    try {
+      prep = conn.prepareStatement("SELECT shortcutTools FROM user_data WHERE username == ?");
+      prep.setString(1, username);
+      rs = prep.executeQuery();
+      byte[] bytes = null;
+
+      while (rs.next()) {
+        bytes = rs.getBytes(1);
+      }
+
+      if (bytes == null) {
+        return tools;
+      }
+
+      tools = DatabaseUtils.convertByteArrayToObject(bytes, String[][].class);
+
+      prep.close();
+      rs.close();
+    } catch (IOException e) {
+      System.out.println("IOException occurred while getting shortcut tools");
+    } catch (ClassNotFoundException e) {
+      System.out.println("Failed to deserialize while getting shortcut tools");
+    } catch (SQLException e) {
+      System.out.println("SQL error encountered while getting shortcut tools");
+    }
+
+    return tools;
+  }
   // ----------------------------------------------------------------------------------
 }

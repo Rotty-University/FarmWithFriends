@@ -189,7 +189,8 @@ class Home extends React.Component {
         super(props);
         this.state = {
             prevSelectedToolType: "select",
-            prevSelectedToolID: ""
+            prevSelectedToolID: "",
+            shortcutTools: []
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
@@ -240,6 +241,25 @@ class Home extends React.Component {
     	window.inventoryComponent.show();
     }
 
+    componentDidMount() {
+        $.get("/shortcutTools").done(function(response) {
+        	const toolNames = JSON.parse(response);
+        	const toolBoxReturnValues = [];
+        	
+        	// example toolSlot: <DropSlot id="tool1" className={"toolSlot"}/>
+        	for (var i=0; i<toolNames.length; i++) {
+        		const toolType = toolNames[i][0];
+        		const toolName = toolNames[i][1];
+        		
+        		const thisTool = <DragItem className={"toolbaritem"} id={toolName} type={toolType} onClick={this.updatePrevSelectedTool}> <img src={"css/images/toolImages/" + toolType + "/" + toolName + ".png"} height={40} width={40}/> </DragItem>
+        		const thisSlot = <DropSlot children={thisTool} className={"toolSlot"} id={"tool" + (String)(i-1)}/>;
+        		
+        		toolBoxReturnValues.push(thisSlot);
+        	}
+        	
+        	this.setState({shortcutTools: toolBoxReturnValues});
+        }.bind(this));
+    }
 
     render() {
         this.closeTheDiv()
@@ -251,12 +271,7 @@ class Home extends React.Component {
                 </div>    
                 <Inventory currentUserName={this.props.currentUserName} handleClick={this.updatePrevSelectedTool}/>
                 <div className="toolbox">
-                      <DropSlot id="tool1" className={"toolSlot"}/>
-                      <DropSlot id="tool2" className={"toolSlot"}/>
-                      <DropSlot id="tool3" className={"toolSlot"}/>
-                      <DropSlot id="tool4" className={"toolSlot"}/>
-                      <DropSlot id="tool5" className={"toolSlot"}/>
-                      <DropSlot id="tool6" className={"toolSlot"}/>
+                      {this.state.shortcutTools}
 
                       <button onClick={this.showInventory}> show inventory </button>
                 </div>

@@ -178,6 +178,7 @@ public final class Main {
     Spark.post("/farmActions/" + username, farmingHandlers::handleActions);
     Spark.post("/farmUpdates/" + username, farmingHandlers::handleUpdates);
     Spark.get("/currentUserInventory/" + username, farmingHandlers::loadInventoryItems);
+    Spark.get("/shortcutTools", farmingHandlers::loadShortcutTools);
 
     // create new session for this user
     Session session = req.session(true);
