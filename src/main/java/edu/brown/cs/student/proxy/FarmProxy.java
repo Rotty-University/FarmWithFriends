@@ -11,7 +11,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -1548,34 +1547,52 @@ public final class FarmProxy {
   // **********************
 
   /**
+   * Return the size of input user's inventory
+   *
+   * @param username user's name
+   * @return the size of input user's inventory
+   */
+  public static int getInventorySizeByUsername(String username) {
+    PreparedStatement prep;
+    ResultSet rs;
+
+    // TODO: create database tables for this and remove the mock below
+
+//    try {
+//      prep = conn.prepareStatement("SELECT * FROM ____ WHERE username == ?");
+//      prep.setString(1, username);
+//      rs = prep.executeQuery();
+//
+//      while (rs.next()) {
+//      }
+//
+//      prep.close();
+//      rs.close();
+//    } catch (SQLException e) {
+//      System.out.println("SQL error while querying for user's inventory dimensions");
+//    }
+
+    // mock data for now
+
+    return 8 * 5;
+  }
+
+  /**
    * Return all tools owned by the input username and the amount of each tool
    * (will NOT return items that have a count of 0)
    *
    * @param username user's name
-   * @return a list containing lists of item's name, type, and amount
+   * @return a map mapping each item's name to an array of item's type, and amount
+   *         (0: type, 1: amount)
    */
-  public static List<List<String>> getAllToolsByUsername(String username) {
+  public static Map<String, String[]> getAllToolsByUsername(String username) {
     PreparedStatement prep;
     ResultSet rs;
     String[] toolTables = {
         "user_inventory_tools_cure", "user_inventory_tools_harvest", "user_inventory_tools_plow",
         "user_inventory_tools_seeds", "user_inventory_tools_steal", "user_inventory_tools_water"
     };
-    List<List<String>> toolList = new ArrayList<List<String>>();
-    List<String> rowList = new ArrayList<String>();
-    List<String> colList = new ArrayList<String>();
-    // TODO: add inventory size database
-    rowList.add("5");
-    colList.add("8");
-    List<String> nameList = new ArrayList<String>();
-    List<String> typeList = new ArrayList<String>();
-    List<String> countList = new ArrayList<String>();
-
-    toolList.add(rowList);
-    toolList.add(colList);
-    toolList.add(nameList);
-    toolList.add(typeList);
-    toolList.add(countList);
+    Map<String, String[]> toolMap = new HashMap<String, String[]>();
 
     try {
       for (String tableName : toolTables) {
@@ -1590,10 +1607,13 @@ public final class FarmProxy {
           for (int i = 1; i <= columnCount; i++) {
             int itemCount = rs.getInt(i);
             if (itemCount > 0) {
-              nameList.add(rsmd.getColumnName(i));
-              countList.add(String.valueOf(itemCount));
-              // use substring here to find the type name
-              typeList.add(tableName.substring(21));
+              String[] info = {
+                  tableName.substring(21),
+                  // use substring here to find the type name
+                  String.valueOf(itemCount)
+              };
+
+              toolMap.put(rsmd.getColumnName(i), info);
             }
           }
         }
@@ -1606,12 +1626,13 @@ public final class FarmProxy {
       e.printStackTrace();
     }
 
-    return toolList;
+    return toolMap;
   }
 
   public static String[][] getShortcutToolsByUsername(String username) {
     PreparedStatement prep;
     ResultSet rs;
+    // array format: [type][name]
     String[][] tools = null;
 
     try {

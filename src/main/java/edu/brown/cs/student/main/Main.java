@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import edu.brown.cs.student.farm.FarmFile;
 import edu.brown.cs.student.farm.FarmViewer;
 import edu.brown.cs.student.guihandlers.FarmingHandlers;
+import edu.brown.cs.student.guihandlers.UserDataHandlers;
 import edu.brown.cs.student.proxy.FarmProxy;
 import freemarker.template.Configuration;
 import joptsimple.OptionParser;
@@ -150,6 +151,9 @@ public final class Main {
     Spark.post("/showingWhatFriendWasClicked", this::ClickingFriendOnMapHandler);
 
     Spark.get("/currentUserName", new GetCurrentUserHandler());
+    Spark.get("/loadUserInventoryDims", UserDataHandlers::loadInventoryDimensions);
+    Spark.get("/currentUserInventory", UserDataHandlers::loadInventoryItems);
+    Spark.get("/shortcutTools", UserDataHandlers::loadShortcutTools);
 
     // all farmingHandler routes are made in initFarmViewerAndHandler
   }
@@ -177,8 +181,6 @@ public final class Main {
 
     Spark.post("/farmActions/" + username, farmingHandlers::handleActions);
     Spark.post("/farmUpdates/" + username, farmingHandlers::handleUpdates);
-    Spark.get("/currentUserInventory/" + username, farmingHandlers::loadInventoryItems);
-    Spark.get("/shortcutTools", farmingHandlers::loadShortcutTools);
 
     // create new session for this user
     Session session = req.session(true);

@@ -111,12 +111,10 @@ class Inventory extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-				inventoryItemNames: [],
-				inventoryItemCounts: []
+				inventoryItemInfo: null
 		};
 		
-		this.rows = 0;
-		this.cols = 0;
+		this.inventorySize = 0;
 		
 		this.show = this.show.bind(this);
 		this.hide = this.hide.bind(this);
@@ -125,17 +123,14 @@ class Inventory extends React.Component {
 	}
     
     show() {
-        $.get("/currentUserInventory/" + (String)(this.props.currentUserName)).done(function(response) {        	
-        	this.setState({inventoryItems: JSON.parse(response)});
-        	const res = JSON.parse(response);
-    		
-    		this.rows = parseInt(res[0][0]);
-    		this.cols = parseInt(res[1][0]);
-    		this.setState({inventoryItemNames: res[2],
-    					   inventoryItemTypes: res[3], 
-    					   inventoryItemCounts: res[4]});
-    		
-    		document.getElementById("inventoryWindow").style.display="inline";
+        $.get("/loadUserInventoryDims").done(function(response1) {  
+        	this.inventorySize = JSON.parse(response1);
+        	
+            $.get("/currentUserInventory").done(function(response2) {
+        		this.setState({inventoryItemInfo: JSON.parse(response2)});
+        		
+        		document.getElementById("inventoryWindow").style.display="inline";
+            }.bind(this));
         }.bind(this));
     }
     
@@ -144,33 +139,40 @@ class Inventory extends React.Component {
     }
 	
 	render() {
-		// number of items in inventory
-		const numOfItems = this.state.inventoryItemNames.length;
+		if (this.state.inventoryItemInfo === null) {
+			return null;
+//			return (<div> "loading inventory" </div>);
+		}
+		
 		// init the inventory box
 		const inventoryBox = [];
+		// init counter for number of items we've looped through
+		let count = 0;
 		
+		for (var key in this.state.inventoryItemInfo) {
+			if (count >= this.inventorySize) {
+				break;
+			}
+			
+			const itemName = key;
+			const itemType = this.state.inventoryItemInfo[key][0];
+			//TODO: reflect item counts
+			const itemAmount = this.state.inventoryItemInfo[key][1];
+			const thisItem = <DragItem className={"toolbaritem"} id={itemName} type={itemType} onClick={this.props.handleClick}> <img src={"css/images/toolImages/" + itemType + "/" + itemName + ".png"} height={40} width={40}/> </DragItem>
+
+			thisSlot = <DropSlot children={thisItem} className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
+
+			inventoryBox.push(thisSlot);
+			
+			count++;
+		}
+		
+		for (var i=count; i<this.inventorySize; i++) {
+			// just create a slot with no item
+			const thisSlot = <DropSlot className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
+			inventoryBox.push(thisSlot);
+		}
 //<DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>		
-		for (var i = 0; i < this.rows; i++) {
-        	for (var j = 0; j < this.cols; j++) {
-        		let thisSlot = null;
-        		
-        		// create an item if there is more items to display
-        		if (i*this.cols + j < numOfItems) {
-            		const itemName = this.state.inventoryItemNames[i*this.cols + j];
-            		const itemType = this.state.inventoryItemTypes[i*this.cols + j];
-            		//TODO: reflect item counts
-            		const itemCount = this.state.inventoryItemCounts[i*this.cols + j];
-            		const thisItem = <DragItem className={"toolbaritem"} id={itemName} type={itemType} onClick={this.props.handleClick}> <img src={"css/images/toolImages/" + itemType + "/" + itemName + ".png"} height={40} width={40}/> </DragItem>
-            		
-            		thisSlot = <DropSlot children={thisItem} className={"inventorySlot"} id={"inventorySlot" + (String)(i*this.cols + j)}/>;
-        		} else {
-            		// just create a slot with no item
-            		thisSlot = <DropSlot className={"inventorySlot"} id={"inventorySlot" + (String)(i*this.cols + j)}/>;
-        		}
-        		
-        		inventoryBox.push(thisSlot);
-        	}
-        }
 		
 		return (
 				<div className={"inventoryWindow"} id={"inventoryWindow"}>
