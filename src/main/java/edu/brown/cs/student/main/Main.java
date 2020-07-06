@@ -151,9 +151,10 @@ public final class Main {
     Spark.post("/showingWhatFriendWasClicked", this::ClickingFriendOnMapHandler);
 
     Spark.get("/currentUserName", new GetCurrentUserHandler());
-    Spark.get("/loadUserInventoryDims", UserDataHandlers::loadInventoryDimensions);
+    Spark.get("/loadUserInventorySize", UserDataHandlers::loadInventoryDimensions);
     Spark.get("/currentUserInventory", UserDataHandlers::loadInventoryItems);
     Spark.get("/shortcutTools", UserDataHandlers::loadShortcutTools);
+    Spark.post("/updateShortcutTool", UserDataHandlers::updateShortcutTool);
 
     // all farmingHandler routes are made in initFarmViewerAndHandler
   }

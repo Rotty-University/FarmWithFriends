@@ -1663,5 +1663,28 @@ public final class FarmProxy {
 
     return tools;
   }
+
+  public static void setShortcutToolsByUsername(String username, int slotNumber, String toolType,
+      String toolName) {
+    String[][] oldShortcuts = getShortcutToolsByUsername(username);
+    oldShortcuts[slotNumber][0] = toolType;
+    oldShortcuts[slotNumber][1] = toolName;
+
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE user_data SET shortcutTools= ? WHERE username=?;");
+      prep.setBytes(1, DatabaseUtils.convertToByteArray(oldShortcuts));
+      prep.setString(2, username);
+
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
   // ----------------------------------------------------------------------------------
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 import edu.brown.cs.student.proxy.FarmProxy;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 
@@ -25,6 +26,16 @@ public final class UserDataHandlers {
     String username = request.session().attribute("username");
 
     return GSON.toJson(FarmProxy.getInventorySizeByUsername(username));
+  }
+
+  public static String updateShortcutTool(Request request, Response response) {
+    String username = request.session().attribute("username");
+    QueryParamsMap qm = request.queryMap();
+
+    FarmProxy.setShortcutToolsByUsername(username, Integer.parseInt(qm.value("slotNumber")),
+        qm.value("newType"), qm.value("newItem"));
+
+    return "Success";
   }
 
   /**

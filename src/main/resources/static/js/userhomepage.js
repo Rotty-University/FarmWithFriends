@@ -123,7 +123,7 @@ class Inventory extends React.Component {
 	}
     
     show() {
-        $.get("/loadUserInventoryDims").done(function(response1) {  
+        $.get("/loadUserInventorySize").done(function(response1) {  
         	this.inventorySize = JSON.parse(response1);
         	
             $.get("/currentUserInventory").done(function(response2) {
@@ -160,14 +160,14 @@ class Inventory extends React.Component {
 			const itemAmount = this.state.inventoryItemInfo[key][1];
 			const thisItem = <DragItem className={"toolbaritem"} id={itemName} type={itemType} onClick={this.props.handleClick}> <img src={"css/images/toolImages/" + itemType + "/" + itemName + ".png"} height={40} width={40}/> </DragItem>
 
-			thisSlot = <DropSlot children={thisItem} className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
+			const thisSlot = <DropSlot children={thisItem} className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
 
 			inventoryBox.push(thisSlot);
 			
 			count++;
 		}
 		
-		for (var i=count; i<this.inventorySize; i++) {
+		for (count; count<this.inventorySize; count++) {
 			// just create a slot with no item
 			const thisSlot = <DropSlot className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
 			inventoryBox.push(thisSlot);
@@ -253,8 +253,16 @@ class Home extends React.Component {
         		const toolType = toolNames[i][0];
         		const toolName = toolNames[i][1];
         		
-        		const thisTool = <DragItem className={"toolbaritem"} id={toolName} type={toolType} onClick={this.updatePrevSelectedTool}> <img src={"css/images/toolImages/" + toolType + "/" + toolName + ".png"} height={40} width={40}/> </DragItem>
-        		const thisSlot = <DropSlot children={thisTool} className={"toolSlot"} id={"tool" + (String)(i-1)}/>;
+        		let thisSlot = null;
+        		
+        		if (toolType === "" || toolName === "") {
+        			// no item here, just push slot
+        			thisSlot = <DropSlot className={"toolSlot"} id={"tool" + (String)(i)}/>;
+        		} else {
+        			// item exists here, push item and slot
+        			const thisTool = <DragItem className={"toolbaritem"} id={toolName} type={toolType} onClick={this.updatePrevSelectedTool}> <img src={"css/images/toolImages/" + toolType + "/" + toolName + ".png"} height={40} width={40}/> </DragItem>
+            		thisSlot = <DropSlot children={thisTool} className={"toolSlot"} id={"tool" + (String)(i)}/>;
+        		}
         		
         		toolBoxReturnValues.push(thisSlot);
         	}
