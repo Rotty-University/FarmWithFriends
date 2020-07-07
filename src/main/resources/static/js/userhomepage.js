@@ -111,10 +111,11 @@ class Inventory extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-				inventoryItemInfo: null
+				inventoryUpdated: false
 		};
 		
 		this.inventorySize = 0;
+		this.inventoryItemInfo = [];
 		
 		this.show = this.show.bind(this);
 		this.hide = this.hide.bind(this);
@@ -123,61 +124,80 @@ class Inventory extends React.Component {
 	}
     
     show() {
+    	
         $.get("/loadUserInventorySize").done(function(response1) {  
         	this.inventorySize = JSON.parse(response1);
         	
-            $.get("/currentUserInventory").done(function(response2) {
-        		this.setState({inventoryItemInfo: JSON.parse(response2)});
+            $.get("/currentUserInventory").done(function(response2) {        		
+        		const itemMap = JSON.parse(response2);
+        		
+        		for (var key in itemMap) {
+        			console.log(key)
+        		}
+        		
+        		// init the inventory box
+        		const inventoryBox = [];
+        		// init counter for number of items we've looped through
+        		let count = 0;
+        		
+        		for (var key in itemMap) {
+        			if (count >= this.inventorySize) {
+        				break;
+        			}
+        			
+        			const itemInfo = [];
+        			itemInfo.push("true");
+        			itemInfo.push("toolbaritem");
+        			itemInfo.push(key);
+        			itemInfo.push(itemMap[key][0]);
+        			itemInfo.push(itemMap[key][1]);
+
+        			const thisSlot = <DropSlot key={(String)(count)} itemInfo={itemInfo} className={"inventorySlot"} 
+        			id={"inventorySlot" + (String)(count)} handleItemClick={this.props.handleItemClick}/>;
+
+        			inventoryBox.push(thisSlot);
+        			
+        			count++;
+        		}
+        		
+        		for (count; count<this.inventorySize; count++) {
+        			// just create a slot with no item
+        			const itemInfo = [];
+        			itemInfo.push("false");
+        			itemInfo.push(null);
+        			itemInfo.push(null);
+        			itemInfo.push(null);
+        			itemInfo.push(null);
+        			
+        			const thisSlot = <DropSlot key={(String)(count)} itemInfo={itemInfo} className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
+        			inventoryBox.push(thisSlot);
+        		}
+        		
+        		this.inventoryItemInfo = inventoryBox;
+        		
+        		this.setState({inventoryUpdated: true});
         		
         		document.getElementById("inventoryWindow").style.display="inline";
+        		
             }.bind(this));
         }.bind(this));
     }
     
     hide() {
     	document.getElementById("inventoryWindow").style.display="none";
+    	this.setState({inventoryUpdated: false});
     }
 	
 	render() {
-		if (this.state.inventoryItemInfo === null) {
-			return null;
-//			return (<div> "loading inventory" </div>);
-		}
-		
-		// init the inventory box
-		const inventoryBox = [];
-		// init counter for number of items we've looped through
-		let count = 0;
-		
-		for (var key in this.state.inventoryItemInfo) {
-			if (count >= this.inventorySize) {
-				break;
-			}
-			
-			const itemName = key;
-			const itemType = this.state.inventoryItemInfo[key][0];
-			//TODO: reflect item counts
-			const itemAmount = this.state.inventoryItemInfo[key][1];
-			const thisItem = <DragItem className={"toolbaritem"} id={itemName} type={itemType} onClick={this.props.handleClick}> <img src={"css/images/toolImages/" + itemType + "/" + itemName + ".png"} height={40} width={40}/> </DragItem>
-
-			const thisSlot = <DropSlot children={thisItem} className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
-
-			inventoryBox.push(thisSlot);
-			
-			count++;
-		}
-		
-		for (count; count<this.inventorySize; count++) {
-			// just create a slot with no item
-			const thisSlot = <DropSlot className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
-			inventoryBox.push(thisSlot);
+		if (!this.state.inventoryUpdated) {
+			this.inventoryItemInfo = [];
 		}
 //<DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>		
 		
 		return (
 				<div className={"inventoryWindow"} id={"inventoryWindow"}>
 					<div className={"inventoryBox"} id={"inventoryBox"}>
-					{inventoryBox}
+					{this.inventoryItemInfo}
 					</div>
 					<button className={"closeInventory"} onClick={this.hide}> close inventory </button>
 				</div>
@@ -253,17 +273,27 @@ class Home extends React.Component {
         		const toolType = toolNames[i][0];
         		const toolName = toolNames[i][1];
         		
-        		let thisSlot = null;
-        		
+        		const itemInfo = [];
         		if (toolType === "" || toolName === "") {
-        			// no item here, just push slot
-        			thisSlot = <DropSlot className={"toolSlot"} id={"tool" + (String)(i)}/>;
+        			// no item here
+        			itemInfo.push("false");
+        			itemInfo.push(null);
+        			itemInfo.push(null);
+        			itemInfo.push(null);
+        			itemInfo.push(null);
         		} else {
-        			// item exists here, push item and slot
-        			const thisTool = <DragItem className={"toolbaritem"} id={toolName} type={toolType} onClick={this.updatePrevSelectedTool}> <img src={"css/images/toolImages/" + toolType + "/" + toolName + ".png"} height={40} width={40}/> </DragItem>
-            		thisSlot = <DropSlot children={thisTool} className={"toolSlot"} id={"tool" + (String)(i)}/>;
+        			// push item info here
+        			itemInfo.push("true");
+        			itemInfo.push("toolbaritem");
+        			itemInfo.push(toolName);
+        			itemInfo.push(toolType);
+        			// TODO: place holder, add in amount later
+        			itemInfo.push(null);
         		}
         		
+        		const thisSlot = <DropSlot key={(String)(i)} itemInfo={itemInfo} className={"toolSlot"} 
+        		id={"tool" + (String)(i)} handleItemClick={this.updatePrevSelectedTool}/>;
+        	
         		toolBoxReturnValues.push(thisSlot);
         	}
         	
@@ -279,7 +309,7 @@ class Home extends React.Component {
                 <div className={"farmContainer"}>
                     {table}
                 </div>    
-                <Inventory currentUserName={this.props.currentUserName} handleClick={this.updatePrevSelectedTool}/>
+                <Inventory currentUserName={this.props.currentUserName} handleItemClick={this.updatePrevSelectedTool}/>
                 <div className="toolbox">
                       {this.state.shortcutTools}
 

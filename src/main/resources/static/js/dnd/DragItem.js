@@ -1,18 +1,39 @@
 class DragItem extends React.Component {
+	constructor(props)
+	{
+		super(props);
+		
+		this.dragEnd = this.dragEnd.bind(this);
+	}
 	
 	drag = (e) => {
-		// if img is selected, default to parent DragItem
-		const selected = e.target.nodeName == "IMG" ? e.target.parentElement : e.target;
-		e.dataTransfer.setData('transfer', selected.id);
+		const itemInfo = [];
+		itemInfo.push("true");
+		itemInfo.push(this.props.className);
+		itemInfo.push(this.props.id);
+		itemInfo.push(this.props.type);
+		itemInfo.push(this.props.amount);
 		
-		// save parent DropSlot for swapping
-		e.dataTransfer.setData('originalSlot', selected.parentElement.id);
+		// save new item info for new slot to update child
+		e.dataTransfer.setData("itemInfo", itemInfo);
+		
+		// save data to check if item was dragged from tool box
+		e.dataTransfer.setData("toolSlotNumber", this.props.parentToolSlotNumber);
+	}
+	
+	dragEnd = (e) => {
+		console.log("dragEnd")
+		const newItemInfo = e.dataTransfer.getData("swapItemInfo");
+		console.log("swap info: " + newItemInfo)
+		this.props.swapItems(newItemInfo);
 	}
 	
 	render() {
 		return (
-				<div id={this.props.id} data-tool-type={this.props.type} onClick={this.props.onClick} className={this.props.className} draggable="true" onDragStart={this.drag}>
-				{this.props.children}
+				<div id={this.props.id} data-tool-type={this.props.type} onClick={this.props.onClick} 
+				className={this.props.className} draggable="true" onDragStart={this.drag} 
+				onDragEnd={this.dragEnd}>
+					{this.props.children}
 				</div>
 		);
 	}

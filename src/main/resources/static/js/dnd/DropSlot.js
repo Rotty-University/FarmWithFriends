@@ -1,63 +1,78 @@
 class DropSlot extends React.Component {
+	constructor(props)
+	{
+		super(props);
+
+		// ***REMEMBER: handleClick is in PROPS and will never change
+		this.state = {
+				/*
+				 * 0: hasItem
+				 * 1: itemClassName
+				 * 2: itemName
+				 * 3: itemType
+				 * 4: itemAmount
+				 */
+				itemInfo: this.props.itemInfo
+		};
+		
+		this.drop = this.drop.bind(this);
+		this.swapItems = this.swapItems.bind(this);
+		this.allowDrop = this.allowDrop.bind(this);
+	}
 	
 	drop = (e) => {
 		e.preventDefault();
+		
 		// new item for this slot
-		const data = e.dataTransfer.getData('transfer');
-		// the slot to swap this slot's item to
-		const originalSlotID = e.dataTransfer.getData("originalSlot");
+		const newItemInfo = e.dataTransfer.getData("itemInfo").split(",");
+		const toolSlotNumber = parseInt(e.dataTransfer.getData("toolSlotNumber"));
 		
-		// check if accepted dragItem was dragged onto this
-		if (data == "" || originalSlotID == "") {
-			return;
-		}
-
-		// always default to parent DropSlot 
-		let selected = e.target;
-		
-		if (selected.nodeName == "IMG") {
-			// first selected is the img inside slot inside item
-			selected = selected.parentElement.parentElement;
-		} else if (selected.className == "toolbaritem") {
-			// first selected is the item
-			selected = selected.parentElement;
-		}
-		
-		// do nothing if dragging on self
-		if (selected.children.length > 0 && selected.children[0].id === data) {
-			return;	
-		}
-		
-		// swap current child if there is any
-		if (selected.firstChild) {
-			if (document.getElementById(originalSlotID).className === "toolSlot") {
-				this.updateDatabase(originalSlotID.substring(originalSlotID.length-1), 
-						selected.lastChild.getAttribute("data-tool-type"),
-						selected.lastChild.id);
+		if (toolSlotNumber !== -1) {
+			// need to update database
+			if (this.state.itemInfo[0] === "true") {
+				// update to current item
+				this.updateDatabase(toolSlotNumber, 
+						this.state.itemInfo[3],
+						this.state.itemInfo[2]);
+			} else {
+				// no current item, update to empty strings
+				this.updateDatabase(toolSlotNumber, 
+						"",
+						"");
 			}
-			// perform the swap
-			document.getElementById(originalSlotID).appendChild(selected.lastChild);
-		} else if (document.getElementById(originalSlotID).className === "toolSlot") {
-			// if current child is empty and being swapped to a tool slot, then also update database
-			this.updateDatabase(originalSlotID.substring(originalSlotID.length-1), "", "");
 		}
 		
-		// append the dragged element to this slot
-		const newElement = document.getElementById(data)
-		selected.appendChild(newElement);
+		// update current item
+		this.setState({
+			itemInfo: newItemInfo
+		});
 		
 		// update database if this slot is toolSlot
-		if (selected.className === "toolSlot") {
-			const thisSlotId = selected.id;
-			this.updateDatabase(thisSlotId.substring(thisSlotId.length-1), 
-					newElement.getAttribute("data-tool-type"),
-					newElement.id);
+		if (this.props.className === "toolSlot") {
+			const thisSlotId = this.props.id.substring(this.props.id.length - 1);
+			this.updateDatabase(thisSlotId, 
+					newItemInfo[3],
+					newItemInfo[2]);
 		}
-		//TODO: add backend handler for this
 	}
 	
 	allowDrop = (e) => {
 		e.preventDefault();
+		
+		const itemInfo = [];
+		itemInfo.push(this.state.itemInfo[0]);
+		itemInfo.push(this.state.itemInfo[1]);
+		itemInfo.push(this.state.itemInfo[2]);
+		itemInfo.push(this.state.itemInfo[3]);
+		itemInfo.push(this.state.itemInfo[4]);
+		
+		// swap current child if there is any
+		e.dataTransfer.setData("swapItemInfo", itemInfo);
+		// save data to check if this slot is toolSlot
+		e.dataTransfer.setData("swapToolSlotNumber", this.props.className==="toolSlot" ? this.props.id.substring(this.props.id.length-1) : -1);
+
+		
+		console.log(itemInfo)
 	};
 	
 	updateDatabase = (slotNumber, newType, newItem) => {
@@ -68,14 +83,34 @@ class DropSlot extends React.Component {
 		}
 		
 		$.post("/updateShortcutTool", dict);
-		console.log("done")
+	}
+	
+	swapItems = (newItemInfo) => {
+		this.setState({
+			itemInfo: newItemInfo
+		});
 	}
 		
-	render() {
-		return (
-				<div id={this.props.id} className={this.props.className} onDrop={this.drop} onDragOver={this.allowDrop}>
-				{this.props.children}
-				</div>
-		);
+	render() {		
+		const itemInfo = this.state.itemInfo;
+
+		if (itemInfo[0] === "true") {
+			const item = <img src={"css/images/toolImages/" + itemInfo[3] + "/" + itemInfo[2] + ".png"} height={40} width={40}/>;
+			const parentToolSlotNumber = this.props.className==="toolSlot" ? this.props.id.substring(this.props.id.length-1) : -1;
+			
+			return (
+					<div id={this.props.id} className={this.props.className} onDrop={this.drop} onDragOver={this.allowDrop}>
+						<DragItem className={itemInfo[1]} id={itemInfo[2]} type={itemInfo[3]} 
+						onClick={this.props.handleItemClick} children={item} swapItems={this.swapItems}
+						parentToolSlotNumber={parentToolSlotNumber}> 
+						</DragItem>
+					</div>
+			);
+		} else {
+			return (
+					<div id={this.props.id} className={this.props.className} onDrop={this.drop} onDragOver={this.allowDrop}>
+					</div>
+			);
+		}
 	}
 }
