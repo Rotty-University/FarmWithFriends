@@ -2,8 +2,6 @@ class DragItem extends React.Component {
 	constructor(props)
 	{
 		super(props);
-		
-		this.dragEnd = this.dragEnd.bind(this);
 	}
 	
 	drag = (e) => {
@@ -15,24 +13,18 @@ class DragItem extends React.Component {
 		itemInfo.push(this.props.amount);
 		
 		// save new item info for new slot to update child
-		e.dataTransfer.setData("itemInfo", itemInfo);
-		
-		// save data to check if item was dragged from tool box
-		e.dataTransfer.setData("toolSlotNumber", this.props.parentToolSlotNumber);
-	}
-	
-	dragEnd = (e) => {
-		console.log("dragEnd")
-		const newItemInfo = e.dataTransfer.getData("swapItemInfo");
-		console.log("swap info: " + newItemInfo)
-		this.props.swapItems(newItemInfo);
+		e.dataTransfer.setData("ogItemInfo", itemInfo);
+		// save original slot class
+		e.dataTransfer.setData("ogSlotClass", this.props.slotClass);
+		// save original slot number
+		e.dataTransfer.setData("ogSlotNumber", this.props.slotNumber);
+		// 
 	}
 	
 	render() {
 		return (
 				<div id={this.props.id} data-tool-type={this.props.type} onClick={this.props.onClick} 
-				className={this.props.className} draggable="true" onDragStart={this.drag} 
-				onDragEnd={this.dragEnd}>
+				className={this.props.className} draggable="true" onDragStart={this.drag}>
 					{this.props.children}
 				</div>
 		);

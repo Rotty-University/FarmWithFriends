@@ -110,98 +110,44 @@ class Game extends React.Component {
 class Inventory extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {
-				inventoryUpdated: false
-		};
 		
-		this.inventorySize = 0;
-		this.inventoryItemInfo = [];
-		
-		this.show = this.show.bind(this);
 		this.hide = this.hide.bind(this);
-		
-		window.inventoryComponent = this;
 	}
-    
-    show() {
-    	
-        $.get("/loadUserInventorySize").done(function(response1) {  
-        	this.inventorySize = JSON.parse(response1);
-        	
-            $.get("/currentUserInventory").done(function(response2) {        		
-        		const itemMap = JSON.parse(response2);
-        		
-        		for (var key in itemMap) {
-        			console.log(key)
-        		}
-        		
-        		// init the inventory box
-        		const inventoryBox = [];
-        		// init counter for number of items we've looped through
-        		let count = 0;
-        		
-        		for (var key in itemMap) {
-        			if (count >= this.inventorySize) {
-        				break;
-        			}
-        			
-        			const itemInfo = [];
-        			itemInfo.push("true");
-        			itemInfo.push("toolbaritem");
-        			itemInfo.push(key);
-        			itemInfo.push(itemMap[key][0]);
-        			itemInfo.push(itemMap[key][1]);
-
-        			const thisSlot = <DropSlot key={(String)(count)} itemInfo={itemInfo} className={"inventorySlot"} 
-        			id={"inventorySlot" + (String)(count)} handleItemClick={this.props.handleItemClick}/>;
-
-        			inventoryBox.push(thisSlot);
-        			
-        			count++;
-        		}
-        		
-        		for (count; count<this.inventorySize; count++) {
-        			// just create a slot with no item
-        			const itemInfo = [];
-        			itemInfo.push("false");
-        			itemInfo.push(null);
-        			itemInfo.push(null);
-        			itemInfo.push(null);
-        			itemInfo.push(null);
-        			
-        			const thisSlot = <DropSlot key={(String)(count)} itemInfo={itemInfo} className={"inventorySlot"} id={"inventorySlot" + (String)(count)}/>;
-        			inventoryBox.push(thisSlot);
-        		}
-        		
-        		this.inventoryItemInfo = inventoryBox;
-        		
-        		this.setState({inventoryUpdated: true});
-        		
-        		document.getElementById("inventoryWindow").style.display="inline";
-        		
-            }.bind(this));
-        }.bind(this));
-    }
     
     hide() {
     	document.getElementById("inventoryWindow").style.display="none";
-    	this.setState({inventoryUpdated: false});
     }
 	
 	render() {
-		if (!this.state.inventoryUpdated) {
-			this.inventoryItemInfo = [];
-		}
 //<DropSlot id="tool1" className={"toolSlot"}> <DragItem className={"toolbaritem"} id={"defaultPlough"} type={"plough"} onClick={this.updatePrevSelectedTool}> <img src={"css/images/iconHoe.svg"} height={40} width={40}/> </DragItem> </DropSlot>		
 		
 		return (
 				<div className={"inventoryWindow"} id={"inventoryWindow"}>
 					<div className={"inventoryBox"} id={"inventoryBox"}>
-					{this.inventoryItemInfo}
+					{this.props.children}
 					</div>
 					<button className={"closeInventory"} onClick={this.hide}> close inventory </button>
 				</div>
 	            );
+	}
+}
+
+class ToolBox extends React.Component {
+	constructor(props)
+	{
+		super(props);
+	}
+
+	render() {
+		return(
+				<div id="toolBoxWindow">
+				<div className="toolbox" id="toolBox">
+				{this.props.children}
+				</div>
+
+				<button className={"showInventory"} onClick={this.props.showInventory}> show inventory </button>
+				</div>
+		);
 	}
 }
 
@@ -212,13 +158,15 @@ class Home extends React.Component {
         this.state = {
             prevSelectedToolType: "select",
             prevSelectedToolID: "",
-            shortcutTools: []
+            shortcutTools: [],
+            inventoryInfo: []
         }
         this.updatePrevSelectedTool = this.updatePrevSelectedTool.bind(this)
         this.generateFarmArray = this.generateFarmArray.bind(this)
         this.closeTheDiv = this.closeTheDiv.bind(this)
         
         this.showInventory = this.showInventory.bind(this);
+        this.swapItems = this.swapItems.bind(this);
     }
 
     generateFarmArray(rows, columns, activeToolType, activeToolID) {
@@ -260,21 +208,121 @@ class Home extends React.Component {
     }
     
     showInventory() {
-    	window.inventoryComponent.show();
+
+    	$.get("/loadUserInventorySize").done(function(response1) {  
+    		this.inventorySize = JSON.parse(response1);
+
+    		$.get("/currentUserInventory").done(function(response2) {        		
+    			const itemMap = JSON.parse(response2);
+
+//    			for (var key in itemMap) {
+//    				console.log(key)
+//    			}
+
+    			// init the inventory box
+    			const inventoryBox = [];
+    			// init counter for number of items we've looped through
+    			let count = 0;
+
+    			for (var key in itemMap) {
+    				if (count >= this.inventorySize) {
+    					break;
+    				}
+
+    				const itemInfo = [];
+    				itemInfo.push("true");
+    				itemInfo.push("toolbaritem");
+    				itemInfo.push(key);
+    				itemInfo.push(itemMap[key][0]);
+    				itemInfo.push(itemMap[key][1]);
+
+    				const thisSlot = <DropSlot key={count} itemInfo={itemInfo} className={"inventorySlot"} 
+    				id={count} handleItemClick={this.updatePrevSelectedTool} 
+    				swapItems={this.swapItems}/>;
+
+    				inventoryBox.push(thisSlot);
+
+    				count++;
+    			}
+
+    			for (count; count<this.inventorySize; count++) {
+    				// just create a slot with no item
+    				const itemInfo = [];
+    				itemInfo.push("false");
+    				itemInfo.push(null);
+    				itemInfo.push(null);
+    				itemInfo.push(null);
+    				itemInfo.push(null);
+
+    				const thisSlot = <DropSlot key={count} itemInfo={itemInfo} className={"inventorySlot"} id={count}
+    				handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+    				
+    				inventoryBox.push(thisSlot);
+    			}
+
+    			this.setState({inventoryInfo: inventoryBox});
+
+    			document.getElementById("inventoryWindow").style.display="inline";
+
+    		}.bind(this));
+    	}.bind(this));
+    }
+    
+    swapItems(slotClass1, slotKey1, itemInfo1, slotClass2, slotKey2, itemInfo2) {
+    	let currToolBox = this.state.shortcutTools;
+    	let currInventory = this.state.inventoryInfo;
+    	
+    	// update slot1
+    	let newSlot1 = null;
+    	if (slotClass1 == "toolSlot") {
+    		newSlot1 = <DropSlot key={slotKey1} itemInfo={itemInfo2} className={"toolSlot"} id={slotKey1}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+    				
+        	currToolBox[slotKey1] = newSlot1;
+    	} else {
+    		newSlot1 = <DropSlot key={slotKey1} itemInfo={itemInfo2} className={"inventorySlot"} id={slotKey1}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+        	
+    		currInventory[slotKey1] = newSlot1;
+    	}
+    	
+    	// update slot2
+    	let newSlot2 = null;
+    	if (slotClass2 == "toolSlot") {
+    		newSlot2 = <DropSlot key={slotKey2} itemInfo={itemInfo1} className={"toolSlot"} id={slotKey2}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+        	
+    		currToolBox[slotKey2] = newSlot2;
+    	} else {
+    		newSlot2 = <DropSlot key={slotKey2} itemInfo={itemInfo1} className={"inventorySlot"} id={slotKey2}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+        	
+    		currInventory[slotKey2] = newSlot2;
+    	}
+    	
+    	console.log("Class1: " + slotClass1, "key1: " + slotKey1, "item1: " + itemInfo1);
+    	console.log("Class2: " + slotClass2, "key2: " + slotKey2, "item2: " + itemInfo2);
+    	
+    	// set states
+    	this.setState(
+    			{
+    				shortcutTools: currToolBox,
+    				inventoryInfo: currInventory
+    			});
     }
 
     componentDidMount() {
-        $.get("/shortcutTools").done(function(response) {
-        	const toolNames = JSON.parse(response);
-        	const toolBoxReturnValues = [];
-        	
-        	// example toolSlot: <DropSlot id="tool1" className={"toolSlot"}/>
-        	for (var i=0; i<toolNames.length; i++) {
-        		const toolType = toolNames[i][0];
-        		const toolName = toolNames[i][1];
-        		
-        		const itemInfo = [];
-        		if (toolType === "" || toolName === "") {
+    	$.get("/shortcutTools").done(function(response) {
+    		const toolNames = JSON.parse(response);
+    		const toolBoxReturnValues = [];
+
+    		// example toolSlot: <DropSlot id="tool1" className={"toolSlot"}/>
+    		for (var i=0; i<toolNames.length; i++) {
+    			const toolType = toolNames[i][0];
+    			const toolName = toolNames[i][1];
+
+    			const itemInfo = [];
+    			if (toolType === "" || toolName === "") {
         			// no item here
         			itemInfo.push("false");
         			itemInfo.push(null);
@@ -291,12 +339,12 @@ class Home extends React.Component {
         			itemInfo.push(null);
         		}
         		
-        		const thisSlot = <DropSlot key={(String)(i)} itemInfo={itemInfo} className={"toolSlot"} 
-        		id={"tool" + (String)(i)} handleItemClick={this.updatePrevSelectedTool}/>;
+        		const thisSlot = <DropSlot key={i} itemInfo={itemInfo} className={"toolSlot"} 
+        		id={i} handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
         	
         		toolBoxReturnValues.push(thisSlot);
         	}
-        	
+    		
         	this.setState({shortcutTools: toolBoxReturnValues});
         }.bind(this));
     }
@@ -309,12 +357,8 @@ class Home extends React.Component {
                 <div className={"farmContainer"}>
                     {table}
                 </div>    
-                <Inventory currentUserName={this.props.currentUserName} handleItemClick={this.updatePrevSelectedTool}/>
-                <div className="toolbox">
-                      {this.state.shortcutTools}
-
-                      <button onClick={this.showInventory}> show inventory </button>
-                </div>
+                <Inventory children={this.state.inventoryInfo} currentUserName={this.props.currentUserName}/>
+                <ToolBox children={this.state.shortcutTools} showInventory={this.showInventory}/>
             </div>
         )
     }
