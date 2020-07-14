@@ -1,13 +1,12 @@
 package edu.brown.cs.student.farm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.brown.cs.student.proxy.FarmProxy;
+
+import static org.junit.Assert.*;
 
 public class DataBaseTest {
   @Before
@@ -184,6 +183,16 @@ public class DataBaseTest {
 //    FarmProxy.removeTradeListing("farmer bob,milt,1,wheat,1");
 //    FarmProxy.removeTradeListing("farmer joe,corn,2,tomato,4");
 //    assertEquals(FarmProxy.getTradingCenter(), "");
+    tearDown();
+  }
+
+  @Test
+  public void testingStore() throws Exception {
+    setUp();
+    assertEquals(FarmProxy.getStoreItemAmt("tomato", "seeds"), 5);
+    FarmProxy.updateStoreBalance(3, "tomato", "seeds");
+    assertEquals(FarmProxy.getStoreItemAmt("tomato", "seeds"), 3);
+    FarmProxy.updateStoreBalance(5, "tomato", "seeds");
     tearDown();
   }
 

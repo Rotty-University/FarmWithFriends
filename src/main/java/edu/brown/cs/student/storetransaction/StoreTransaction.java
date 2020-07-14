@@ -56,11 +56,25 @@ public final class StoreTransaction {
     if (currentBalance < totalPrice) {
       return -1;
     }
-
+    int storeAmt = FarmProxy.getStoreItemAmt(itemName, category);
+    // database problem
+    if (storeAmt == -1) {
+      return -3;
+    }
+    // check if item is in stock
+    if (storeAmt < amount) {
+      return -2;
+    }
+    FarmProxy.updateStoreBalance(storeAmt - amount, itemName, category);
     FarmProxy.updateUserBalance(username, FarmProxy.getUserBalance(username) - totalPrice);
     FarmProxy.updateInventory(username, category, itemName,
         FarmProxy.getOneInventoryItem(username, category, itemName) + amount);
 
     return totalPrice;
   }
+
+  /**
+   * TODO: Queries to randomize the items offered in the store each day and the amounts that can
+   * be bought.
+   */
 } // end of class

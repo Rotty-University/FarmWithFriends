@@ -1695,4 +1695,57 @@ public final class FarmProxy {
     System.out.println();
   }
   // ----------------------------------------------------------------------------------
+  // **********************
+  // *Store related queries*
+  // **********************
+
+  /**
+   * Retrieves number of items a store is selling of a particular item.
+   * @param itemName name of item
+   * @param category category of item
+   * @return number of specified item
+   */
+  public static int getStoreItemAmt(String itemName, String category) {
+    PreparedStatement prep;
+    ResultSet rs = null;
+    int ret = 0;
+    try {
+      prep = conn.prepareStatement(
+          "SELECT amount FROM store WHERE name=? AND category=?;");
+      prep.setString(1, itemName);
+      prep.setString(2, category);
+
+      rs = prep.executeQuery();
+      while (rs.next()) {
+        ret = rs.getInt(1);
+      }
+      rs.close();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("ERROR");
+      return -1;
+    }
+    return ret;
+  }
+  /**
+   * Updates the store's amounts of an item
+   * @param newAmount new amount of item
+   * @param itemName item's name
+   * @param category item's category
+   */
+  public static void updateStoreBalance(int newAmount, String itemName, String category) {
+    PreparedStatement prep;
+    try {
+      prep = conn.prepareStatement("UPDATE store SET amount=? WHERE name=? AND category=?;");
+      prep.setInt(1, newAmount);
+      prep.setString(2, itemName);
+      prep.setString(3, category);
+      prep.executeUpdate();
+      prep.close();
+    } catch (SQLException e) {
+      System.out.println("SQL error while updating balance for " + itemName + ": " + category);
+    }
+  }
+  // ----------------------------------------------------------------------------------
+
 }
