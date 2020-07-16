@@ -1685,14 +1685,6 @@ public final class FarmProxy {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-
-    for (String[] s : oldShortcuts) {
-      if (s[1].equals(""))
-        System.out.println("none");
-      else
-        System.out.println(s[1]);
-    }
-    System.out.println();
   }
   // ----------------------------------------------------------------------------------
 }

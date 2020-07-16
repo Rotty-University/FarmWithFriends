@@ -156,8 +156,6 @@ class Home extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            prevSelectedToolType: "select",
-            prevSelectedToolID: "",
             shortcutTools: [],
             inventoryInfo: []
         }
@@ -167,6 +165,29 @@ class Home extends React.Component {
         
         this.showInventory = this.showInventory.bind(this);
         this.swapItems = this.swapItems.bind(this);
+        
+        this.prevSelectedToolType = "select";
+        this.prevSelectedToolID = "";
+        this.getPrevSelectedToolType = this.getPrevSelectedToolType.bind(this);
+        this.getPrevSelectedToolID = this.getPrevSelectedToolID.bind(this);
+        
+        // set up action map for handleClick()
+        this.actionMap = new Map();
+        this.actionMap.set("select", 0);
+        this.actionMap.set("plow", 1);
+        this.actionMap.set("seeds", 2);
+        this.actionMap.set("water", 3);
+        this.actionMap.set("harvest", 4);
+        this.actionMap.set("steal", 5);
+        this.actionMap.set("cure", 6);
+    }
+    
+    getPrevSelectedToolType() {
+    	return this.actionMap.get(this.prevSelectedToolType);
+    }
+    
+    getPrevSelectedToolID() {
+    	return this.getPrevSelectedToolID;
     }
 
     generateFarmArray(rows, columns, activeToolType, activeToolID) {
@@ -188,18 +209,17 @@ class Home extends React.Component {
 //        console.log(newToolID);
         
         // remove the highlight on the tool selected before by changing style
-        let current = document.getElementById(this.state.prevSelectedToolID);
+        let current = document.getElementById(this.prevSelectedToolID);
         if (current != null) {
             current.className = "toolbaritem";
         }
         
         // select the tool by highlighting
         selected.className = "toolbarSelected";
-        this.setState({
-						prevSelectedToolID: newToolID,
-        				prevSelectedToolType: newToolType
-        			   });
-        
+						
+        // update previously selected tool information
+        this.prevSelectedToolID = newToolID;
+        this.prevSelectedToolType = newToolType;
     }
     
     closeTheDiv(){
@@ -300,8 +320,8 @@ class Home extends React.Component {
     		currInventory[slotKey2] = newSlot2;
     	}
     	
-    	console.log("Class1: " + slotClass1, "key1: " + slotKey1, "item1: " + itemInfo1);
-    	console.log("Class2: " + slotClass2, "key2: " + slotKey2, "item2: " + itemInfo2);
+//    	console.log("Class1: " + slotClass1, "key1: " + slotKey1, "item1: " + itemInfo1);
+//    	console.log("Class2: " + slotClass2, "key2: " + slotKey2, "item2: " + itemInfo2);
     	
     	// set states
     	this.setState(
@@ -351,7 +371,7 @@ class Home extends React.Component {
 
     render() {
         this.closeTheDiv()
-        let table = this.generateFarmArray(12, 20, this.state.prevSelectedToolType, this.state.prevSelectedToolID);
+        let table = this.generateFarmArray(12, 20, this.getPrevSelectedToolType, this.getPrevSelectedToolID);
         return (
             <div className={"homeContainer"} onClick={this.resetTool}>
                 <div className={"farmContainer"}>
@@ -386,16 +406,6 @@ class Table extends React.Component {
         this.state = {
         		spritePaths: this.spritePaths
         };
-        
-        // set up action map for handleClick()
-        this.actionMap = new Map();
-        this.actionMap.set("select", 0);
-        this.actionMap.set("plow", 1);
-        this.actionMap.set("seeds", 2);
-        this.actionMap.set("water", 3);
-        this.actionMap.set("harvest", 4);
-        this.actionMap.set("steal", 5);
-        this.actionMap.set("cure", 6);
         
         // set up timer to constantly update
         setInterval(this.updateTiles, 500);
@@ -475,7 +485,6 @@ class Table extends React.Component {
                 	tileId={i*this.props.columns + idx}
                     activeToolType={this.props.activeToolType}
                 	activeToolID={this.props.activeToolID}
-                	actionMap = {this.actionMap}
                 	currentUserName = {this.props.currentUserName}
                 /></td>)
             }
@@ -512,7 +521,7 @@ class Tile extends React.Component {
         const dict = {
         	row : this.props.row,
             col : this.props.column,
-            action : this.props.actionMap.get(this.props.activeToolType),
+            action : this.props.activeToolType,
             //TODO: change the crop name here once the front end selection is set up
             crop : this.props.activeToolID,
             //TODO: change the water duration here
