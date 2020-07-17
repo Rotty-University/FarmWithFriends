@@ -187,7 +187,7 @@ class Home extends React.Component {
     }
     
     getPrevSelectedToolID() {
-    	return this.getPrevSelectedToolID;
+    	return this.prevSelectedToolID;
     }
 
     generateFarmArray(rows, columns, activeToolType, activeToolID) {
@@ -690,6 +690,16 @@ class Tile extends React.Component {
     }
     
     // --------------------------------------------------------------------------------------
+    
+    // optimize performance: only re-render if sprite for this tile has changed
+    shouldComponentUpdate(nextProps, nextState) {
+    	if (nextState.spritepath !== this.state.spritepath ||
+    			nextProps.spritepath !== this.props.spritepath) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
     
     componentDidUpdate(prevProps) {
     	if (this.props.spritepath !== prevProps.spritepath) {
