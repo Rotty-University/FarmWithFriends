@@ -11,12 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.cache.CacheBuilder;
@@ -1746,6 +1741,35 @@ public final class FarmProxy {
       System.out.println("SQL error while updating balance for " + itemName + ": " + category);
     }
   }
+
+  /**
+   * Randomly generates 8 items for store to sell. Items sold can only be items the player has
+   * unlocked according to their game level.
+   * @return names of items
+   * @throws SQLException SQL Exception
+   */
+  public static List<String> generateStoreItems() throws SQLException {
+    List<String> items = new ArrayList<String>();
+    PreparedStatement prep;
+    prep = conn.prepareStatement("SELECT name FROM store WHERE unlocked='yes' ORDER BY"
+    + " RANDOM() LIMIT 8;");
+    try {
+      ResultSet rs = prep.executeQuery();
+      while (rs.next()) {
+        items.add(rs.getString(1));
+      }
+      prep.close();
+      rs.close();
+    } catch (SQLException e) {
+      System.out.print("SQL error: could not generate items to stock store with");
+    }
+    if (items.size() == 0) {
+      return null;
+    }
+    return items;
+
+  }
+
   // ----------------------------------------------------------------------------------
 
 }

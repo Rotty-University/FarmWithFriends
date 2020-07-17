@@ -1,10 +1,13 @@
 package edu.brown.cs.student.farm;
 
+import edu.brown.cs.student.storetransaction.StoreTransaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.brown.cs.student.proxy.FarmProxy;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -189,6 +192,11 @@ public class DataBaseTest {
   @Test
   public void testingStore() throws Exception {
     setUp();
+    List<String> items = FarmProxy.generateStoreItems();
+    assertTrue(items.size() <= 8);
+    assertFalse(items.contains("cherries"));
+    System.out.print(items);
+    StoreTransaction.update();
     assertEquals(FarmProxy.getStoreItemAmt("tomato", "seeds"), 5);
     FarmProxy.updateStoreBalance(3, "tomato", "seeds");
     assertEquals(FarmProxy.getStoreItemAmt("tomato", "seeds"), 3);

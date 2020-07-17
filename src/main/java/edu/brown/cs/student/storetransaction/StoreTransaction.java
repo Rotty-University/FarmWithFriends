@@ -2,10 +2,55 @@ package edu.brown.cs.student.storetransaction;
 
 import edu.brown.cs.student.proxy.FarmProxy;
 
-public final class StoreTransaction {
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
+
+
+public final class StoreTransaction extends TimerTask {
   private StoreTransaction() {
     // hide constructor for final classes
   }
+
+  /**
+   * Queries the database to randomly select 8 items for the store to
+   * sell to a player based off what items they have unlocked.
+   */
+  @Override
+  public void run() {
+    try {
+      FarmProxy.generateStoreItems();
+    } catch (SQLException e) {
+      System.out.print("SQL error: could not generate store items");
+    }
+  }
+
+  /**
+   * Updates the items offered in the store each day.
+   */
+  public static void stockStore() {
+    Calendar today = Calendar.getInstance();
+    today.set(Calendar.HOUR_OF_DAY, 0);
+    today.set(Calendar.MINUTE, 0);
+    today.set(Calendar.SECOND, 0);
+    // every day at 12am the items in the store are updated
+    Timer timer = new Timer();
+
+    timer.schedule();
+  }
+
+  /**
+   * Queries the database to randomly select 8 items for the store to
+   * sell to a player based off what items they have unlocked.
+   */
+//  private void update() {
+//    try {
+//      FarmProxy.generateStoreItems();
+//    } catch (SQLException e) {
+//     System.out.print("SQL error: could not generate store items");
+//    }
+//  }
 
   /**
    * attempt to sell the input item to the store
@@ -73,8 +118,4 @@ public final class StoreTransaction {
     return totalPrice;
   }
 
-  /**
-   * TODO: Queries to randomize the items offered in the store each day and the amounts that can
-   * be bought.
-   */
 } // end of class
