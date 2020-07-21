@@ -166,10 +166,15 @@ class Home extends React.Component {
         this.showInventory = this.showInventory.bind(this);
         this.swapItems = this.swapItems.bind(this);
         
+        // save info of selected tool for farm actions
         this.prevSelectedToolType = "select";
         this.prevSelectedToolID = "";
         this.getPrevSelectedToolType = this.getPrevSelectedToolType.bind(this);
         this.getPrevSelectedToolID = this.getPrevSelectedToolID.bind(this);
+        
+        // save info of selected tool for switching active tool
+        this.prevSelectedToolBox = "";
+        this.prevSelectedToolKey = -1;
         
         // set up action map for handleClick()
         this.actionMap = new Map();
@@ -194,32 +199,76 @@ class Home extends React.Component {
         return <Table id={"farmTable"} rows={rows} columns={columns} activeToolType={activeToolType} activeToolID={activeToolID} currentUserName={this.props.currentUserName}/>;
     }
 
-    updatePrevSelectedTool(e) {
-        let selected = e.target;
-        // if the img is selected, then set back to the parent DragItem
-        // we can NOT select the img here because the tool info is in DragItem
-        if (selected.nodeName == "IMG") {
-        	selected = selected.parentElement;
-        }
-        
-    	// tool-type represents type of action while id represents exactly the tool/seed's name
-        const newToolType = selected.getAttribute("data-tool-type");
-        const newToolID = selected.id;
-//        console.log(newToolType);
-//        console.log(newToolID);
+    updatePrevSelectedTool(newBox, newKey) {
+    	// newBox === null means no item in slot
+    	if (newBox === null) {
+    		return;
+    	}
+    	
+    	let newShortcutToolBox = this.state.shortcutTools;
+    	let newInventoryBox = this.state.inventoryInfo;
+    	let newToolType;
+    	let newToolID;
         
         // remove the highlight on the tool selected before by changing style
-        let current = document.getElementById(this.prevSelectedToolID);
-        if (current != null) {
-            current.className = "toolbaritem";
+        if (this.prevSelectedToolBox === "toolSlot") {
+        	let newToolProps = newShortcutToolBox[this.prevSelectedToolKey].props;
+        	let newToolItemProps = newToolProps["itemInfo"];
+        	
+        	newToolItemProps[1] = "toolbaritem";
+        	
+        	newShortcutToolBox[this.prevSelectedToolKey] = <DropSlot key={this.prevSelectedToolKey} itemInfo={newToolItemProps} className={"toolSlot"} id={this.prevSelectedToolKey}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+        } else if (this.prevSelectedToolBox === "inventorySlot"){
+        	let newToolProps = newInventoryBox[this.prevSelectedToolKey].props;
+        	let newToolItemProps = newToolProps["itemInfo"];
+        	
+        	newToolItemProps[1] = "toolbaritem";
+        	
+        	newInventoryBox[this.prevSelectedToolKey] = <DropSlot key={this.prevSelectedToolKey} itemInfo={newToolItemProps} className={"inventorySlot"} id={this.prevSelectedToolKey}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
         }
-        
-        // select the tool by highlighting
-        selected.className = "toolbarSelected";
+    	
+        // highlight the newly selected tool
+        if (newBox === "toolSlot") {
+        	let newToolProps = newShortcutToolBox[newKey].props;
+        	let newToolItemProps = newToolProps["itemInfo"];
+        	
+        	newToolType = newToolItemProps[3];
+        	newToolID = newToolItemProps[2];
+        	
+        	newToolItemProps[1] = "toolbarSelected";
+        	
+        	newShortcutToolBox[newKey] = <DropSlot key={newKey} itemInfo={newToolItemProps} className={"toolSlot"} id={newKey}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+        } else if (newBox === "inventorySlot"){
+        	let newToolProps = newInventoryBox[newKey].props;
+        	let newToolItemProps = newToolProps["itemInfo"];
+        	
+        	newToolType = newToolItemProps[3];
+        	newToolID = newToolItemProps[2];
+        	
+        	newToolItemProps[1] = "toolbarSelected";
+        	
+        	newInventoryBox[newKey] = <DropSlot key={newKey} itemInfo={newToolItemProps} className={"inventorySlot"} id={newKey}
+    		handleItemClick={this.updatePrevSelectedTool} swapItems={this.swapItems}/>;
+        }
 						
         // update previously selected tool information
+//      console.log(newToolType);
+//      console.log(newToolID);
         this.prevSelectedToolID = newToolID;
         this.prevSelectedToolType = newToolType;
+        
+        this.prevSelectedToolBox = newBox;
+        this.prevSelectedToolKey = newKey;
+        
+        // re-render if necessary
+    	this.setState(
+    			{
+    				shortcutTools: newShortcutToolBox,
+    				inventoryInfo: newInventoryBox
+    			});
     }
     
     closeTheDiv(){
@@ -322,6 +371,15 @@ class Home extends React.Component {
     	
 //    	console.log("Class1: " + slotClass1, "key1: " + slotKey1, "item1: " + itemInfo1);
 //    	console.log("Class2: " + slotClass2, "key2: " + slotKey2, "item2: " + itemInfo2);
+    	
+    	// update prevSelectedTool information
+    	if (slotClass1 === this.prevSelectedToolBox && slotKey1 === this.prevSelectedToolKey) {
+    		this.prevSelectedToolBox = slotClass2;
+    		this.prevSelectedToolKey = slotKey2;
+    	} else if (slotClass2 === this.prevSelectedToolBox && slotKey2 === this.prevSelectedToolKey) {
+    		this.prevSelectedToolBox = slotClass1;
+    		this.prevSelectedToolKey = slotKey1;
+    	}
     	
     	// set states
     	this.setState(

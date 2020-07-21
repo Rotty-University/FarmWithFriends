@@ -33,7 +33,7 @@ public class FarmViewer {
   // Helper methods ------------------------------------------------------------
 
   // save current state of farm
-  public void saveFarm() {
+  public synchronized void saveFarm() {
     if (thePlantation == null || serializedFarm == null) {
       return;
     }
@@ -83,7 +83,7 @@ public class FarmViewer {
   }
 
   // update ONE specific tile
-  public void updateFarm() {
+  public synchronized void updateFarm() {
     if (thePlantation == null) {
       System.out.println("Can't do that: no farm selected");
 

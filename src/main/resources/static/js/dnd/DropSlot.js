@@ -12,6 +12,7 @@ class DropSlot extends React.Component {
 		
 		this.drop = this.drop.bind(this);
 		this.allowDrop = this.allowDrop.bind(this);
+		this.handleItemClick = this.handleItemClick.bind(this);
 	}
 	
 	drop = (e) => {
@@ -64,6 +65,22 @@ class DropSlot extends React.Component {
 		
 		$.post("/updateShortcutTool", dict);
 	}
+	
+	handleItemClick() {
+		this.props.handleItemClick(this.props.className, this.props.id);
+	}
+	
+	// for some reason we don't need this lol
+	// react is already only re-rendering slots that changed
+//	shouldComponentUpdate(nextProps, nextState) {
+//    	for (let i=0; i<this.props.itemInfo.length; i++) {
+//    		if (nextProps.itemInfo[i] !== this.props.itemInfo[i]) {
+//    			return true;
+//    		}
+//    	}
+//    	
+//    	return false;
+//    }
 		
 	render() {		
 		const itemInfo = this.props.itemInfo;
@@ -76,7 +93,7 @@ class DropSlot extends React.Component {
 			return (
 					<div id={this.props.className + this.props.id} className={this.props.className} onDrop={this.drop} onDragOver={this.allowDrop}>
 						<DragItem className={itemInfo[1]} id={itemInfo[2]} type={itemInfo[3]} 
-						onClick={this.props.handleItemClick} children={item}
+						onClick={this.handleItemClick} children={item}
 						slotClass={slotClass} slotNumber={slotNumber}> 
 						</DragItem>
 					</div>
