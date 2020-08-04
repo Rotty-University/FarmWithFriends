@@ -10,9 +10,9 @@
 
 
 ## How to Build and Run
-**Build**
+**Buil**  
 `mvn package` in root directory
 
-**Run**
-Currently deployed at: welcome2myfarm.herokuapp.com
+**Run**  
+Currently deployed at: welcome2myfarm.herokuapp.com  
 Run locally: `./run` in root directory
