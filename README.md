@@ -14,5 +14,5 @@
 `mvn package` in root directory
 
 **Run**  
-Currently deployed at: welcome2myfarm.herokuapp.com  
+Currently deployed at: [welcome2myfarm.herokuapp.com](https://welcome2myfarm.herokuapp.com/login)  
 Run locally: `./run` in root directory
