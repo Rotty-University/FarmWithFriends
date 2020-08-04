@@ -1,6 +1,6 @@
-# Farm With Friends (we need a better title than this lol) 2020
+# Farm With Friends 2020
 
-**Software team:** Nasheath Ahmed, Andrew Boden, Henry Lucco, Jake Zhang
+**Software team:** Nasheath Ahmed, Andrew Boden, Daniel Li, Henry Lucco, Sarah Wang, Jake Zhang
 
 **Art team:** Henry Lucco, Alexis Vitali
 
@@ -10,4 +10,9 @@
 
 
 ## How to Build and Run
-_A necessary part of any README!_
+**Build**
+`mvn package` in root directory
+
+**Run**
+Currently deployed at: welcome2myfarm.herokuapp.com
+Run locally: `./run` in root directory
